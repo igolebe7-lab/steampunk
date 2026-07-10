@@ -1,0 +1,14 @@
+# Godot generated files
+.godot/
+
+# Local brainstorming companion
+.superpowers/
+
+# Local logs and exports
+logs/
+builds/
+exports/
+
+# macOS
+.DS_Store
+
