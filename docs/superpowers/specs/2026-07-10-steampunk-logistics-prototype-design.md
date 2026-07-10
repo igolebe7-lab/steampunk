@@ -1,325 +1,359 @@
-# Steampunk Logistics Prototype — Design Specification
+# Прототип стимпанк-логистики — проектная спецификация
 
-**Status:** Approved for implementation planning  
-**Date:** 2026-07-10  
-**Engine:** Godot 4.6.2, GDScript  
-**Working repository:** `https://github.com/igolebe7-lab/steampunk.git`
+**Статус:** согласовано для подготовки плана реализации
 
-## 1. Product intent
+**Дата:** 2026-07-10
 
-The long-term game is a colonial-industrial steampunk automation game on a hex grid. Its central fantasy is not simply building a factory; it is guiding a society through an industrial transition. People, animals, roads, vehicles, steam machines, and local conveyors coexist instead of each new logistics tier immediately replacing the previous one.
+**Движок:** Godot 4.6.2, GDScript
 
-The design pillars to preserve are:
+**Рабочий репозиторий:** `https://github.com/igolebe7-lab/steampunk.git`
 
-1. Physical logistics: workers and later vehicles visibly carry goods.
-2. Industrial transition: manual work gradually becomes mechanized.
-3. Technology trades one constraint for another instead of removing play.
-4. Steam is eventually a physical pressure network, not abstract electricity.
-5. The primary pressure comes from an increasingly complex system rather than mandatory combat.
+## 1. Замысел игры
 
-The full concept is intentionally larger than the first implementation cycle. The first prototype tests only the highest-risk and most distinctive hypothesis.
+В перспективе это колониально-индустриальный стимпанк-автоматизатор на гексах. Главная фантазия игрока — не просто построить завод, а провести общество через промышленный перелом. Люди, животные, дороги, транспорт, паровые машины и локальные конвейеры сосуществуют; новый уровень логистики не должен мгновенно делать предыдущий бесполезным.
 
-## 2. Prototype hypothesis and success condition
+Основные принципы, которые необходимо сохранить:
 
-**Hypothesis:** observing, diagnosing, and improving a physical flow of workers and cargo is enjoyable before advanced automation exists.
+1. Физическая логистика: рабочие, а позднее транспорт, действительно перемещают видимые грузы.
+2. Индустриальный переход: ручной труд постепенно становится механизированным.
+3. Новая технология заменяет одно ограничение другим, а не устраняет игровой процесс.
+4. В полной игре пар станет физической сетью давления, а не абстрактным электричеством.
+5. Основное давление создаёт усложняющаяся система, а не обязательная война.
 
-The prototype is a 15–20 minute scenario on a hand-authored 18×18 hex map. The player starts with an inefficient logistics network and six autonomous porters. The objective is to deliver the resources needed to activate a boiler and produce the first strike of a steam hammer.
+Полная концепция намеренно значительно шире первого цикла разработки. Первый прототип проверяет только самую рискованную и отличительную гипотезу.
 
-The prototype succeeds when a player can:
+## 2. Гипотеза и критерии успеха прототипа
 
-- finish the scenario in roughly 15–20 minutes;
-- identify the first bottleneck without developer explanation;
-- understand the diagnostic reason for a delay;
-- increase throughput by at least 25% through roads, one relay depot, or priorities;
-- perceive a clear difference between open ground, paths, and dirt roads;
-- understand that the steam hammer is the result of reorganizing logistics.
+**Гипотеза:** наблюдать, диагностировать и улучшать физический поток рабочих и грузов интересно ещё до появления продвинутой автоматизации.
 
-## 3. Player experience and scenario flow
+Прототип представляет собой сценарий на 15–20 минут на подготовленной карте размером 18×18 гексов. Игрок начинает с неэффективной логистической сети и шести автономных носильщиков. Цель — доставить ресурсы, необходимые для запуска котла и первого удара парового молота.
 
-### 0–3 minutes: observe
+Прототип считается успешным, если игрок:
 
-The camp, main warehouse, four resource sources, and six porters already exist. Sources create cargo at a fixed rate. Porters autonomously accept delivery jobs and move across open ground. The player can inspect workers, jobs, routes, and inventories.
+- завершает сценарий примерно за 15–20 минут;
+- самостоятельно находит первое узкое место;
+- понимает диагностическое объяснение задержки;
+- повышает пропускную способность хотя бы на 25% с помощью дорог, одного перевалочного склада или приоритетов;
+- замечает явную разницу между открытой землёй, тропой и грунтовой дорогой;
+- понимает, что паровой молот запущен благодаря реорганизации логистики.
 
-### 3–7 minutes: encounter the first bottleneck
+## 3. Ход игровой сессии
 
-Wood and iron deliveries share an inefficient choke point. Delivery queues grow, workers wait for occupied cells, and average delivery time rises. The interface exposes these symptoms without prescribing a single solution.
+### 0–3 минуты: наблюдение
 
-### 7–11 minutes: improve the flow
+Лагерь, главный склад, четыре источника ресурсов и шесть носильщиков уже существуют. Источники создают грузы с фиксированной скоростью. Носильщики самостоятельно принимают заказы на доставку и перемещаются по открытой земле. Игрок может изучать рабочих, задания, маршруты и запасы.
 
-The player can build or upgrade a route, place one relay warehouse, and change delivery priorities. The system reports the resulting improvement in cargo per minute and time spent moving versus waiting.
+### 3–7 минут: первое узкое место
 
-### 11–16 minutes: accept a new load
+Доставка дерева и железа использует неэффективный общий проход. Очередь заказов растёт, рабочие ждут освобождения занятых гексов, среднее время доставки увеличивается. Интерфейс показывает симптомы, но не навязывает единственное решение.
 
-The steam-hammer construction site activates. It requests wood, iron, coal, and water barrels at the same time. The newly expanded demand stresses the network again.
+### 7–11 минут: улучшение потока
 
-### 16–20 minutes: reorganize and finish
+Игрок может построить или улучшить дорогу, поставить один перевалочный склад и изменить приоритет доставки. Система показывает изменение числа грузов в минуту и соотношение времени в пути и ожидания.
 
-The player performs a second improvement. Once all required cargo reaches the site, the boiler activates and the steam hammer makes its first strike. A results panel compares throughput and delay statistics from before and after the player's changes.
+### 11–16 минут: новая нагрузка
 
-There is no hard loss state. A stalled network remains recoverable through rebuilding, reprioritization, or warehouse placement.
+Активируется строительная площадка парового молота. Ей одновременно нужны дерево, железо, уголь и бочки воды. Новая нагрузка снова создаёт напряжение в сети.
 
-## 4. Prototype scope
+### 16–20 минут: перестройка и завершение
 
-### Included
+Игрок выполняет второе улучшение. Когда все грузы доставлены, котёл запускается, а паровой молот делает первый удар. Итоговая панель сравнивает пропускную способность и задержки до и после изменений игрока.
 
-- flat top-down 2D presentation;
-- axial-coordinate hex grid;
-- one hand-authored 18×18 scenario;
-- six physical porter agents;
-- delivery jobs, automatic assignment, pathfinding, cell reservation, loading, and unloading;
-- wood, iron, coal, and water cargo;
-- open ground, path, and dirt-road movement costs;
-- camp, source sites, main warehouse, one relay warehouse, boiler, and steam hammer;
-- build road, place warehouse, set priority, and inspect actions;
-- pause and ×1, ×2, and ×4 simulation speeds;
-- diagnostic overlays and per-worker inspection;
-- scenario metrics and results screen;
-- minimal construction, pickup, drop-off, steam, and hammer-impact sound effects.
+Жёсткого проигрыша нет. Остановившуюся сеть всегда можно восстановить перестройкой, сменой приоритетов или размещением склада.
 
-### Simplified
+## 4. Объём прототипа
 
-- sources generate cargo without simulated extractors;
-- every porter carries one standardized cargo unit;
-- there is only one worker profession;
-- steam is a binary supplied/not-supplied condition;
-- traffic uses deterministic cell reservation rather than full local collision avoidance;
-- cargo is represented by type and quantity rather than a separate world entity while stored;
-- only one scenario and one goal exist.
+### Входит в прототип
 
-### Explicitly excluded
+- плоское двухмерное представление сверху;
+- гексагональная сетка в аксиальных координатах;
+- один подготовленный сценарий 18×18;
+- шесть физических носильщиков;
+- заказы на доставку, автоматическое назначение, поиск пути, резервирование гексов, погрузка и разгрузка;
+- дерево, железо, уголь и вода;
+- открытая земля, тропа и грунтовая дорога с разной стоимостью перемещения;
+- лагерь, источники, главный склад, один перевалочный склад, котёл и паровой молот;
+- действия «построить дорогу», «поставить склад», «изменить приоритет» и «осмотреть»;
+- пауза и скорости симуляции ×1, ×2 и ×4;
+- диагностические слои и инспектор рабочего;
+- метрики сценария и итоговый экран;
+- минимальные звуки строительства, погрузки, разгрузки, пара и удара молота.
 
-- worker needs, fatigue, housing, loyalty, health, and wages;
-- animals, carts, tractors, rails, conveyors, and automatons;
-- physical pressure, pipes, leaks, heat, and boiler explosions;
-- technology trees, research, and multiple eras;
-- weather, disasters, combat, and hostile creatures;
-- procedural map generation;
-- save/load, localization, tutorial campaign, and accessibility settings beyond basic scalable UI;
-- final art, music, and production balancing.
+### Упрощено
 
-## 5. Architecture decision
+- источники создают груз без симуляции добытчиков;
+- каждый носильщик переносит одну стандартную единицу груза;
+- существует только одна профессия рабочего;
+- пар представлен бинарным состоянием «снабжение есть / снабжения нет»;
+- заторы используют детерминированное резервирование гексов вместо полной симуляции столкновений;
+- груз на складе хранится как тип и количество, а не как отдельный объект мира;
+- существует только один сценарий и одна цель.
 
-The prototype uses a **data-first, deterministic fixed-tick simulation** separated from Godot presentation nodes. The simulation is the only source of gameplay truth. Rendering reads simulation snapshots and events but does not own inventories, jobs, movement decisions, or scenario progress.
+### Явно не входит
+
+- потребности, усталость, жильё, лояльность, здоровье и оплата рабочих;
+- животные, повозки, тягачи, рельсы, конвейеры и автоматоны;
+- физическое давление, трубы, утечки, перегрев и взрывы котлов;
+- дерево технологий, исследования и несколько эпох;
+- погода, катастрофы, боевые действия и враждебные существа;
+- процедурная генерация карты;
+- сохранение и загрузка, обучающая кампания и полноценные настройки доступности;
+- финальная графика, музыка и производственный баланс.
+
+## 5. Язык проекта и локализация
+
+Русский язык является исходным языком проекта и игры.
+
+На русском создаются:
+
+- проектные спецификации и планы реализации;
+- README, игровая документация и руководства;
+- отчёты о тестировании и плейтестах, предназначенные для проверки владельцем проекта;
+- весь пользовательский интерфейс, сообщения, цели, названия объектов и диагностические объяснения первой версии игры.
+
+Технические идентификаторы GDScript, имена файлов и каталогов, имена классов и ключи локализации пишутся по-английски латиницей. Это сохраняет совместимость с Godot и инструментами разработки, не меняя язык пользовательской документации.
+
+Весь пользовательский текст с первого этапа проходит через систему локализации Godot:
+
+- строки не зашиваются напрямую в сцены и игровую логику;
+- код обращается к семантическим ключам через `tr()` и `tr_n()`;
+- диагностические коды преобразуются в ключи локализации;
+- динамические значения передаются в переводимые шаблоны через именованные параметры;
+- шрифты обязаны полностью поддерживать кириллицу;
+- базовая локаль проекта — `ru`;
+- каталог `localization/game.csv` содержит столбец ключей и русские значения; новые языки добавляются отдельными столбцами без изменения игрового кода;
+- отсутствие перевода обнаруживается автоматической проверкой каталога.
+
+В первом прототипе не требуется пользовательский экран выбора языка и не требуется готовый английский перевод. Архитектура обязана позволять подключить второй язык и переключить локаль через `TranslationServer` без изменения симуляции, UI-компоновки и ключей.
+
+## 6. Архитектурное решение
+
+Прототип использует **data-first архитектуру с детерминированной симуляцией на фиксированных тиках**, отделённой от узлов представления Godot. Симуляция является единственным источником игровой истины. Отображение читает снимки состояния и события, но не владеет запасами, заданиями, маршрутами, решениями рабочих или прогрессом сценария.
 
 ```mermaid
 flowchart TD
-    Input["Hex input and HUD"] --> Commands["Validated commands"]
-    Commands --> Runner["SimulationRunner: fixed ticks"]
+    Input["Ввод на гексах и HUD"] --> Commands["Проверенные команды"]
+    Commands --> Runner["SimulationRunner: фиксированные тики"]
     Runner --> State["SimulationState"]
-    State --> Systems["Ordered simulation systems"]
+    State --> Systems["Упорядоченные системы симуляции"]
     Systems --> State
-    Systems --> Events["Typed tick events and metrics"]
-    State --> Views["World and worker views"]
+    Systems --> Events["Типизированные события и метрики"]
+    State --> Views["Представления мира и рабочих"]
     Events --> Views
-    Events --> Diagnostics["HUD and diagnostic overlays"]
-    Definitions["Godot Resources: definitions only"] --> State
-    Headless["Headless tests and replays"] --> Runner
+    Events --> Diagnostics["HUD и диагностические слои"]
+    Definitions["Godot Resources: только определения"] --> State
+    Headless["Headless-тесты и повторы"] --> Runner
 ```
 
-The default simulation rate is 10 ticks per second. Rendering targets 60 frames per second and interpolates worker positions between completed ticks. The exact tick rate remains configurable for testing, but gameplay logic never depends directly on render-frame delta.
+Стандартная частота симуляции — 10 тиков в секунду. Отображение стремится к 60 кадрам в секунду и интерполирует положение рабочих между завершёнными тиками. Частоту тиков можно менять для тестов, но игровая логика никогда не зависит напрямую от длительности кадра рендера.
 
-The data flow is one-way:
+Поток данных всегда однонаправленный:
 
-`input → command → simulation tick → state/events → presentation`
+`ввод → команда → тик симуляции → состояние и события → отображение`
 
-## 6. Runtime model
+## 7. Модель состояния
 
-`SimulationState` is the single mutable snapshot of the world. It contains:
+`SimulationState` — единственный изменяемый снимок мира. Он содержит:
 
-- map bounds and hex-cell data;
-- workers and their current state;
-- buildings and local inventories;
-- delivery jobs and assignments;
-- paths and cell reservations;
-- simulation clock, scenario state, and metrics;
-- deterministic random seed when randomness is introduced.
+- границы карты и данные гексов;
+- рабочих и их текущее состояние;
+- здания и локальные запасы;
+- заказы на доставку и назначения;
+- маршруты и резервирование гексов;
+- игровое время, состояние сценария и метрики;
+- детерминированный seed после появления случайности.
 
-Core runtime types have stable integer identifiers. References between runtime entities use identifiers rather than Godot node paths.
+Основные сущности получают стабильные целочисленные идентификаторы. Связи между сущностями используют идентификаторы, а не пути к узлам Godot.
 
-Key model types:
+Ключевые типы модели:
 
-- `HexCoord`: axial `q/r` coordinate value object;
-- `HexCellState`: terrain, road tier, occupant, and reservation data;
-- `WorkerState`: position, movement progress, carried cargo, job, route, and wait reason;
-- `BuildingState`: definition identifier, position, inventory, requests, and priority;
-- `DeliveryJob`: source, destination, cargo type, lifecycle state, priority, and assignee;
-- `ScenarioState`: current phase, objective quantities, completion state, and measurements.
+- `HexCoord`: значение аксиальной координаты `q/r`;
+- `HexCellState`: тип земли, уровень дороги, занятость и резервирование;
+- `WorkerState`: положение, прогресс движения, груз, задание, маршрут и причина ожидания;
+- `BuildingState`: идентификатор определения, положение, запасы, запросы и приоритет;
+- `DeliveryJob`: источник, назначение, тип груза, состояние, приоритет и исполнитель;
+- `ScenarioState`: текущая фаза, требования цели, завершение и измерения.
 
-Godot `Resource` assets define immutable authoring data:
+Godot `Resource` используется для неизменяемых авторских определений:
 
-- `ResourceDef`: identifier, display name, color, and icon;
-- `RoadDef`: build cost, traversal cost, and display properties;
-- `BuildingDef`: footprint, cost, inventory rules, request rules, and view scene;
-- `ScenarioDef`: map, starting entities, limits, objective, and measurement windows.
+- `ResourceDef`: идентификатор, ключ отображаемого имени, цвет и значок;
+- `RoadDef`: цена строительства, стоимость перемещения и свойства отображения;
+- `BuildingDef`: занимаемые гексы, цена, правила запасов, запросы и сцена представления;
+- `ScenarioDef`: карта, начальные сущности, ограничения, цель и интервалы измерения.
 
-Runtime inventories and mutable state never live in shared definition resources.
+Изменяемые запасы и состояние мира никогда не хранятся в общих ресурсах-определениях.
 
-## 7. Simulation order
+## 8. Порядок систем симуляции
 
-Every tick applies systems in a stable order:
+Каждый тик выполняет системы в стабильном порядке:
 
-1. `CommandSystem` validates and applies queued player actions.
-2. `JobSystem` converts inventory needs and available cargo into delivery jobs.
-3. `AssignmentSystem` assigns suitable jobs to idle workers.
-4. `PathSystem` creates or repairs worker routes.
-5. `MovementSystem` reserves cells and advances workers.
-6. `InventorySystem` performs pickup and drop-off operations.
-7. `ScenarioSystem` updates objective progress and completion.
-8. `TelemetrySystem` records throughput, travel time, waiting time, and bottlenecks.
-9. `InvariantChecker` runs in debug and test builds.
+1. `CommandSystem` проверяет и применяет накопленные команды игрока.
+2. `JobSystem` превращает потребности складов и доступные грузы в заказы.
+3. `AssignmentSystem` назначает подходящие заказы свободным рабочим.
+4. `PathSystem` создаёт или восстанавливает маршруты.
+5. `MovementSystem` резервирует гексы и перемещает рабочих.
+6. `InventorySystem` выполняет погрузку и разгрузку.
+7. `ScenarioSystem` обновляет прогресс цели и состояние завершения.
+8. `TelemetrySystem` измеряет пропускную способность, время пути, ожидание и узкие места.
+9. `InvariantChecker` выполняется в debug- и тестовых сборках.
 
-Systems do not use Godot scene nodes to communicate. They receive the state and explicit dependencies, then return events or result values. Events are emitted after state mutation so presentation never observes a half-applied tick.
+Системы не используют узлы сцен Godot для связи. Они получают состояние и явные зависимости, после чего возвращают события или значения результата. События публикуются после изменения состояния, поэтому отображение никогда не видит частично выполненный тик.
 
-## 8. Godot integration boundaries
+## 9. Границы интеграции с Godot
 
-Godot scenes and nodes are adapters around the simulation:
+Сцены и узлы Godot являются адаптерами вокруг симуляции:
 
-- `GameApp` is the only initial autoload and owns high-level scenario startup;
-- `SimulationRunner` owns tick scheduling, pause, and time scale;
-- `WorldView` renders the map and synchronizes building views;
-- `WorkerView` interpolates a single worker's position and displays its cargo marker;
-- `HUDController` converts UI actions into commands;
-- `DiagnosticsView` displays routes, utilization, queues, and wait reasons;
-- `CameraController` handles pan, zoom, and map bounds.
+- `GameApp` — единственный начальный autoload, управляющий запуском сценария;
+- `SimulationRunner` управляет тиками, паузой и скоростью времени;
+- `WorldView` рисует карту и синхронизирует представления зданий;
+- `WorkerView` интерполирует положение рабочего и показывает переносимый груз;
+- `HUDController` превращает действия интерфейса в команды;
+- `DiagnosticsView` показывает маршруты, загрузку, очереди и причины ожидания;
+- `CameraController` управляет перемещением, масштабом и границами камеры.
 
-Signals are used at presentation boundaries for coarse events such as scenario completion, selection change, and snapshot availability. A global event bus is not used in the prototype. GDScript is statically typed wherever Godot permits it, and autoloads remain limited to genuinely global application lifecycle concerns.
+Сигналы используются на границах представления для крупных событий: завершение сценария, смена выделения и готовность нового снимка. Глобальная шина событий в прототипе не используется. GDScript статически типизируется везде, где это позволяет Godot, а autoload применяется только для действительно глобального жизненного цикла приложения.
 
-## 9. Interface design
+Godot `TranslationServer` используется напрямую для локали и перевода интерфейса. Отдельный глобальный менеджер локализации не вводится, пока не появится поведение, которого нет в стандартной системе движка.
 
-The map remains the dominant surface. Panels occupy the screen edges and do not cover the logistics network.
+## 10. Интерфейс
 
-### Top bar
+Карта остаётся главным пространством. Панели располагаются по краям и не закрывают логистическую сеть. Все подписи получают текст через ключи локализации.
 
-- current quantities of wood, iron, coal, and water;
-- steam-hammer objective progress;
-- pause and ×1/×2/×4 controls.
+### Верхняя панель
 
-### Left diagnostics panel
+- текущее количество дерева, железа, угля и воды;
+- прогресс цели «Паровой молот»;
+- пауза и скорости ×1, ×2 и ×4.
 
-Toggleable overlays for:
+### Левая панель диагностики
 
-- worker routes;
-- road utilization and choke points;
-- inventories;
-- job queue and unassigned demand.
+Переключаемые слои:
 
-### Right inspector
+- маршруты рабочих;
+- загрузка дорог и узкие места;
+- запасы;
+- очередь работ и неназначенный спрос.
 
-For a selected worker, display:
+### Правый инспектор
 
-- current job and cargo;
-- source and destination;
-- route length and estimated arrival time;
-- time spent moving and waiting;
-- a human-readable wait reason.
+Для выбранного рабочего показываются:
 
-For buildings, the same area displays inventory, incoming requests, priority, and blocked reasons.
+- текущее задание и груз;
+- источник и место назначения;
+- длина пути и примерное время прибытия;
+- время в движении и ожидании;
+- понятная причина ожидания.
 
-### Bottom action bar
+Для здания та же область показывает запасы, входящие запросы, приоритет и причины блокировки.
 
-Only four actions are exposed:
+### Нижняя панель действий
 
-- build/upgrade road;
-- place the single relay warehouse;
-- change priority;
-- inspect.
+Доступны только четыре действия:
 
-No minimap, large construction catalog, technology screen, or multi-page management UI is included.
+- построить или улучшить дорогу;
+- поставить единственный перевалочный склад;
+- изменить приоритет;
+- осмотреть.
 
-## 10. Errors, recovery, and observability
+Мини-карта, большой каталог строительства, экран технологий и многостраничное управление не входят в прототип.
 
-Player commands return structured failure reasons such as out of bounds, occupied cell, insufficient resources, invalid footprint, or missing road connection. The UI translates these codes into concise messages.
+## 11. Ошибки, восстановление и наблюдаемость
 
-Every job has an explicit lifecycle and wait reason. Supported reasons include no worker, no cargo, destination full, no route, and temporary cell reservation. A worker whose route becomes invalid releases reservations, returns the job to the queue, and requests replanning. Workers must never remain silently stuck.
+Команды игрока возвращают структурированные причины отказа: гекс вне карты, клетка занята, недостаточно ресурсов, недопустимая форма здания или отсутствует соединение с дорогой. Интерфейс переводит коды причин в локализованные короткие сообщения.
 
-Debug and test builds validate these invariants after ticks:
+Каждый заказ имеет явное состояние и причину ожидания. Поддерживаются причины: нет рабочего, нет груза, склад назначения заполнен, маршрут отсутствует, гекс временно зарезервирован. Если маршрут стал недоступен, рабочий освобождает резервирование, возвращает заказ в очередь и запрашивает новый путь. Рабочие не должны молча застывать.
 
-- no inventory quantity is negative;
-- one job cannot be assigned to multiple workers;
-- one cell cannot be reserved incompatibly by multiple workers;
-- pickup and drop-off conserve cargo;
-- paths remain within map bounds;
-- identifiers reference existing runtime entities.
+Debug- и тестовые сборки после тиков проверяют следующие инварианты:
 
-The simulation retains a bounded recent event log and the initial seed. A failing scenario can therefore be reproduced headlessly using the same starting state and command trace.
+- запас не может быть отрицательным;
+- один заказ нельзя назначить нескольким рабочим;
+- один гекс нельзя несовместимо зарезервировать нескольким рабочим;
+- погрузка и разгрузка сохраняют общее количество груза;
+- маршрут не выходит за границы карты;
+- идентификаторы ссылаются на существующие сущности.
 
-Invalid resource or scenario definitions fail fast during loading with a precise error. The game does not attempt to run a partially valid world.
+Симуляция хранит ограниченный журнал последних событий и начальный seed. Ошибочный сценарий можно воспроизвести в headless-режиме с тем же начальным состоянием и трассой команд.
 
-## 11. Asset workflow
+Некорректные определения ресурсов, зданий, сценария или локализации приводят к явной ошибке загрузки. Игра не запускает частично корректный мир.
 
-### Functional graybox
+## 12. Пайплайн ассетов
 
-The first implementation uses scalable vector shapes, flat colors, labels, and simple effects. Visual language is diagnostic:
+### Функциональный graybox
 
-- wood: green;
-- iron: blue-gray;
-- coal: near-black;
-- water: blue;
-- normal flow: neutral;
-- waiting: amber;
-- blocked: red.
+Первая реализация использует масштабируемые векторные формы, плоские цвета, подписи и простые эффекты. Визуальный язык служит диагностике:
 
-Workers are circles with direction and cargo markers. Roads differ by width, value, and edge treatment. Buildings use distinct silhouettes and short labels. These assets are intentionally readable at multiple zoom levels.
+- дерево — зелёное;
+- железо — серо-синее;
+- уголь — почти чёрное;
+- вода — голубая;
+- нормальный поток — нейтральный;
+- ожидание — янтарное;
+- блокировка — красная.
 
-### First art pass
+Рабочие представлены кругами с направлением движения и значком груза. Дороги различаются шириной, яркостью и обработкой края. Здания имеют разные силуэты и короткие локализованные подписи. Все элементы остаются читаемыми при разных масштабах камеры.
 
-An art pass begins only after the mechanical playtest succeeds:
+### Первый художественный проход
 
-1. approve a compact visual style guide;
-2. approve one reference worker, warehouse, road, and steam hammer;
-3. generate or draw coherent batches;
-4. normalize palette, scale, shadows, and anchors;
-5. replace presentation assets without changing simulation state or systems.
+Художественный проход начинается только после успешного механического плейтеста:
 
-The intended direction is warm, material steampunk: brass, cast iron, wood, brick, wet earth, canvas, smoke, and steam. It is not dark dieselpunk and should not look exactly like nineteenth-century Earth.
+1. согласовать короткий визуальный style guide;
+2. согласовать по одному эталону рабочего, склада, дороги и парового молота;
+3. создать согласованные серии изображений;
+4. нормализовать палитру, масштаб, тени и точки привязки;
+5. заменить ассеты представления без изменения симуляции.
 
-Editable source assets and game-ready assets remain separate. Godot-generated `.godot/` data, local brainstorming files, logs, and exports are ignored by Git.
+Визуальное направление — тёплый материальный стимпанк: латунь, чугун, дерево, кирпич, мокрая земля, ткань, дым и пар. Это не мрачный дизельпанк и не буквальное воспроизведение Земли XIX века.
 
-## 12. Testing strategy
+Редактируемые исходники и готовые игровые ассеты хранятся раздельно. Сгенерированные Godot данные `.godot/`, локальные файлы brainstorming, журналы и экспортированные сборки не попадают в Git.
 
-### Unit tests
+## 13. Стратегия тестирования
 
-Headless tests cover:
+### Модульные тесты
 
-- hex neighbors, distance, conversion, and path cost;
-- job creation and assignment;
-- pathfinding and replanning;
-- reservations and deterministic conflict resolution;
-- pickup, drop-off, and cargo conservation;
-- command validation;
-- deterministic results for identical inputs.
+Headless-тесты проверяют:
 
-### Scenario tests
+- соседей, расстояние, преобразования и стоимость пути на гексах;
+- создание и назначение заказов;
+- поиск и перестроение пути;
+- резервирование и детерминированное разрешение конфликтов;
+- погрузку, разгрузку и сохранение количества груза;
+- проверку команд;
+- одинаковый результат для одинакового ввода.
 
-Small fixed scenarios validate:
+### Сценарные тесты
 
-- source-to-warehouse delivery;
-- route invalidation and recovery;
-- full-destination blocking with the correct reason;
-- measurable improvement after road construction;
-- relay-warehouse behavior;
-- completion after all steam-hammer cargo arrives.
+Маленькие фиксированные сценарии проверяют:
 
-### Godot integration tests
+- доставку от источника до склада;
+- восстановление после изменения маршрута;
+- блокировку заполненным складом с правильной причиной;
+- измеримое улучшение после строительства дороги;
+- работу перевалочного склада;
+- завершение после доставки всех грузов к паровому молоту.
 
-Godot 4.6.2 headless runs verify:
+### Интеграционные тесты Godot
 
-- resource import;
-- GDScript parsing;
-- main-scene startup;
-- presentation entity creation and removal;
-- pause and time-scale controls;
-- scenario completion signaling.
+Godot 4.6.2 в headless-режиме проверяет:
 
-### Playtest and visual checks
+- импорт ресурсов;
+- разбор GDScript без ошибок;
+- запуск главной сцены;
+- создание и удаление объектов представления;
+- паузу и управление скоростью;
+- сигнал завершения сценария;
+- наличие русского значения для каждого используемого ключа локализации;
+- переключение на тестовую вторую локаль без изменения кода;
+- отсутствие обрезания ключевых русских подписей в HUD на целевом разрешении.
 
-The scenario is played through in the Godot editor. Screenshots verify HUD legibility and overlay behavior. Metrics and observations are recorded against the success conditions in Section 2.
+### Плейтест и визуальная проверка
 
-### Stress test
+Сценарий полностью проходится в редакторе Godot. Скриншоты проверяют читаемость русского HUD и поведение диагностических слоёв. Метрики и наблюдения сравниваются с критериями раздела 2.
 
-A non-player 40×40 scenario with 50 workers runs at 10 ticks per second. It detects architectural regressions beyond the six-worker content target. Initial performance acceptance is no sustained render-frame degradation caused by simulation and no tick backlog on the development Mac. Numeric budgets will be set from the first profiler baseline rather than guessed before implementation.
+### Стресс-тест
 
-## 13. Project layout
+Неигровой сценарий 40×40 с 50 рабочими запускается на частоте 10 тиков в секунду. Он обнаруживает архитектурные проблемы, которые не проявятся на шести рабочих. Первичное требование — симуляция не должна постоянно снижать частоту отображения или накапливать отставание тиков на рабочем Mac. Числовой бюджет будет установлен по первому профилю, а не выдуман заранее.
+
+## 14. Структура проекта
 
 ```text
 project.godot
@@ -339,6 +373,8 @@ data/
   buildings/
   roads/
   scenarios/
+localization/
+  game.csv
 scenes/
 assets/
   source/
@@ -349,64 +385,66 @@ tests/
   integration/
 ```
 
-Files remain small and organized by responsibility. Simulation model types do not import presentation types. Presentation code may read public simulation snapshots and typed events but may not mutate simulation state directly.
+Файлы остаются небольшими и разделяются по ответственности. Типы модели симуляции не импортируют типы представления. Представление может читать публичные снимки состояния и типизированные события, но не может напрямую менять состояние симуляции.
 
-## 14. Implementation milestones
+## 15. Этапы реализации
 
-### Milestone 1: project foundation
+### Этап 1: основа проекта
 
-- Godot project metadata and ignore rules;
-- headless test runner;
-- typed hex coordinate and map model;
-- top-down hex rendering, camera, and cell selection.
+- метаданные Godot и правила игнорирования файлов;
+- headless-раннер тестов;
+- типизированная координата гекса и модель карты;
+- отображение гексов сверху, камера и выбор клетки;
+- каталог локализации с русской базовой локалью и проверка кириллического шрифта.
 
-**Gate:** coordinate tests pass and a selectable 18×18 map runs in Godot.
+**Условие перехода:** тесты координат проходят, карта 18×18 запускается в Godot, а тестовая локализованная подпись отображается на русском без жёстко зашитого текста.
 
-### Milestone 2: fixed-tick world
+### Этап 2: мир с фиксированными тиками
 
 - `SimulationState`;
-- command queue and tick runner;
-- resource and building definitions;
-- deterministic hand-authored scenario loading.
+- очередь команд и раннер тиков;
+- определения ресурсов и зданий;
+- детерминированная загрузка подготовленного сценария.
 
-**Gate:** identical command traces produce identical state hashes.
+**Условие перехода:** одинаковые трассы команд создают одинаковые хэши состояния.
 
-### Milestone 3: physical logistics
+### Этап 3: физическая логистика
 
-- delivery jobs and assignment;
-- pathfinding and cell reservations;
-- worker movement and interpolation;
-- pickup and drop-off.
+- заказы на доставку и назначение;
+- поиск пути и резервирование гексов;
+- движение рабочих и интерполяция;
+- погрузка и разгрузка.
 
-**Gate:** six autonomous workers repeatedly deliver cargo without loss, duplication, or silent stalls.
+**Условие перехода:** шесть автономных рабочих многократно доставляют груз без потерь, дублирования и молчаливых зависаний.
 
-### Milestone 4: player control and diagnostics
+### Этап 4: управление и диагностика
 
-- roads, one relay warehouse, and priorities;
-- route and utilization overlays;
-- worker/building inspector;
-- throughput and delay metrics.
+- дороги, один перевалочный склад и приоритеты;
+- слои маршрутов и загрузки;
+- инспектор рабочего и здания;
+- метрики пропускной способности и задержек;
+- полный русский набор строк для доступного интерфейса.
 
-**Gate:** a test road improvement produces a verified throughput gain and the UI explains active bottlenecks.
+**Условие перехода:** тестовое улучшение дороги даёт подтверждённый рост пропускной способности, а интерфейс по-русски объясняет активные узкие места.
 
-### Milestone 5: complete scenario
+### Этап 5: полный сценарий
 
-- four resources;
-- boiler and steam-hammer objective;
-- phase progression and results screen;
-- minimal sound and effects.
+- четыре ресурса;
+- котёл и цель с паровым молотом;
+- переходы фаз и итоговый экран;
+- минимальные звуки и эффекты.
 
-**Gate:** the complete 15–20 minute scenario is playable from start to finish.
+**Условие перехода:** сценарий полностью проходится за 15–20 минут, а все пользовательские строки берутся из каталога локализации.
 
-### Milestone 6: validation and first art pass
+### Этап 6: проверка и первый художественный проход
 
-- full headless suite and stress test;
-- editor playtest and visual review;
-- approved style references;
-- coherent replacement assets for the prototype set.
+- полный набор headless-тестов и стресс-тест;
+- плейтест в редакторе и визуальная проверка;
+- согласованные эталоны стиля;
+- целостный набор ассетов прототипа.
 
-**Gate:** success conditions are evaluated and documented before expanding scope.
+**Условие перехода:** критерии успеха измерены и задокументированы на русском до расширения объёма игры.
 
-## 15. Expansion rule
+## 16. Правило расширения
 
-No animals, vehicles, physical steam network, research tree, procedural world, social simulation, or combat is added until the prototype establishes that diagnosing and improving worker logistics is enjoyable. If the hypothesis fails, the team revises the logistics interaction before adding content. If it succeeds, the next design cycle chooses exactly one expansion axis and receives its own specification and implementation plan.
+Животные, транспорт, физическая сеть пара, дерево исследований, процедурный мир, социальная симуляция и боевые действия не добавляются, пока прототип не подтвердит, что диагностика и улучшение логистики рабочих интересны сами по себе. Если гипотеза не подтверждается, изменяется взаимодействие с логистикой, а не добавляется контент. Если гипотеза подтверждается, следующий проектный цикл выбирает ровно одно направление расширения и получает отдельную русскоязычную спецификацию и план реализации.
