@@ -4,6 +4,9 @@
 # Local brainstorming companion
 .superpowers/
 
+# Local Git worktrees
+.worktrees/
+
 # Local logs and exports
 logs/
 builds/
@@ -11,4 +14,3 @@ exports/
 
 # macOS
 .DS_Store
-
