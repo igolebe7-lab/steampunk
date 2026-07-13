@@ -1208,8 +1208,12 @@ func run() -> Array[String]:
         PackedStringArray()
     )
     assert_true(
-        translation_paths.has("res://localization/game.csv"),
-        "каталог game.csv должен загружаться проектом"
+        translation_paths.has("res://localization/game.ru.translation"),
+        "русский ресурс перевода должен загружаться проектом"
+    )
+    assert_true(
+        translation_paths.has("res://localization/game.en.translation"),
+        "английский ресурс перевода должен загружаться проектом"
     )
     _assert_catalog_complete("res://localization/game.csv")
 

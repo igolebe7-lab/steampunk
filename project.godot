@@ -1,5 +1,10 @@
 ; Engine configuration file.
-; It is best edited using the editor and kept under version control.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
 
@@ -7,6 +12,7 @@ config_version=5
 
 config/name="Паровая логистика"
 run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.6")
 
 [display]
 
@@ -18,8 +24,8 @@ window/stretch/mode="canvas_items"
 
 [internationalization]
 
-locale/fallback="ru"
 locale/translations=PackedStringArray("res://localization/game.ru.translation", "res://localization/game.en.translation")
+locale/fallback="ru"
 
 [rendering]
 
