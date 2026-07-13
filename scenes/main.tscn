@@ -1,10 +1,18 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://src/app/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://src/presentation/world/hex_grid_view.gd" id="2_grid"]
+[ext_resource type="Script" path="res://src/presentation/world/camera_controller.gd" id="3_camera"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
+
+[node name="CameraController" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+enabled = true
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
+script = ExtResource("3_camera")
 
 [node name="Background" type="CanvasLayer" parent="."]
 layer = -10
