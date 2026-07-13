@@ -4,6 +4,13 @@ const REQUIRED_KEYS := [
     "ui.app.title",
     "ui.status.select_hex",
     "ui.status.selected_hex",
+    "resource.wood.name",
+    "resource.iron.name",
+    "resource.coal.name",
+    "resource.water.name",
+    "building.transfer_depot.name",
+    "building.boiler.name",
+    "building.steam_hammer.name",
 ]
 
 
