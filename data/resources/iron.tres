@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ResourceDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/simulation/definitions/resource_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"iron"
+display_name_key = &"resource.iron.name"
+color = Color(0.45, 0.55, 0.62, 1)

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ResourceDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/simulation/definitions/resource_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"water"
+display_name_key = &"resource.water.name"
+color = Color(0.24, 0.58, 0.78, 1)

@@ -2,3 +2,10 @@ keys,ru,en
 ui.app.title,Паровая логистика,Steam Logistics
 ui.status.select_hex,Выберите гекс,Select a hex
 ui.status.selected_hex,"Выбран гекс: {q}, {r}","Selected hex: {q}, {r}"
+resource.wood.name,Дерево,Wood
+resource.iron.name,Железо,Iron
+resource.coal.name,Уголь,Coal
+resource.water.name,Вода,Water
+building.transfer_depot.name,Перевалочный склад,Transfer Depot
+building.boiler.name,Котёл,Boiler
+building.steam_hammer.name,Паровой молот,Steam Hammer
