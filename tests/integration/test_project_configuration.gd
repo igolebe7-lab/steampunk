@@ -13,7 +13,6 @@ const REQUIRED_KEYS := [
     "building.steam_hammer.name",
 ]
 
-
 func run() -> Array[String]:
     assert_eq(
         ProjectSettings.get_setting("internationalization/locale/fallback"),
@@ -44,6 +43,7 @@ func run() -> Array[String]:
         "английский ресурс перевода должен загружаться проектом"
     )
     _assert_catalog_complete("res://localization/game.csv")
+    _assert_required_data_loads()
 
     TranslationServer.set_locale("en")
     assert_eq(
@@ -53,6 +53,13 @@ func run() -> Array[String]:
     )
     TranslationServer.set_locale("ru")
     return finish()
+
+
+func _assert_required_data_loads() -> void:
+    var catalog := load("res://data/catalog.tres")
+    var scenario := load("res://data/scenarios/foundation.tres")
+    assert_true(catalog is DefinitionCatalog, "каталог должен загружаться как DefinitionCatalog")
+    assert_true(scenario is ScenarioDef, "сценарий должен загружаться как ScenarioDef")
 
 
 func _assert_catalog_complete(path: String) -> void:
