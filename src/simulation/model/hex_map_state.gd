@@ -4,6 +4,7 @@ extends RefCounted
 var width: int
 var height: int
 var _cells: Dictionary = {}
+var _ordered_cells: Array[HexCellState] = []
 
 
 func _init(p_width: int, p_height: int) -> void:
@@ -11,14 +12,21 @@ func _init(p_width: int, p_height: int) -> void:
     width = p_width
     height = p_height
 
-    for q in width:
-        for r in height:
-            var coord := HexCoord.new(q, r)
-            _cells[coord.key()] = HexCellState.new(coord)
+    for column in width:
+        for row in height:
+            var axial_r := row - (column - (column & 1)) / 2
+            var coord := HexCoord.new(column, axial_r)
+            var cell := HexCellState.new(coord)
+            _cells[coord.key()] = cell
+            _ordered_cells.append(cell)
 
 
 func cell_count() -> int:
     return _cells.size()
+
+
+func get_cells() -> Array[HexCellState]:
+    return _ordered_cells.duplicate()
 
 
 func contains(coord: HexCoord) -> bool:

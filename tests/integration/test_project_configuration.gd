@@ -1,5 +1,11 @@
 extends TestCase
 
+const REQUIRED_KEYS := [
+    "ui.app.title",
+    "ui.status.select_hex",
+    "ui.status.selected_hex",
+]
+
 
 func run() -> Array[String]:
     assert_eq(
@@ -65,3 +71,6 @@ func _assert_catalog_complete(path: String) -> void:
         assert_true(not seen_keys.has(row[0]), "ключ локализации не должен повторяться: %s" % row[0])
         assert_true(not row[1].is_empty(), "русское значение не может быть пустым: %s" % row[0])
         seen_keys[row[0]] = true
+
+    for required_key in REQUIRED_KEYS:
+        assert_true(seen_keys.has(required_key), "обязательный ключ отсутствует в CSV: %s" % required_key)

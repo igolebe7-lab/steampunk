@@ -6,6 +6,7 @@ extends Camera2D
 @export var zoom_step: float = 1.15
 
 var _dragging: bool = false
+var _world_rect: Rect2
 
 
 func set_zoom_factor(value: float) -> void:
@@ -14,12 +15,18 @@ func set_zoom_factor(value: float) -> void:
 
 
 func configure_bounds(world_rect: Rect2) -> void:
+    _world_rect = world_rect
     limit_left = floori(world_rect.position.x)
     limit_top = floori(world_rect.position.y)
     limit_right = ceili(world_rect.end.x)
     limit_bottom = ceili(world_rect.end.y)
     position = world_rect.get_center()
     reset_smoothing()
+
+
+func pan_by(screen_delta: Vector2) -> void:
+    var target := position - screen_delta / zoom.x
+    position = target.clamp(_world_rect.position, _world_rect.end)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -39,5 +46,5 @@ func _unhandled_input(event: InputEvent) -> void:
                     get_viewport().set_input_as_handled()
     elif event is InputEventMouseMotion and _dragging:
         var motion_event := event as InputEventMouseMotion
-        position -= motion_event.relative / zoom.x
+        pan_by(motion_event.relative)
         get_viewport().set_input_as_handled()

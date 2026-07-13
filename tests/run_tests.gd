@@ -11,10 +11,13 @@ func _run_all() -> void:
     var failures: Array[String] = []
     var suites := _discover_suites(TEST_ROOT)
 
+    if suites.is_empty():
+        failures.append("тестовые наборы не найдены")
+
     for suite_path in suites:
         var suite_script := load(suite_path) as Script
-        if suite_script == null:
-            failures.append("%s: файл теста не загружен" % suite_path)
+        if suite_script == null or not suite_script.can_instantiate():
+            failures.append("%s: файл теста не компилируется" % suite_path)
             continue
 
         var suite: Variant = suite_script.new()
@@ -22,7 +25,12 @@ func _run_all() -> void:
             failures.append("%s: отсутствует метод run()" % suite_path)
             continue
 
-        var suite_failures: Array = suite.call("run")
+        var suite_result: Variant = suite.call("run")
+        if not suite_result is Array:
+            failures.append("%s: метод run() должен вернуть Array" % suite_path)
+            continue
+
+        var suite_failures := suite_result as Array
         for failure in suite_failures:
             failures.append("%s: %s" % [suite_path, str(failure)])
 

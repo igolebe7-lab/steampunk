@@ -5,15 +5,17 @@ extends Node2D
 @onready var title_label: Label = $UI/Margin/VBox/Title
 @onready var status_label: Label = $UI/Margin/VBox/Status
 
+var _map_state: HexMapState
+var _hex_layout: HexLayout
+
 
 func _ready() -> void:
-    TranslationServer.set_locale("ru")
     title_label.text = tr(&"ui.app.title")
     status_label.text = tr(&"ui.status.select_hex")
 
-    var map_state := HexMapState.new(18, 18)
-    var layout := HexLayout.new(32.0, Vector2.ZERO)
-    grid_view.configure(map_state, layout)
+    _map_state = HexMapState.new(18, 18)
+    _hex_layout = HexLayout.new(32.0, Vector2.ZERO)
+    grid_view.configure(_map_state, _hex_layout)
     grid_view.hex_selected.connect(_on_hex_selected)
 
     camera_controller.configure_bounds(grid_view.get_world_rect().grow(64.0))

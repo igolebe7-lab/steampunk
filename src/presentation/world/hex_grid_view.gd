@@ -43,13 +43,12 @@ func get_world_rect() -> Rect2:
 
     var minimum := Vector2(INF, INF)
     var maximum := Vector2(-INF, -INF)
-    for q in _map_state.width:
-        for r in _map_state.height:
-            for point in _layout.polygon_corners(HexCoord.new(q, r)):
-                minimum.x = minf(minimum.x, point.x)
-                minimum.y = minf(minimum.y, point.y)
-                maximum.x = maxf(maximum.x, point.x)
-                maximum.y = maxf(maximum.y, point.y)
+    for cell in _map_state.get_cells():
+        for point in _layout.polygon_corners(cell.coord):
+            minimum.x = minf(minimum.x, point.x)
+            minimum.y = minf(minimum.y, point.y)
+            maximum.x = maxf(maximum.x, point.x)
+            maximum.y = maxf(maximum.y, point.y)
     return Rect2(minimum + position, maximum - minimum)
 
 
@@ -65,16 +64,15 @@ func _draw() -> void:
     if _map_state == null or _layout == null:
         return
 
-    for q in _map_state.width:
-        for r in _map_state.height:
-            var coord := HexCoord.new(q, r)
-            var points := _layout.polygon_corners(coord)
-            var fill := CELL_COLOR_A if (q + r) % 2 == 0 else CELL_COLOR_B
-            draw_colored_polygon(points, fill)
-            draw_polyline(_closed_polygon(points), OUTLINE_COLOR, 1.0, true)
+    for cell in _map_state.get_cells():
+        var coord := cell.coord
+        var points := _layout.polygon_corners(coord)
+        var fill := CELL_COLOR_A if (coord.q + coord.r) % 2 == 0 else CELL_COLOR_B
+        draw_colored_polygon(points, fill)
+        draw_polyline(_closed_polygon(points), OUTLINE_COLOR, 1.0, true)
 
-            if _selected_coord != null and _selected_coord.equals(coord):
-                draw_polyline(_closed_polygon(points), SELECTED_COLOR, 4.0, true)
+        if _selected_coord != null and _selected_coord.equals(coord):
+            draw_polyline(_closed_polygon(points), SELECTED_COLOR, 4.0, true)
 
 
 func _closed_polygon(points: PackedVector2Array) -> PackedVector2Array:

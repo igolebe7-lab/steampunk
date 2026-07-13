@@ -10,16 +10,23 @@ const DIRECTIONS := [
     Vector2i(0, 1),
 ]
 
-var q: int
-var r: int
+var q: int:
+    get:
+        return _q
+var r: int:
+    get:
+        return _r
 var s: int:
     get:
-        return -q - r
+        return -_q - _r
+
+var _q: int
+var _r: int
 
 
 func _init(p_q: int = 0, p_r: int = 0) -> void:
-    q = p_q
-    r = p_r
+    _q = p_q
+    _r = p_r
 
 
 func neighbor(direction: int) -> HexCoord:

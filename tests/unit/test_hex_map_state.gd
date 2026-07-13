@@ -6,7 +6,9 @@ func run() -> Array[String]:
 
     assert_eq(map_state.cell_count(), 324, "карта 18×18 должна содержать 324 гекса")
     assert_true(map_state.contains(HexCoord.new(0, 0)), "левый верхний гекс должен существовать")
-    assert_true(map_state.contains(HexCoord.new(17, 17)), "правый нижний гекс должен существовать")
+    assert_true(map_state.contains(HexCoord.new(17, -8)), "верхний гекс последней staggered-колонки должен существовать")
+    assert_true(map_state.contains(HexCoord.new(17, 9)), "нижний гекс последней staggered-колонки должен существовать")
+    assert_true(not map_state.contains(HexCoord.new(17, 10)), "гекс ниже последней staggered-колонки должен быть вне карты")
     assert_true(not map_state.contains(HexCoord.new(-1, 0)), "отрицательный q должен быть вне карты")
     assert_true(not map_state.contains(HexCoord.new(18, 0)), "q за правой границей должен быть вне карты")
     assert_eq(map_state.get_neighbors(HexCoord.new(0, 0)).size(), 2, "угловой гекс имеет двух соседей внутри карты")

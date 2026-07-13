@@ -26,7 +26,7 @@ project.godot                                  # настройки проект
 localization/game.csv                         # семантические ключи, русский и тестовый английский
 src/simulation/model/hex_coord.gd             # аксиальная координата и операции над ней
 src/simulation/model/hex_cell_state.gd        # состояние одного гекса
-src/simulation/model/hex_map_state.gd         # прямоугольная аксиальная карта
+src/simulation/model/hex_map_state.gd         # прямоугольное staggered-поле в аксиальных координатах
 src/presentation/world/hex_layout.gd           # перевод coord ↔ pixel и геометрия шестиугольника
 src/presentation/world/hex_grid_view.gd        # рисование карты и выбор гекса
 src/presentation/world/camera_controller.gd    # перетаскивание, масштаб и границы камеры
@@ -142,10 +142,13 @@ func _run_all() -> void:
     var failures: Array[String] = []
     var suites := _discover_suites(TEST_ROOT)
 
+    if suites.is_empty():
+        failures.append("тестовые наборы не найдены")
+
     for suite_path in suites:
         var suite_script := load(suite_path) as Script
-        if suite_script == null:
-            failures.append("%s: файл теста не загружен" % suite_path)
+        if suite_script == null or not suite_script.can_instantiate():
+            failures.append("%s: файл теста не компилируется" % suite_path)
             continue
 
         var suite: Variant = suite_script.new()
@@ -153,7 +156,12 @@ func _run_all() -> void:
             failures.append("%s: отсутствует метод run()" % suite_path)
             continue
 
-        var suite_failures: Array = suite.call("run")
+        var suite_result: Variant = suite.call("run")
+        if not suite_result is Array:
+            failures.append("%s: метод run() должен вернуть Array" % suite_path)
+            continue
+
+        var suite_failures := suite_result as Array
         for failure in suite_failures:
             failures.append("%s: %s" % [suite_path, str(failure)])
 
@@ -337,16 +345,23 @@ const DIRECTIONS := [
     Vector2i(0, 1),
 ]
 
-var q: int
-var r: int
+var q: int:
+    get:
+        return _q
+var r: int:
+    get:
+        return _r
 var s: int:
     get:
-        return -q - r
+        return -_q - _r
+
+var _q: int
+var _r: int
 
 
 func _init(p_q: int = 0, p_r: int = 0) -> void:
-    q = p_q
-    r = p_r
+    _q = p_q
+    _r = p_r
 
 
 func neighbor(direction: int) -> HexCoord:
@@ -400,8 +415,8 @@ git commit -m "feat: добавить аксиальные координаты 
 
 **Интерфейсы:**
 - Создаёт `HexCellState.coord`, `traversable` и `movement_cost`.
-- Создаёт `HexMapState.new(width, height)`, `contains()`, `get_cell()`, `get_neighbors()`, `set_movement_cost()` и `cell_count()`.
-- Карта этапа 1 — аксиальный прямоугольник `q=0..width-1`, `r=0..height-1`.
+- Создаёт `HexMapState.new(width, height)`, `contains()`, `get_cell()`, `get_cells()`, `get_neighbors()`, `set_movement_cost()` и `cell_count()`.
+- Карта этапа 1 — визуально прямоугольное odd-q staggered-поле; клетки хранятся в аксиальных координатах, чтобы сохранить единые операции соседства и расстояния.
 
 - [ ] **Шаг 1: написать тесты границ, соседей и стоимости движения**
 
@@ -416,7 +431,9 @@ func run() -> Array[String]:
 
     assert_eq(map_state.cell_count(), 324, "карта 18×18 должна содержать 324 гекса")
     assert_true(map_state.contains(HexCoord.new(0, 0)), "левый верхний гекс должен существовать")
-    assert_true(map_state.contains(HexCoord.new(17, 17)), "правый нижний гекс должен существовать")
+    assert_true(map_state.contains(HexCoord.new(17, -8)), "верхний гекс последней staggered-колонки должен существовать")
+    assert_true(map_state.contains(HexCoord.new(17, 9)), "нижний гекс последней staggered-колонки должен существовать")
+    assert_true(not map_state.contains(HexCoord.new(17, 10)), "гекс ниже последней staggered-колонки должен быть вне карты")
     assert_true(not map_state.contains(HexCoord.new(-1, 0)), "отрицательный q должен быть вне карты")
     assert_true(not map_state.contains(HexCoord.new(18, 0)), "q за правой границей должен быть вне карты")
     assert_eq(map_state.get_neighbors(HexCoord.new(0, 0)).size(), 2, "угловой гекс имеет двух соседей внутри карты")
@@ -464,6 +481,7 @@ extends RefCounted
 var width: int
 var height: int
 var _cells: Dictionary = {}
+var _ordered_cells: Array[HexCellState] = []
 
 
 func _init(p_width: int, p_height: int) -> void:
@@ -471,14 +489,21 @@ func _init(p_width: int, p_height: int) -> void:
     width = p_width
     height = p_height
 
-    for q in width:
-        for r in height:
-            var coord := HexCoord.new(q, r)
-            _cells[coord.key()] = HexCellState.new(coord)
+    for column in width:
+        for row in height:
+            var axial_r := row - (column - (column & 1)) / 2
+            var coord := HexCoord.new(column, axial_r)
+            var cell := HexCellState.new(coord)
+            _cells[coord.key()] = cell
+            _ordered_cells.append(cell)
 
 
 func cell_count() -> int:
     return _cells.size()
+
+
+func get_cells() -> Array[HexCellState]:
+    return _ordered_cells.duplicate()
 
 
 func contains(coord: HexCoord) -> bool:
@@ -690,6 +715,11 @@ func run() -> Array[String]:
     var layout := HexLayout.new(32.0, Vector2.ZERO)
     view.configure(map_state, layout)
 
+    assert_true(
+        view.get_world_rect().size.y < 1100.0,
+        "staggered-карта 18×18 не должна вытягиваться в наклонный аксиальный параллелограмм"
+    )
+
     var target := HexCoord.new(3, 4)
     assert_true(view.select_at_local_position(layout.coord_to_pixel(target)), "центр существующего гекса должен выбираться")
     assert_true(view.get_selected_coord().equals(target), "выбранная координата должна совпасть с целью")
@@ -781,13 +811,12 @@ func get_world_rect() -> Rect2:
 
     var minimum := Vector2(INF, INF)
     var maximum := Vector2(-INF, -INF)
-    for q in _map_state.width:
-        for r in _map_state.height:
-            for point in _layout.polygon_corners(HexCoord.new(q, r)):
-                minimum.x = minf(minimum.x, point.x)
-                minimum.y = minf(minimum.y, point.y)
-                maximum.x = maxf(maximum.x, point.x)
-                maximum.y = maxf(maximum.y, point.y)
+    for cell in _map_state.get_cells():
+        for point in _layout.polygon_corners(cell.coord):
+            minimum.x = minf(minimum.x, point.x)
+            minimum.y = minf(minimum.y, point.y)
+            maximum.x = maxf(maximum.x, point.x)
+            maximum.y = maxf(maximum.y, point.y)
     return Rect2(minimum + position, maximum - minimum)
 
 
@@ -803,16 +832,15 @@ func _draw() -> void:
     if _map_state == null or _layout == null:
         return
 
-    for q in _map_state.width:
-        for r in _map_state.height:
-            var coord := HexCoord.new(q, r)
-            var points := _layout.polygon_corners(coord)
-            var fill := CELL_COLOR_A if (q + r) % 2 == 0 else CELL_COLOR_B
-            draw_colored_polygon(points, fill)
-            draw_polyline(_closed_polygon(points), OUTLINE_COLOR, 1.0, true)
+    for cell in _map_state.get_cells():
+        var coord := cell.coord
+        var points := _layout.polygon_corners(coord)
+        var fill := CELL_COLOR_A if (coord.q + coord.r) % 2 == 0 else CELL_COLOR_B
+        draw_colored_polygon(points, fill)
+        draw_polyline(_closed_polygon(points), OUTLINE_COLOR, 1.0, true)
 
-            if _selected_coord != null and _selected_coord.equals(coord):
-                draw_polyline(_closed_polygon(points), SELECTED_COLOR, 4.0, true)
+        if _selected_coord != null and _selected_coord.equals(coord):
+            draw_polyline(_closed_polygon(points), SELECTED_COLOR, 4.0, true)
 
 
 func _closed_polygon(points: PackedVector2Array) -> PackedVector2Array:
@@ -832,15 +860,17 @@ extends Node2D
 @onready var title_label: Label = $UI/Margin/VBox/Title
 @onready var status_label: Label = $UI/Margin/VBox/Status
 
+var _map_state: HexMapState
+var _hex_layout: HexLayout
+
 
 func _ready() -> void:
-    TranslationServer.set_locale("ru")
     title_label.text = tr(&"ui.app.title")
     status_label.text = tr(&"ui.status.select_hex")
 
-    var map_state := HexMapState.new(18, 18)
-    var layout := HexLayout.new(32.0, Vector2.ZERO)
-    grid_view.configure(map_state, layout)
+    _map_state = HexMapState.new(18, 18)
+    _hex_layout = HexLayout.new(32.0, Vector2.ZERO)
+    grid_view.configure(_map_state, _hex_layout)
     grid_view.hex_selected.connect(_on_hex_selected)
 
 
@@ -991,6 +1021,16 @@ func run() -> Array[String]:
     assert_eq(camera.limit_left, -40, "левая граница должна совпасть с картой")
     assert_eq(camera.limit_bottom, 1180, "нижняя граница должна совпасть с картой")
     assert_eq(camera.position, Vector2(410, 580), "камера должна центрироваться по карте")
+
+    assert_true(camera.has_method("pan_by"), "контроллер камеры должен предоставлять проверяемое перемещение")
+    if not camera.has_method("pan_by"):
+        camera.free()
+        return finish()
+
+    camera.pan_by(Vector2(10000, 10000))
+    assert_eq(camera.position, Vector2(-40, -20), "позиция камеры не должна накапливаться за верхней левой границей")
+    camera.pan_by(Vector2(-10000, -10000))
+    assert_eq(camera.position, Vector2(860, 1180), "позиция камеры не должна накапливаться за нижней правой границей")
     camera.free()
     return finish()
 ```
@@ -1016,6 +1056,7 @@ extends Camera2D
 @export var zoom_step: float = 1.15
 
 var _dragging: bool = false
+var _world_rect: Rect2
 
 
 func set_zoom_factor(value: float) -> void:
@@ -1024,12 +1065,18 @@ func set_zoom_factor(value: float) -> void:
 
 
 func configure_bounds(world_rect: Rect2) -> void:
+    _world_rect = world_rect
     limit_left = floori(world_rect.position.x)
     limit_top = floori(world_rect.position.y)
     limit_right = ceili(world_rect.end.x)
     limit_bottom = ceili(world_rect.end.y)
     position = world_rect.get_center()
     reset_smoothing()
+
+
+func pan_by(screen_delta: Vector2) -> void:
+    var target := position - screen_delta / zoom.x
+    position = target.clamp(_world_rect.position, _world_rect.end)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -1049,7 +1096,7 @@ func _unhandled_input(event: InputEvent) -> void:
                     get_viewport().set_input_as_handled()
     elif event is InputEventMouseMotion and _dragging:
         var motion_event := event as InputEventMouseMotion
-        position -= motion_event.relative / zoom.x
+        pan_by(motion_event.relative)
         get_viewport().set_input_as_handled()
 ```
 
@@ -1065,15 +1112,17 @@ extends Node2D
 @onready var title_label: Label = $UI/Margin/VBox/Title
 @onready var status_label: Label = $UI/Margin/VBox/Status
 
+var _map_state: HexMapState
+var _hex_layout: HexLayout
+
 
 func _ready() -> void:
-    TranslationServer.set_locale("ru")
     title_label.text = tr(&"ui.app.title")
     status_label.text = tr(&"ui.status.select_hex")
 
-    var map_state := HexMapState.new(18, 18)
-    var layout := HexLayout.new(32.0, Vector2.ZERO)
-    grid_view.configure(map_state, layout)
+    _map_state = HexMapState.new(18, 18)
+    _hex_layout = HexLayout.new(32.0, Vector2.ZERO)
+    grid_view.configure(_map_state, _hex_layout)
     grid_view.hex_selected.connect(_on_hex_selected)
 
     camera_controller.configure_bounds(grid_view.get_world_rect().grow(64.0))
@@ -1185,6 +1234,12 @@ git commit -m "feat: добавить управление камерой"
 ```gdscript
 extends TestCase
 
+const REQUIRED_KEYS := [
+    "ui.app.title",
+    "ui.status.select_hex",
+    "ui.status.selected_hex",
+]
+
 
 func run() -> Array[String]:
     assert_eq(
@@ -1250,6 +1305,9 @@ func _assert_catalog_complete(path: String) -> void:
         assert_true(not seen_keys.has(row[0]), "ключ локализации не должен повторяться: %s" % row[0])
         assert_true(not row[1].is_empty(), "русское значение не может быть пустым: %s" % row[0])
         seen_keys[row[0]] = true
+
+    for required_key in REQUIRED_KEYS:
+        assert_true(seen_keys.has(required_key), "обязательный ключ отсутствует в CSV: %s" % required_key)
 ```
 
 - [ ] **Шаг 2: запустить тест и убедиться, что текущая конфигурация проходит**
@@ -1269,10 +1327,36 @@ func _assert_catalog_complete(path: String) -> void:
 set -euo pipefail
 
 GODOT_BIN="${GODOT_BIN:-/Applications/Godot.app/Contents/MacOS/Godot}"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+GODOT_VERSION="$("$GODOT_BIN" --version)"
 
-"$GODOT_BIN" --headless --path . --import
-"$GODOT_BIN" --headless --path . --script res://tests/run_tests.gd
-"$GODOT_BIN" --headless --path . --quit-after 2
+if [[ "$GODOT_VERSION" != 4.6.2.* ]]; then
+    echo "Требуется Godot 4.6.2, найден: $GODOT_VERSION" >&2
+    exit 1
+fi
+
+run_godot_checked() {
+    local output
+    local status
+
+    set +e
+    output="$("$GODOT_BIN" "$@" 2>&1)"
+    status=$?
+    set -e
+    printf '%s\n' "$output"
+
+    if ((status != 0)); then
+        return "$status"
+    fi
+    if grep -Eq 'SCRIPT ERROR:|Parse Error:|Failed loading resource:' <<<"$output"; then
+        echo "Godot сообщил об ошибке при коде завершения 0." >&2
+        return 1
+    fi
+}
+
+"$GODOT_BIN" --headless --path "$PROJECT_DIR" --import
+run_godot_checked --headless --path "$PROJECT_DIR" --script res://tests/run_tests.gd
+run_godot_checked --headless --path "$PROJECT_DIR" --quit-after 2
 
 echo "Проверка проекта завершена успешно."
 ```
