@@ -16,4 +16,15 @@ func run() -> Array[String]:
     var duplicate := DefinitionCatalog.new()
     duplicate.resources = [catalog.resources[0], catalog.resources[0]]
     assert_true(duplicate.validate().has(&"duplicate_resource_id"), "повтор ID ресурса должен отклоняться")
+
+    var invalid_footprint := BuildingDef.new()
+    invalid_footprint.id = &"invalid_footprint"
+    invalid_footprint.display_name_key = &"building.invalid.name"
+    invalid_footprint.footprint = [Vector2i.ZERO, Vector2i.ZERO]
+    var invalid_catalog := DefinitionCatalog.new()
+    invalid_catalog.buildings = [invalid_footprint]
+    assert_true(
+        invalid_catalog.validate().has(&"duplicate_footprint_cell"),
+        "одна клетка footprint не должна повторяться"
+    )
     return finish()

@@ -77,6 +77,9 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
         occupied_cells,
         next_entity_id
     )
+    errors.append_array(InvariantChecker.new().check(state))
+    if not errors.is_empty():
+        return ScenarioLoadResult.new(null, errors)
     return ScenarioLoadResult.new(state, errors)
 
 

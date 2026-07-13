@@ -28,4 +28,26 @@ func run() -> Array[String]:
     assert_true(not rejected.is_success(), "неизвестное здание должно отклонять весь сценарий")
     assert_true(rejected.errors.has(&"unknown_building_definition"), "отказ должен иметь структурированный код")
     assert_eq(rejected.state, null, "ошибочная загрузка не должна возвращать частичное состояние")
+
+    var duplicate_footprint := BuildingDef.new()
+    duplicate_footprint.id = &"duplicate_footprint"
+    duplicate_footprint.display_name_key = &"building.duplicate.name"
+    duplicate_footprint.footprint = [Vector2i.ZERO, Vector2i.ZERO]
+    var invalid_catalog := DefinitionCatalog.new()
+    invalid_catalog.buildings = [duplicate_footprint]
+    var invalid_footprint_scenario := ScenarioDef.new()
+    invalid_footprint_scenario.catalog = invalid_catalog
+    var invalid_initial := InitialBuildingDef.new()
+    invalid_initial.definition_id = duplicate_footprint.id
+    invalid_footprint_scenario.initial_buildings = [invalid_initial]
+    var invalid_footprint_result := ScenarioLoader.new().load_scenario(invalid_footprint_scenario)
+    assert_true(
+        not invalid_footprint_result.is_success(),
+        "сценарий с повтором клетки footprint должен отклоняться атомарно"
+    )
+    assert_eq(
+        invalid_footprint_result.state,
+        null,
+        "сценарий с нарушением footprint не должен возвращать состояние"
+    )
     return finish()

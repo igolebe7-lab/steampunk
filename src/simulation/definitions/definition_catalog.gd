@@ -23,12 +23,19 @@ func validate() -> Array[StringName]:
             or definition.id.is_empty()
             or definition.display_name_key.is_empty()
             or definition.footprint.is_empty()
+            or definition.inventory_capacity < 0
         ):
             errors.append(&"invalid_building")
         elif building_ids.has(definition.id):
             errors.append(&"duplicate_building_id")
         else:
             building_ids[definition.id] = true
+            var footprint_cells: Dictionary = {}
+            for offset in definition.footprint:
+                if footprint_cells.has(offset):
+                    errors.append(&"duplicate_footprint_cell")
+                    break
+                footprint_cells[offset] = true
     return errors
 
 

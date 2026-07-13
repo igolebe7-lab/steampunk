@@ -28,10 +28,11 @@ func step() -> String:
         state.last_events.append(result.code)
 
     var invariant_errors := _invariant_checker.check(state)
-    assert(
-        invariant_errors.is_empty(),
-        "Нарушены инварианты симуляции: %s" % [invariant_errors]
-    )
+    if not invariant_errors.is_empty():
+        var message := "Нарушены инварианты симуляции: %s" % [invariant_errors]
+        push_error(message)
+        assert(false, message)
+        return ""
     state.tick = target_tick
     return _hasher.hash_state(state)
 

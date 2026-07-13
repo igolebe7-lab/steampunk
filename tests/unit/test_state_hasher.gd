@@ -27,4 +27,12 @@ func run() -> Array[String]:
 
     second.get_building(1).priority = 4
     assert_true(initial_hash != hasher.hash_state(second), "изменение состояния должно менять хэш")
+
+    var changed_map := ScenarioLoader.new().load_scenario(scenario).state
+    var first_cell := changed_map.map_state.get_cells()[0]
+    changed_map.map_state.set_movement_cost(first_cell.coord, 2)
+    assert_true(
+        initial_hash != hasher.hash_state(changed_map),
+        "изменение клетки карты должно менять хэш состояния"
+    )
     return finish()
