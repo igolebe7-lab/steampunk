@@ -927,7 +927,7 @@ window/stretch/mode="canvas_items"
 [internationalization]
 
 locale/fallback="ru"
-locale/translations=PackedStringArray("res://localization/game.csv")
+locale/translations=PackedStringArray("res://localization/game.ru.translation", "res://localization/game.en.translation")
 
 [rendering]
 
