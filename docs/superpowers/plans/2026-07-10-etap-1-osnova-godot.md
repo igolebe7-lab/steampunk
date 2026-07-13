@@ -172,7 +172,11 @@ func _discover_suites(root_path: String) -> Array[String]:
     var result: Array[String] = []
 
     for file_name in DirAccess.get_files_at(root_path):
-        if file_name.begins_with("test_") and file_name.ends_with(".gd"):
+        if (
+            file_name != "test_case.gd"
+            and file_name.begins_with("test_")
+            and file_name.ends_with(".gd")
+        ):
             result.append(root_path.path_join(file_name))
 
     for directory_name in DirAccess.get_directories_at(root_path):
@@ -186,7 +190,7 @@ func _discover_suites(root_path: String) -> Array[String]:
 Создать `tests/unit/test_localization.gd`:
 
 ```gdscript
-extends TestCase
+extends "res://tests/test_case.gd"
 
 
 func run() -> Array[String]:
@@ -247,7 +251,7 @@ window/stretch/mode="canvas_items"
 [internationalization]
 
 locale/fallback="ru"
-locale/translations=PackedStringArray("res://localization/game.csv")
+locale/translations=PackedStringArray("res://localization/game.ru.translation", "res://localization/game.en.translation")
 
 [rendering]
 

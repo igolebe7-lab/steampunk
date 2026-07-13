@@ -1,0 +1,4 @@
+keys,ru,en
+ui.app.title,Паровая логистика,Steam Logistics
+ui.status.select_hex,Выберите гекс,Select a hex
+ui.status.selected_hex,"Выбран гекс: {q}, {r}","Selected hex: {q}, {r}"
