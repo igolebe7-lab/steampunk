@@ -39,7 +39,7 @@ func get_amount(resource_id: StringName) -> int:
 
 
 func add_amount(resource_id: StringName, amount: int) -> bool:
-    if amount < 0 or get_amount(resource_id) + amount > inventory_capacity:
+    if amount < 0 or inventory_total() + amount > inventory_capacity:
         return false
     inventories[resource_id] = get_amount(resource_id) + amount
     return true
@@ -89,9 +89,14 @@ func remove_amount(resource_id: StringName, amount: int) -> bool:
 
 
 func free_capacity() -> int:
-    var used := 0
-    for amount in inventories.values():
-        used += amount as int
+    var used := inventory_total()
     for amount in incoming_reserved.values():
         used += amount as int
     return maxi(inventory_capacity - used, 0)
+
+
+func inventory_total() -> int:
+    var total := 0
+    for amount in inventories.values():
+        total += amount as int
+    return total

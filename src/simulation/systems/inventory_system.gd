@@ -59,12 +59,14 @@ func _advance_unloading(state: SimulationState, worker: WorkerState, target_tick
         destination == null
         or worker.cargo_resource_id != job.resource_id
         or destination.get_incoming_reserved(job.resource_id) < 1
-        or destination.get_amount(job.resource_id) >= destination.inventory_capacity
+        or destination.inventory_total() >= destination.inventory_capacity
     ):
         _block_operation(worker, job, &"unload_blocked")
         return
 
-    destination.add_amount(job.resource_id, 1)
+    if not destination.add_amount(job.resource_id, 1):
+        _block_operation(worker, job, &"unload_blocked")
+        return
     destination.release_incoming(job.resource_id, 1)
     worker.cargo_resource_id = &""
     worker.operation_progress = 0
