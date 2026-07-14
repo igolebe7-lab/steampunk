@@ -19,7 +19,10 @@ func run(state: SimulationState, target_tick: int) -> void:
             continue
 
         var resource_id := definition.source_resource_id
-        if building.get_amount(resource_id) >= definition.source_capacity:
+        if (
+            building.get_amount(resource_id) >= definition.source_capacity
+            or building.free_capacity() <= 0
+        ):
             building.source_progress_ticks = definition.source_interval_ticks
             continue
 
