@@ -21,6 +21,7 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
     var map_state := HexMapState.new(definition.width, definition.height)
     var buildings: Dictionary = {}
     var occupied_cells: Dictionary = {}
+    var scenario_keys: Dictionary = {}
     var next_entity_id := 1
 
     for initial in definition.initial_buildings:
@@ -61,10 +62,60 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
             anchor,
             initial.priority
         )
+        building.inventory_capacity = building_def.inventory_capacity
         buildings[next_entity_id] = building
+        if not initial.scenario_key.is_empty():
+            if scenario_keys.has(initial.scenario_key):
+                errors.append(&"duplicate_scenario_key")
+            else:
+                scenario_keys[initial.scenario_key] = next_entity_id
         for coord in footprint_cells:
             occupied_cells[coord.key()] = next_entity_id
         next_entity_id += 1
+
+    if not errors.is_empty():
+        return ScenarioLoadResult.new(null, errors)
+
+    var workers: Dictionary = {}
+    var worker_occupancy: Dictionary = {}
+    for initial_worker in definition.initial_workers:
+        if initial_worker == null:
+            errors.append(&"invalid_initial_worker")
+            continue
+        var worker_coord := _offset_to_axial(initial_worker.offset_coord)
+        if not map_state.contains(worker_coord):
+            errors.append(&"worker_out_of_bounds")
+            continue
+        if occupied_cells.has(worker_coord.key()):
+            errors.append(&"worker_on_building")
+            continue
+        if worker_occupancy.has(worker_coord.key()):
+            errors.append(&"worker_overlap")
+            continue
+        workers[next_entity_id] = WorkerState.new(next_entity_id, worker_coord)
+        worker_occupancy[worker_coord.key()] = next_entity_id
+        next_entity_id += 1
+
+    var delivery_flows: Array[DeliveryFlowState] = []
+    var flow_id := 1
+    for initial_flow in definition.delivery_flows:
+        if initial_flow == null or initial_flow.source_key.is_empty() or initial_flow.destination_key.is_empty():
+            errors.append(&"invalid_delivery_flow")
+            continue
+        if not scenario_keys.has(initial_flow.source_key) or not scenario_keys.has(initial_flow.destination_key):
+            errors.append(&"unknown_flow_building")
+            continue
+        if definition.catalog.get_resource(initial_flow.resource_id) == null:
+            errors.append(&"unknown_flow_resource")
+            continue
+        delivery_flows.append(DeliveryFlowState.new(
+            flow_id,
+            scenario_keys[initial_flow.source_key] as int,
+            scenario_keys[initial_flow.destination_key] as int,
+            initial_flow.resource_id,
+            initial_flow.priority
+        ))
+        flow_id += 1
 
     if not errors.is_empty():
         return ScenarioLoadResult.new(null, errors)
@@ -77,6 +128,13 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
         occupied_cells,
         next_entity_id
     )
+    state.workers = workers
+    state.worker_occupancy = worker_occupancy
+    state.delivery_flows = delivery_flows
+    state.worker_ticks_per_hex = definition.worker_ticks_per_hex
+    state.load_ticks = definition.load_ticks
+    state.unload_ticks = definition.unload_ticks
+    state.repath_after_ticks = definition.repath_after_ticks
     errors.append_array(InvariantChecker.new().check(state))
     if not errors.is_empty():
         return ScenarioLoadResult.new(null, errors)
