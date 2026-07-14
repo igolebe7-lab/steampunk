@@ -9,6 +9,20 @@ var buildings: Dictionary = {}
 var occupied_cells: Dictionary = {}
 var next_entity_id: int = 1
 var last_events: Array[StringName] = []
+var events: Array[SimulationEvent] = []
+var workers: Dictionary = {}
+var jobs: Dictionary = {}
+var delivery_flows: Array[DeliveryFlowState] = []
+var worker_occupancy: Dictionary = {}
+var cell_reservations: Dictionary = {}
+var next_job_id: int = 1
+var generated_totals: Dictionary = {}
+var delivered_totals: Dictionary = {}
+var worker_ticks_per_hex: int = 4
+var load_ticks: int = 2
+var unload_ticks: int = 2
+var repath_after_ticks: int = 10
+var telemetry: Dictionary = {}
 
 
 func _init(
@@ -29,3 +43,11 @@ func _init(
 
 func get_building(entity_id: int) -> BuildingState:
     return buildings.get(entity_id) as BuildingState
+
+
+func get_worker(entity_id: int) -> WorkerState:
+    return workers.get(entity_id) as WorkerState
+
+
+func get_job(job_id: int) -> DeliveryJob:
+    return jobs.get(job_id) as DeliveryJob

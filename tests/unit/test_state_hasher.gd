@@ -35,4 +35,41 @@ func run() -> Array[String]:
         initial_hash != hasher.hash_state(changed_map),
         "изменение клетки карты должно менять хэш состояния"
     )
+    _assert_logistics_dictionary_order_is_ignored(hasher)
     return finish()
+
+
+func _assert_logistics_dictionary_order_is_ignored(hasher: StateHasher) -> void:
+    var scenario := load("res://data/scenarios/physical_logistics.tres") as ScenarioDef
+    var state := ScenarioLoader.new().load_scenario(scenario).state
+    SimulationRunner.new(state).run_ticks(100)
+    var expected := hasher.hash_state(state)
+
+    state.buildings = _reversed_dictionary(state.buildings)
+    state.workers = _reversed_dictionary(state.workers)
+    state.jobs = _reversed_dictionary(state.jobs)
+    state.worker_occupancy = _reversed_dictionary(state.worker_occupancy)
+    state.cell_reservations = _reversed_dictionary(state.cell_reservations)
+    state.generated_totals = _reversed_dictionary(state.generated_totals)
+    state.delivered_totals = _reversed_dictionary(state.delivered_totals)
+    state.delivery_flows.reverse()
+    for value: Variant in state.buildings.values():
+        var building := value as BuildingState
+        building.inventories = _reversed_dictionary(building.inventories)
+        building.outgoing_reserved = _reversed_dictionary(building.outgoing_reserved)
+        building.incoming_reserved = _reversed_dictionary(building.incoming_reserved)
+
+    assert_eq(
+        hasher.hash_state(state),
+        expected,
+        "порядок всех logistics Dictionary и flows не влияет на v3 hash"
+    )
+
+
+func _reversed_dictionary(source: Dictionary) -> Dictionary:
+    var keys := source.keys()
+    keys.reverse()
+    var result: Dictionary = {}
+    for key: Variant in keys:
+        result[key] = source[key]
+    return result

@@ -1,0 +1,80 @@
+[gd_resource type="Resource" script_class="ScenarioDef" load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://src/simulation/definitions/scenario_def.gd" id="1_scenario"]
+[ext_resource type="Script" path="res://src/simulation/definitions/initial_building_def.gd" id="2_building"]
+[ext_resource type="Script" path="res://src/simulation/definitions/initial_worker_def.gd" id="3_worker"]
+[ext_resource type="Script" path="res://src/simulation/definitions/initial_delivery_flow_def.gd" id="4_flow"]
+[ext_resource type="Resource" path="res://data/catalog.tres" id="5_catalog"]
+
+[sub_resource type="Resource" id="Building_depot"]
+script = ExtResource("2_building")
+definition_id = &"transfer_depot"
+scenario_key = &"depot"
+offset_coord = Vector2i(9, 8)
+priority = 2
+
+[sub_resource type="Resource" id="Building_west"]
+script = ExtResource("2_building")
+definition_id = &"wood_source"
+scenario_key = &"source_west"
+offset_coord = Vector2i(3, 4)
+priority = 2
+
+[sub_resource type="Resource" id="Building_east"]
+script = ExtResource("2_building")
+definition_id = &"wood_source"
+scenario_key = &"source_east"
+offset_coord = Vector2i(15, 4)
+priority = 2
+
+[sub_resource type="Resource" id="Worker_1"]
+script = ExtResource("3_worker")
+offset_coord = Vector2i(7, 8)
+
+[sub_resource type="Resource" id="Worker_2"]
+script = ExtResource("3_worker")
+offset_coord = Vector2i(8, 9)
+
+[sub_resource type="Resource" id="Worker_3"]
+script = ExtResource("3_worker")
+offset_coord = Vector2i(10, 9)
+
+[sub_resource type="Resource" id="Worker_4"]
+script = ExtResource("3_worker")
+offset_coord = Vector2i(11, 8)
+
+[sub_resource type="Resource" id="Worker_5"]
+script = ExtResource("3_worker")
+offset_coord = Vector2i(8, 6)
+
+[sub_resource type="Resource" id="Worker_6"]
+script = ExtResource("3_worker")
+offset_coord = Vector2i(10, 6)
+
+[sub_resource type="Resource" id="Flow_west"]
+script = ExtResource("4_flow")
+source_key = &"source_west"
+destination_key = &"depot"
+resource_id = &"wood"
+priority = 2
+
+[sub_resource type="Resource" id="Flow_east"]
+script = ExtResource("4_flow")
+source_key = &"source_east"
+destination_key = &"depot"
+resource_id = &"wood"
+priority = 2
+
+[resource]
+script = ExtResource("1_scenario")
+width = 18
+height = 18
+seed = 240714
+catalog = ExtResource("5_catalog")
+initial_buildings = Array[ExtResource("2_building")]([SubResource("Building_depot"), SubResource("Building_west"), SubResource("Building_east")])
+initial_workers = Array[ExtResource("3_worker")]([SubResource("Worker_1"), SubResource("Worker_2"), SubResource("Worker_3"), SubResource("Worker_4"), SubResource("Worker_5"), SubResource("Worker_6")])
+delivery_flows = Array[ExtResource("4_flow")]([SubResource("Flow_west"), SubResource("Flow_east")])
+worker_ticks_per_hex = 4
+load_ticks = 2
+unload_ticks = 2
+repath_after_ticks = 10

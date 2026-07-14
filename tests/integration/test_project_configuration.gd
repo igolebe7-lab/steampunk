@@ -11,6 +11,7 @@ const REQUIRED_KEYS := [
     "building.transfer_depot.name",
     "building.boiler.name",
     "building.steam_hammer.name",
+    "building.wood_source.name",
 ]
 
 func run() -> Array[String]:
@@ -57,9 +58,14 @@ func run() -> Array[String]:
 
 func _assert_required_data_loads() -> void:
     var catalog := load("res://data/catalog.tres")
-    var scenario := load("res://data/scenarios/foundation.tres")
+    var foundation := load("res://data/scenarios/foundation.tres")
+    var physical_logistics := load("res://data/scenarios/physical_logistics.tres")
     assert_true(catalog is DefinitionCatalog, "каталог должен загружаться как DefinitionCatalog")
-    assert_true(scenario is ScenarioDef, "сценарий должен загружаться как ScenarioDef")
+    assert_true(foundation is ScenarioDef, "базовый сценарий должен загружаться как ScenarioDef")
+    assert_true(
+        physical_logistics is ScenarioDef,
+        "сценарий физической логистики должен загружаться как ScenarioDef"
+    )
 
 
 func _assert_catalog_complete(path: String) -> void:

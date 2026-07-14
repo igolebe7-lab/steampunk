@@ -1,11 +1,16 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://src/app/main.gd" id="1_main"]
 [ext_resource type="Script" path="res://src/presentation/world/hex_grid_view.gd" id="2_grid"]
 [ext_resource type="Script" path="res://src/presentation/world/camera_controller.gd" id="3_camera"]
+[ext_resource type="Script" path="res://src/app/simulation_controller.gd" id="4_controller"]
+[ext_resource type="Script" path="res://src/presentation/world/logistics_world_view.gd" id="5_logistics"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_main")
+
+[node name="SimulationController" type="Node" parent="."]
+script = ExtResource("4_controller")
 
 [node name="CameraController" type="Camera2D" parent="."]
 position = Vector2(640, 360)
@@ -31,6 +36,10 @@ color = Color(0.075, 0.094, 0.102, 1)
 [node name="HexGridView" type="Node2D" parent="World"]
 position = Vector2(80, 80)
 script = ExtResource("2_grid")
+
+[node name="LogisticsWorldView" type="Node2D" parent="World"]
+position = Vector2(80, 80)
+script = ExtResource("5_logistics")
 
 [node name="UI" type="CanvasLayer" parent="."]
 layer = 10
