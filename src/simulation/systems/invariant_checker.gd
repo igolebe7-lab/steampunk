@@ -14,6 +14,13 @@ func check(state: SimulationState) -> Array[StringName]:
         errors.append(&"missing_catalog")
     if state.map_state == null or state.catalog == null:
         return errors
+    if (
+        state.worker_ticks_per_hex <= 0
+        or state.load_ticks <= 0
+        or state.unload_ticks <= 0
+        or state.repath_after_ticks <= 0
+    ):
+        _append_once(errors, &"invalid_simulation_timing")
 
     var expected_occupancy: Dictionary = {}
     var maximum_id := 0
@@ -86,6 +93,8 @@ func check(state: SimulationState) -> Array[StringName]:
 
     _check_worker_occupancy(state, expected_worker_occupancy, errors)
     _check_cell_reservations(state, errors)
+    _check_delivery_flows(state, errors)
+    _check_reservation_ledger(state, errors)
     _check_resource_conservation(state, errors)
 
     if state.next_entity_id <= maximum_id:
@@ -157,7 +166,11 @@ func _check_worker_route(
         if previous != null and previous.distance_to(coord) != 1:
             _append_once(errors, &"invalid_worker_route")
         previous = coord
-    if worker.route_index < 0 or (not worker.route.is_empty() and worker.route_index >= worker.route.size()):
+    if (
+        worker.route_index < 0
+        or (worker.route.is_empty() and worker.route_index != 0)
+        or (not worker.route.is_empty() and worker.route_index >= worker.route.size())
+    ):
         _append_once(errors, &"invalid_worker_route")
     if worker.segment_target == null:
         if worker.segment_progress != 0 or worker.segment_duration != 0:
@@ -167,8 +180,16 @@ func _check_worker_route(
         or worker.segment_duration <= 0
         or worker.segment_progress < 0
         or worker.segment_progress >= worker.segment_duration
+        or worker.coord.distance_to(worker.segment_target) != 1
+        or worker.route_index + 1 >= worker.route.size()
+        or not worker.route[worker.route_index + 1].equals(worker.segment_target)
     ):
         _append_once(errors, &"invalid_movement_segment")
+    if (
+        worker.segment_target != null
+        and (state.cell_reservations.get(worker.segment_target.key(), 0) as int) != worker.id
+    ):
+        _append_once(errors, &"invalid_cell_reservation")
 
 
 func _check_worker_job(
@@ -190,6 +211,8 @@ func _check_worker_job(
     if assigned_jobs.has(job.id):
         _append_once(errors, &"duplicate_job_assignment")
     assigned_jobs[job.id] = worker.id
+    if not _worker_job_states_match(worker, job):
+        _append_once(errors, &"worker_job_state_mismatch")
     if not worker.cargo_resource_id.is_empty():
         if worker.cargo_resource_id != job.resource_id:
             _append_once(errors, &"cargo_job_mismatch")
@@ -226,8 +249,114 @@ func _check_cell_reservations(state: SimulationState, errors: Array[StringName])
             worker == null
             or worker.segment_target == null
             or worker.segment_target.key() != (key as StringName)
+            or (
+                (state.worker_occupancy.get(key, 0) as int) != 0
+                and (state.worker_occupancy.get(key, 0) as int) != worker_id
+            )
         ):
             _append_once(errors, &"invalid_cell_reservation")
+
+
+func _check_delivery_flows(state: SimulationState, errors: Array[StringName]) -> void:
+    var flow_ids: Dictionary = {}
+    for flow: DeliveryFlowState in state.delivery_flows:
+        if flow == null or flow.id <= 0 or flow_ids.has(flow.id):
+            _append_once(errors, &"invalid_delivery_flow")
+            continue
+        flow_ids[flow.id] = true
+        var source := state.get_building(flow.source_id)
+        var destination := state.get_building(flow.destination_id)
+        if source == null or destination == null or source.id == destination.id:
+            _append_once(errors, &"invalid_flow_endpoint")
+            continue
+        var source_definition := state.catalog.get_building(source.definition_id)
+        if (
+            state.catalog.get_resource(flow.resource_id) == null
+            or flow.priority < 0
+            or flow.priority > 4
+            or source_definition == null
+            or not source_definition.is_source()
+            or source_definition.source_resource_id != flow.resource_id
+            or destination.inventory_capacity <= 0
+        ):
+            _append_once(errors, &"invalid_delivery_flow")
+
+
+func _check_reservation_ledger(state: SimulationState, errors: Array[StringName]) -> void:
+    var expected_outgoing: Dictionary = {}
+    var expected_incoming: Dictionary = {}
+    for value: Variant in state.jobs.values():
+        var job := value as DeliveryJob
+        if job == null:
+            continue
+        _increment_ledger(expected_incoming, job.destination_id, job.resource_id)
+        var worker := state.get_worker(job.worker_id)
+        var cargo_was_loaded := (
+            worker != null
+            and worker.cargo_resource_id == job.resource_id
+        )
+        if not cargo_was_loaded:
+            _increment_ledger(expected_outgoing, job.source_id, job.resource_id)
+
+    for value: Variant in state.buildings.values():
+        var building := value as BuildingState
+        if not _ledger_matches(
+            building.outgoing_reserved,
+            expected_outgoing.get(building.id, {}) as Dictionary
+        ):
+            _append_once(errors, &"reservation_ledger_mismatch")
+        if not _ledger_matches(
+            building.incoming_reserved,
+            expected_incoming.get(building.id, {}) as Dictionary
+        ):
+            _append_once(errors, &"reservation_ledger_mismatch")
+
+
+func _increment_ledger(ledger: Dictionary, building_id: int, resource_id: StringName) -> void:
+    var building_ledger: Dictionary = ledger.get(building_id, {}) as Dictionary
+    building_ledger[resource_id] = (building_ledger.get(resource_id, 0) as int) + 1
+    ledger[building_id] = building_ledger
+
+
+func _ledger_matches(actual: Dictionary, expected: Dictionary) -> bool:
+    var resource_ids: Dictionary = {}
+    for key: Variant in actual.keys():
+        resource_ids[key] = true
+    for key: Variant in expected.keys():
+        resource_ids[key] = true
+    for key: Variant in resource_ids.keys():
+        if (actual.get(key, 0) as int) != (expected.get(key, 0) as int):
+            return false
+    return true
+
+
+func _worker_job_states_match(worker: WorkerState, job: DeliveryJob) -> bool:
+    match job.state:
+        DeliveryJob.ASSIGNED:
+            return worker.action == WorkerState.ASSIGNED and worker.cargo_resource_id.is_empty()
+        DeliveryJob.TO_SOURCE:
+            return worker.action == WorkerState.TO_SOURCE and worker.cargo_resource_id.is_empty()
+        DeliveryJob.LOADING:
+            return worker.action == WorkerState.LOADING and worker.cargo_resource_id.is_empty()
+        DeliveryJob.AWAITING_DESTINATION_PATH:
+            return (
+                worker.action == WorkerState.AWAITING_DESTINATION_PATH
+                and worker.cargo_resource_id == job.resource_id
+            )
+        DeliveryJob.TO_DESTINATION:
+            return (
+                worker.action == WorkerState.TO_DESTINATION
+                and worker.cargo_resource_id == job.resource_id
+            )
+        DeliveryJob.UNLOADING:
+            return (
+                worker.action == WorkerState.UNLOADING
+                and worker.cargo_resource_id == job.resource_id
+            )
+        DeliveryJob.BLOCKED:
+            return worker.action == WorkerState.BLOCKED
+        _:
+            return false
 
 
 func _check_resource_conservation(state: SimulationState, errors: Array[StringName]) -> void:
