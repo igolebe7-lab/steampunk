@@ -19,7 +19,7 @@ var _is_blocked := false
 
 func configure(worker: WorkerState, layout: HexLayout) -> void:
     worker_id = worker.id
-    _current_position = layout.coord_to_pixel(worker.coord)
+    _current_position = _simulation_position(worker, layout)
     _previous_position = _current_position
     position = _current_position
     _capture_state(worker, layout)
@@ -27,7 +27,7 @@ func configure(worker: WorkerState, layout: HexLayout) -> void:
 
 func capture_tick(worker: WorkerState, layout: HexLayout) -> void:
     _previous_position = _current_position
-    _current_position = layout.coord_to_pixel(worker.coord)
+    _current_position = _simulation_position(worker, layout)
     _capture_state(worker, layout)
 
 
@@ -37,6 +37,19 @@ func set_interpolation(alpha: float) -> void:
 
 func get_visual_position() -> Vector2:
     return position
+
+
+func _simulation_position(worker: WorkerState, layout: HexLayout) -> Vector2:
+    var start := layout.coord_to_pixel(worker.coord)
+    if worker.segment_target == null or worker.segment_duration <= 0:
+        return start
+    var target := layout.coord_to_pixel(worker.segment_target)
+    var progress := clampf(
+        float(worker.segment_progress) / float(worker.segment_duration),
+        0.0,
+        1.0
+    )
+    return start.lerp(target, progress)
 
 
 func _capture_state(worker: WorkerState, layout: HexLayout) -> void:
