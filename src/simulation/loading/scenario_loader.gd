@@ -15,6 +15,17 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
         errors.append(&"invalid_map_size")
     if definition.seed <= 0:
         errors.append(&"invalid_seed")
+    if (
+        definition.worker_ticks_per_hex < 1
+        or definition.worker_ticks_per_hex > 100
+        or definition.load_ticks < 1
+        or definition.load_ticks > 100
+        or definition.unload_ticks < 1
+        or definition.unload_ticks > 100
+        or definition.repath_after_ticks < 1
+        or definition.repath_after_ticks > 100
+    ):
+        errors.append(&"invalid_simulation_timing")
     if not errors.is_empty():
         return ScenarioLoadResult.new(null, errors)
 
@@ -108,10 +119,31 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
         if definition.catalog.get_resource(initial_flow.resource_id) == null:
             errors.append(&"unknown_flow_resource")
             continue
+        if initial_flow.priority < 0 or initial_flow.priority > 4:
+            errors.append(&"invalid_flow_priority")
+            continue
+        var source_id := scenario_keys[initial_flow.source_key] as int
+        var destination_id := scenario_keys[initial_flow.destination_key] as int
+        if source_id == destination_id:
+            errors.append(&"invalid_flow_endpoint")
+            continue
+        var source := buildings[source_id] as BuildingState
+        var destination := buildings[destination_id] as BuildingState
+        var source_definition := definition.catalog.get_building(source.definition_id)
+        if (
+            source_definition == null
+            or not source_definition.is_source()
+            or source_definition.source_resource_id != initial_flow.resource_id
+        ):
+            errors.append(&"invalid_flow_source")
+            continue
+        if destination.inventory_capacity <= 0:
+            errors.append(&"invalid_flow_destination")
+            continue
         delivery_flows.append(DeliveryFlowState.new(
             flow_id,
-            scenario_keys[initial_flow.source_key] as int,
-            scenario_keys[initial_flow.destination_key] as int,
+            source_id,
+            destination_id,
             initial_flow.resource_id,
             initial_flow.priority
         ))

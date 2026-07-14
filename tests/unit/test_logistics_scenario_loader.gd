@@ -17,4 +17,30 @@ func run() -> Array[String]:
     var rejected := ScenarioLoader.new().load_scenario(invalid)
     assert_true(rejected.errors.has(&"worker_overlap"), "overlap должен отклоняться")
     assert_eq(rejected.state, null, "ошибка не возвращает частичное состояние")
+
+    var invalid_timing := scenario.duplicate(true) as ScenarioDef
+    invalid_timing.worker_ticks_per_hex = 0
+    var timing_result := ScenarioLoader.new().load_scenario(invalid_timing)
+    assert_true(
+        timing_result.errors.has(&"invalid_simulation_timing"),
+        "нулевой timing должен отклоняться до создания состояния"
+    )
+    assert_eq(timing_result.state, null, "невалидный timing не возвращает состояние")
+
+    var invalid_priority := scenario.duplicate(true) as ScenarioDef
+    invalid_priority.delivery_flows[0].priority = 5
+    var priority_result := ScenarioLoader.new().load_scenario(invalid_priority)
+    assert_true(
+        priority_result.errors.has(&"invalid_flow_priority"),
+        "priority потока вне диапазона должен отклоняться"
+    )
+
+    var invalid_source := scenario.duplicate(true) as ScenarioDef
+    invalid_source.delivery_flows[0].source_key = &"depot"
+    invalid_source.delivery_flows[0].destination_key = &"source_west"
+    var source_result := ScenarioLoader.new().load_scenario(invalid_source)
+    assert_true(
+        source_result.errors.has(&"invalid_flow_source"),
+        "поток должен начинаться в совместимом источнике"
+    )
     return finish()
