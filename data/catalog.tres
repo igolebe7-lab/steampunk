@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="DefinitionCatalog" load_steps=11 format=3]
+[gd_resource type="Resource" script_class="DefinitionCatalog" load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://src/simulation/definitions/definition_catalog.gd" id="1_catalog"]
 [ext_resource type="Script" path="res://src/simulation/definitions/resource_def.gd" id="2_resource"]
@@ -10,8 +10,9 @@
 [ext_resource type="Resource" path="res://data/buildings/transfer_depot.tres" id="8_depot"]
 [ext_resource type="Resource" path="res://data/buildings/boiler.tres" id="9_boiler"]
 [ext_resource type="Resource" path="res://data/buildings/steam_hammer.tres" id="10_hammer"]
+[ext_resource type="Resource" path="res://data/buildings/wood_source.tres" id="11_source"]
 
 [resource]
 script = ExtResource("1_catalog")
 resources = Array[ExtResource("2_resource")]([ExtResource("4_wood"), ExtResource("5_iron"), ExtResource("6_coal"), ExtResource("7_water")])
-buildings = Array[ExtResource("3_building")]([ExtResource("8_depot"), ExtResource("9_boiler"), ExtResource("10_hammer")])
+buildings = Array[ExtResource("3_building")]([ExtResource("8_depot"), ExtResource("9_boiler"), ExtResource("10_hammer"), ExtResource("11_source")])

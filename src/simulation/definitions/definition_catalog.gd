@@ -36,6 +36,13 @@ func validate() -> Array[StringName]:
                     errors.append(&"duplicate_footprint_cell")
                     break
                 footprint_cells[offset] = true
+            if definition.is_source():
+                if get_resource(definition.source_resource_id) == null:
+                    errors.append(&"unknown_source_resource")
+                if definition.source_interval_ticks <= 0 or definition.source_capacity <= 0:
+                    errors.append(&"invalid_source_config")
+            elif definition.source_interval_ticks != 0 or definition.source_capacity != 0:
+                errors.append(&"invalid_source_config")
     return errors
 
 

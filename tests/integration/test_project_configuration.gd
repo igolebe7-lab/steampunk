@@ -11,6 +11,7 @@ const REQUIRED_KEYS := [
     "building.transfer_depot.name",
     "building.boiler.name",
     "building.steam_hammer.name",
+    "building.wood_source.name",
 ]
 
 func run() -> Array[String]:
