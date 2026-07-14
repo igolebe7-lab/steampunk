@@ -7,6 +7,7 @@ var state: SimulationState
 
 var _queue := CommandQueue.new()
 var _command_system := CommandSystem.new()
+var _logistics_pipeline := LogisticsPipeline.new()
 var _invariant_checker := InvariantChecker.new()
 var _hasher := StateHasher.new()
 
@@ -22,11 +23,13 @@ func enqueue(command: SimulationCommand) -> CommandResult:
 
 func step() -> String:
     state.last_events.clear()
+    state.events.clear()
     var target_tick := state.tick + 1
     for command in _queue.take_for_tick(target_tick):
         var result := _command_system.apply(state, command)
         state.last_events.append(result.code)
 
+    _logistics_pipeline.run(state, target_tick)
     var invariant_errors := _invariant_checker.check(state)
     if not invariant_errors.is_empty():
         var message := "Нарушены инварианты симуляции: %s" % [invariant_errors]
