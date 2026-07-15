@@ -41,6 +41,7 @@ func _on_hex_selected(coord: HexCoord) -> void:
 
 
 func _on_tick_completed(state: SimulationState) -> void:
+    grid_view.capture_tick(state.map_state)
     logistics_world_view.capture_tick(state)
 
 
