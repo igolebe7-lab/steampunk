@@ -25,6 +25,8 @@ func apply(state: SimulationState, command: SimulationCommand) -> CommandResult:
         return _apply_link_settings(state, command as LinkSettingsCommand)
     if command.type == SimulationCommand.SET_DISPATCH_POLICY:
         return _apply_dispatch_policy(state, command as DispatchPolicyCommand)
+    if command.type == SimulationCommand.BUILD_PIPE or command.type == SimulationCommand.REMOVE_PIPE:
+        return PipeCommandSystem.new().apply(state, command as PipeCommand)
     return CommandResult.rejected(&"unsupported_command", command.id)
 
 

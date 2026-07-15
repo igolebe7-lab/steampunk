@@ -10,6 +10,8 @@ const REMOVE_LINK := &"remove_link"
 const RESET_AUTOMATIC_LINK := &"reset_automatic_link"
 const SET_LINK_SETTINGS := &"set_link_settings"
 const SET_DISPATCH_POLICY := &"set_dispatch_policy"
+const BUILD_PIPE := &"build_pipe"
+const REMOVE_PIPE := &"remove_pipe"
 
 var id: StringName:
     get:
