@@ -23,6 +23,9 @@ func check(state: SimulationState) -> Array[StringName]:
         _append_once(errors, &"invalid_simulation_timing")
     _check_road_levels(state, errors)
     _check_telemetry(state, errors)
+    _check_production(state, errors)
+    _check_utility_network(state, errors)
+    _check_scenario_progress(state, errors)
 
     var expected_occupancy: Dictionary = {}
     var maximum_id := 0
@@ -168,6 +171,119 @@ func _check_telemetry(state: SimulationState, errors: Array[StringName]) -> void
             _append_once(errors, &"invalid_diagnostic_report")
     elif not DiagnosticReport.is_supported_code(report.code) or report.loss_ticks <= 0:
         _append_once(errors, &"invalid_diagnostic_report")
+
+
+func _check_production(state: SimulationState, errors: Array[StringName]) -> void:
+    var statuses := [
+        ProductionState.LOCKED,
+        ProductionState.WAITING_INPUTS,
+        ProductionState.RUNNING,
+        ProductionState.BLOCKED,
+        ProductionState.COMPLETED,
+    ]
+    for key: Variant in state.production_states.keys():
+        var building_id := key as int
+        var production := state.production_states[key] as ProductionState
+        if production == null or production.building_id != building_id or state.get_building(building_id) == null:
+            _append_once(errors, &"invalid_production_state")
+            continue
+        var recipe := state.catalog.get_recipe(production.recipe_id)
+        if recipe == null:
+            _append_once(errors, &"unknown_production_recipe")
+        if not statuses.has(production.status):
+            _append_once(errors, &"invalid_production_status")
+        if production.heat_level < 0 or production.heat_level > ProductionSystem.MAX_HEAT:
+            _append_once(errors, &"invalid_production_heat")
+        if production.progress_ticks < 0 or production.cooling_ticks < 0 or production.completed_cycles < 0:
+            _append_once(errors, &"invalid_production_progress")
+        if production.status == ProductionState.RUNNING:
+            if recipe == null or production.progress_ticks <= 0 or production.progress_ticks > recipe.duration_ticks:
+                _append_once(errors, &"invalid_production_progress")
+        elif production.progress_ticks != 0:
+            _append_once(errors, &"invalid_production_progress")
+        if production.linked_building_id > 0 and state.get_building(production.linked_building_id) == null:
+            _append_once(errors, &"invalid_production_link")
+
+
+func _check_utility_network(state: SimulationState, errors: Array[StringName]) -> void:
+    var network := state.utility_network
+    if network == null:
+        _append_once(errors, &"missing_utility_network")
+        return
+    if (
+        network.topology_revision < 0
+        or network.resolved_topology_revision < -1
+        or network.resolved_topology_revision > network.topology_revision
+        or network.pipe_water_delivered < 0
+        or network.manual_water_delivered < 0
+    ):
+        _append_once(errors, &"invalid_utility_network")
+    if (
+        network.pipe_water_delivered != state.telemetry_window.cumulative_pipe_water_delivered
+        or network.manual_water_delivered != state.telemetry_window.cumulative_manual_water_delivered
+    ):
+        _append_once(errors, &"utility_telemetry_mismatch")
+    for key: Variant in network.segments.keys():
+        var segment := network.segments[key] as UtilitySegmentState
+        if segment == null or segment.coord == null or segment.coord.key() != (key as StringName):
+            _append_once(errors, &"invalid_utility_segment")
+            continue
+        if not state.map_state.contains(segment.coord):
+            _append_once(errors, &"utility_segment_out_of_bounds")
+            continue
+        if (
+            state.catalog.get_resource(segment.commodity_id) == null
+            or state.occupied_cells.has(segment.coord.key())
+            or not state.map_state.get_cell(segment.coord).traversable
+        ):
+            _append_once(errors, &"invalid_utility_segment")
+        if (
+            network.resolved_topology_revision == network.topology_revision
+            and segment.component_id.is_empty()
+        ):
+            _append_once(errors, &"invalid_utility_component")
+    for definition: BuildingDef in state.catalog.buildings:
+        for port: UtilityPortDef in definition.utility_ports:
+            if state.catalog.get_resource(port.commodity_id) == null:
+                _append_once(errors, &"unknown_utility_commodity")
+
+
+func _check_scenario_progress(state: SimulationState, errors: Array[StringName]) -> void:
+    var progress := state.scenario_progress
+    if progress == null:
+        _append_once(errors, &"missing_scenario_progress")
+        return
+    var phases := [
+        ScenarioProgressState.INACTIVE,
+        ScenarioProgressState.OBSERVATION,
+        ScenarioProgressState.SITE_PREPARATION,
+        ScenarioProgressState.BOILER_SUPPLY,
+        ScenarioProgressState.WARMING,
+        ScenarioProgressState.FIRST_STRIKE,
+        ScenarioProgressState.COMPLETED,
+    ]
+    if not phases.has(progress.phase) or (progress.enabled and progress.phase == ScenarioProgressState.INACTIVE):
+        _append_once(errors, &"invalid_scenario_phase")
+    if not progress.enabled:
+        if progress.phase != ScenarioProgressState.INACTIVE:
+            _append_once(errors, &"invalid_scenario_phase")
+        return
+    if (
+        progress.observation_ticks < 0
+        or progress.phase_entry_tick < 0
+        or progress.active_start_tick < 0
+        or state.get_building(progress.boiler_id) == null
+        or state.get_building(progress.hammer_id) == null
+        or (progress.pump_station_id > 0 and state.get_building(progress.pump_station_id) == null)
+    ):
+        _append_once(errors, &"invalid_scenario_progress")
+    if progress.hammer_strikes < 0 or progress.hammer_strikes > 1:
+        _append_once(errors, &"invalid_scenario_progress")
+    if (
+        progress.phase == ScenarioProgressState.COMPLETED
+        and (progress.hammer_strikes != 1 or progress.completed_tick <= 0 or progress.final_metrics.is_empty())
+    ):
+        _append_once(errors, &"invalid_scenario_progress")
 
 
 func _check_building_inventory(

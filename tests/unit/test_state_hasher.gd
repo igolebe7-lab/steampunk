@@ -11,8 +11,8 @@ func run() -> Array[String]:
 
     var hasher := StateHasher.new()
     assert_true(
-        hasher.canonicalize(first).begins_with("v=4|"),
-        "каноническое представление должно использовать формат v=4"
+        hasher.canonicalize(first).begins_with("v=5|"),
+        "каноническое представление должно использовать формат v=5"
     )
     assert_eq(
         hasher.canonicalize(first),
@@ -52,21 +52,21 @@ func _assert_stage4_state_changes_hash(
 ) -> void:
     var changed_road := ScenarioLoader.new().load_scenario(scenario).state
     changed_road.map_state.get_cells()[0].road_level = RoadLevelDef.LEVEL_PATH
-    assert_true(initial_hash != hasher.hash_state(changed_road), "уровень дороги должен менять v=4 hash")
+    assert_true(initial_hash != hasher.hash_state(changed_road), "уровень дороги должен менять v=5 hash")
 
     var changed_revision := ScenarioLoader.new().load_scenario(scenario).state
     changed_revision.revision = 1
-    assert_true(initial_hash != hasher.hash_state(changed_revision), "ревизия должна менять v=4 hash")
+    assert_true(initial_hash != hasher.hash_state(changed_revision), "ревизия должна менять v=5 hash")
 
     var changed_link := ScenarioLoader.new().load_scenario(scenario).state
     changed_link.logistics_links[2] = LogisticsLinkState.new(2, 1, 3, &"wood", false, 1, 2)
-    assert_true(initial_hash != hasher.hash_state(changed_link), "логистическая связь должна менять v=4 hash")
+    assert_true(initial_hash != hasher.hash_state(changed_link), "логистическая связь должна менять v=5 hash")
 
     var changed_slots := ScenarioLoader.new().load_scenario(scenario).state
     var source_definition := changed_slots.catalog.get_building(&"wood_source")
     var original_slots := source_definition.outgoing_worker_slots_by_level.duplicate()
     source_definition.outgoing_worker_slots_by_level = [2, 4, 6]
-    assert_true(initial_hash != hasher.hash_state(changed_slots), "полная таблица рабочих мест должна менять v=4 hash")
+    assert_true(initial_hash != hasher.hash_state(changed_slots), "полная таблица рабочих мест должна менять v=5 hash")
     source_definition.outgoing_worker_slots_by_level = original_slots
 
     var changed_ports := ScenarioLoader.new().load_scenario(scenario).state
@@ -76,7 +76,7 @@ func _assert_stage4_state_changes_hash(
     extra_port.resource_id = &"wood"
     extra_port.accepted_building_roles = [LogisticsPortDef.ROLE_MAIN_WAREHOUSE]
     source_definition.logistics_ports.append(extra_port)
-    assert_true(initial_hash != hasher.hash_state(changed_ports), "совместимость логистических портов должна менять v=4 hash")
+    assert_true(initial_hash != hasher.hash_state(changed_ports), "совместимость логистических портов должна менять v=5 hash")
     source_definition.logistics_ports.pop_back()
 
 
@@ -106,7 +106,7 @@ func _assert_logistics_dictionary_order_is_ignored(hasher: StateHasher) -> void:
     assert_eq(
         hasher.hash_state(state),
         expected,
-        "порядок всех logistics Dictionary и flows не влияет на v4 hash"
+        "порядок всех logistics Dictionary и flows не влияет на v5 hash"
     )
 
 

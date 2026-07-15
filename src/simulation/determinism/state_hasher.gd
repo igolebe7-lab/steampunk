@@ -3,7 +3,7 @@ extends RefCounted
 
 
 func canonicalize(state: SimulationState) -> String:
-    return "v=4|tick=%d|revision=%d|seed=%d|next=%d|next_job=%d|next_link=%d|main=%d|topology=%d|map=%d,%d|timings=%d,%d,%d,%d|road_defs=[%s]|building_defs=[%s]|cells=[%s]|buildings=[%s]|workers=[%s]|jobs=[%s]|flows=[%s]|links=[%s]|worker_occupancy=[%s]|cell_reservations=[%s]|generated=[%s]|delivered=[%s]|consumed=[%s]|telemetry=[%s]|diagnostic=[%s]" % [
+    return "v=5|tick=%d|revision=%d|seed=%d|next=%d|next_job=%d|next_link=%d|main=%d|topology=%d|map=%d,%d|timings=%d,%d,%d,%d|road_defs=[%s]|building_defs=[%s]|recipe_defs=[%s]|cells=[%s]|buildings=[%s]|workers=[%s]|jobs=[%s]|flows=[%s]|links=[%s]|production=[%s]|utility=[%s]|scenario=[%s]|worker_occupancy=[%s]|cell_reservations=[%s]|generated=[%s]|delivered=[%s]|consumed=[%s]|telemetry=[%s]|diagnostic=[%s]" % [
         state.tick,
         state.revision,
         state.seed,
@@ -20,12 +20,16 @@ func canonicalize(state: SimulationState) -> String:
         state.repath_after_ticks,
         _encode_road_definitions(state),
         _encode_building_definitions(state),
+        _encode_recipe_definitions(state),
         _encode_cells(state),
         _encode_buildings(state),
         _encode_workers(state),
         _encode_jobs(state),
         _encode_flows(state),
         _encode_links(state),
+        _encode_production(state),
+        _encode_utility_network(state),
+        _encode_scenario(state.scenario_progress),
         _encode_int_dictionary(state.worker_occupancy),
         _encode_int_dictionary(state.cell_reservations),
         _encode_int_dictionary(state.generated_totals),
@@ -44,11 +48,13 @@ func hash_state(state: SimulationState) -> String:
 
 
 func _encode_telemetry_window(window: TelemetryWindow) -> String:
-    return "total=%d,cumulative_main=%s,cumulative_links=%s,cumulative_jobs=%d,samples=%s" % [
+    return "total=%d,cumulative_main=%s,cumulative_links=%s,cumulative_jobs=%d,manual_water=%d,pipe_water=%d,samples=%s" % [
         window.total_samples,
         _encode_variant(window.cumulative_main_deliveries),
         _encode_variant(window.cumulative_link_deliveries),
         window.cumulative_completed_jobs,
+        window.cumulative_manual_water_delivered,
+        window.cumulative_pipe_water_delivered,
         "|".join(window.ordered_fingerprints()),
     ]
 
@@ -259,7 +265,7 @@ func _encode_building_definitions(state: SimulationState) -> String:
     definitions.sort_custom(_sort_building_definitions)
     var parts: PackedStringArray = []
     for definition: BuildingDef in definitions:
-        parts.append("%s,role=%s,max=%d,direct=%d,capacity=%d,source=%s,%d,%d,slots=[%s],ports=[%s],footprint=[%s]" % [
+        parts.append("%s,role=%s,max=%d,direct=%d,capacity=%d,source=%s,%d,%d,slots=[%s],ports=[%s],recipe=%s,utility=[%s],footprint=[%s]" % [
             _encode_identifier(definition.id),
             _encode_identifier(definition.role),
             definition.max_level,
@@ -270,9 +276,84 @@ func _encode_building_definitions(state: SimulationState) -> String:
             definition.source_capacity,
             _encode_int_array(definition.outgoing_worker_slots_by_level),
             _encode_ports(definition.logistics_ports),
+            _encode_identifier(definition.production_recipe_id),
+            _encode_utility_ports(definition.utility_ports),
             _encode_footprint(definition.footprint),
         ])
     return ";".join(parts)
+
+
+func _encode_recipe_definitions(state: SimulationState) -> String:
+    var definitions := state.catalog.recipes.duplicate()
+    definitions.sort_custom(_sort_recipe_definitions)
+    var parts: PackedStringArray = []
+    for definition: RecipeDef in definitions:
+        parts.append("%s,inputs=%s,amounts=%s,buffer=%d,duration=%d,result=%s" % [
+            _encode_identifier(definition.id),
+            _encode_variant(definition.input_resource_ids),
+            _encode_variant(definition.input_amounts),
+            definition.input_buffer_cycles,
+            definition.duration_ticks,
+            _encode_identifier(definition.result_code),
+        ])
+    return ";".join(parts)
+
+
+func _encode_production(state: SimulationState) -> String:
+    var parts: PackedStringArray = []
+    for building_id: int in _sorted_int_keys(state.production_states):
+        var production := state.production_states[building_id] as ProductionState
+        parts.append("%d,%s,%s,progress=%d,cycles=%d,heat=%d,cooling=%d,reason=%s,linked=%d" % [
+            production.building_id,
+            _encode_identifier(production.recipe_id),
+            _encode_identifier(production.status),
+            production.progress_ticks,
+            production.completed_cycles,
+            production.heat_level,
+            production.cooling_ticks,
+            _encode_identifier(production.blocked_reason),
+            production.linked_building_id,
+        ])
+    return ";".join(parts)
+
+
+func _encode_utility_network(state: SimulationState) -> String:
+    var keys := state.utility_network.segments.keys()
+    keys.sort()
+    var parts: PackedStringArray = []
+    for key: Variant in keys:
+        var segment := state.utility_network.segments[key] as UtilitySegmentState
+        parts.append("%s,%s,component=%s" % [
+            _encode_coord(segment.coord),
+            _encode_identifier(segment.commodity_id),
+            _encode_identifier(segment.component_id),
+        ])
+    return "revision=%d,resolved=%d,pipe=%d,manual=%d,segments=%s" % [
+        state.utility_network.topology_revision,
+        state.utility_network.resolved_topology_revision,
+        state.utility_network.pipe_water_delivered,
+        state.utility_network.manual_water_delivered,
+        ";".join(parts),
+    ]
+
+
+func _encode_scenario(progress: ScenarioProgressState) -> String:
+    if progress == null:
+        return "missing"
+    return "enabled=%d,phase=%s,observation=%d,entry=%d,active=%d,completed=%d,boiler=%d,hammer=%d,pump=%d,strikes=%d,baseline=%s,final=%s" % [
+        int(progress.enabled),
+        _encode_identifier(progress.phase),
+        progress.observation_ticks,
+        progress.phase_entry_tick,
+        progress.active_start_tick,
+        progress.completed_tick,
+        progress.boiler_id,
+        progress.hammer_id,
+        progress.pump_station_id,
+        progress.hammer_strikes,
+        _encode_variant(progress.baseline_metrics),
+        _encode_variant(progress.final_metrics),
+    ]
 
 
 func _encode_footprint(footprint: Array[Vector2i]) -> String:
@@ -331,6 +412,17 @@ func _encode_ports(ports: Array[LogisticsPortDef]) -> String:
     return ";".join(parts)
 
 
+func _encode_utility_ports(ports: Array[UtilityPortDef]) -> String:
+    var parts: PackedStringArray = []
+    for port: UtilityPortDef in ports:
+        parts.append("%s,%s" % [
+            _encode_identifier(port.direction),
+            _encode_identifier(port.commodity_id),
+        ])
+    parts.sort()
+    return ";".join(parts)
+
+
 func _sorted_int_keys(values: Dictionary) -> Array[int]:
     var keys: Array[int] = []
     for key: Variant in values.keys():
@@ -359,4 +451,8 @@ func _sort_road_definitions(left: RoadLevelDef, right: RoadLevelDef) -> bool:
 
 
 func _sort_building_definitions(left: BuildingDef, right: BuildingDef) -> bool:
+    return String(left.id) < String(right.id)
+
+
+func _sort_recipe_definitions(left: RecipeDef, right: RecipeDef) -> bool:
     return String(left.id) < String(right.id)
