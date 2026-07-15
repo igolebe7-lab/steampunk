@@ -13,6 +13,8 @@ extends Resource
 @export var outgoing_worker_slots_by_level: Array[int] = [0]
 @export var logistics_ports: Array[LogisticsPortDef] = []
 @export var allows_direct_delivery_to_main: bool = true
+@export var production_recipe_id: StringName
+@export var utility_ports: Array[UtilityPortDef] = []
 
 
 func is_source() -> bool:

@@ -31,6 +31,7 @@ var repath_after_ticks: int = 10
 var telemetry: Dictionary = {}
 var telemetry_window := TelemetryWindow.new()
 var diagnostic_report := DiagnosticReport.new()
+var production_states: Dictionary = {}
 
 
 func _init(
