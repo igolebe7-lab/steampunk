@@ -87,6 +87,14 @@ func check(state: SimulationState) -> Array[StringName]:
             _append_once(errors, &"unknown_job_building")
         if state.catalog.get_resource(job.resource_id) == null:
             _append_once(errors, &"unknown_job_resource")
+        var job_link := state.logistics_links.get(job.link_id) as LogisticsLinkState
+        if (
+            job_link == null
+            or job_link.source_id != job.source_id
+            or job_link.destination_id != job.destination_id
+            or job_link.resource_id != job.resource_id
+        ):
+            _append_once(errors, &"invalid_job_link")
         if job.worker_id > 0:
             var worker := state.get_worker(job.worker_id)
             if worker == null or worker.job_id != job.id:
@@ -98,7 +106,7 @@ func check(state: SimulationState) -> Array[StringName]:
 
     _check_worker_occupancy(state, expected_worker_occupancy, errors)
     _check_cell_reservations(state, errors)
-    _check_delivery_flows(state, errors)
+    _check_logistics_links(state, errors)
     _check_reservation_ledger(state, errors)
     _check_resource_conservation(state, errors)
 
@@ -109,6 +117,11 @@ func check(state: SimulationState) -> Array[StringName]:
         maximum_job_id = maxi(maximum_job_id, key as int)
     if state.next_job_id <= maximum_job_id:
         _append_once(errors, &"invalid_next_job_id")
+    var maximum_link_id := 0
+    for key: Variant in state.logistics_links.keys():
+        maximum_link_id = maxi(maximum_link_id, key as int)
+    if state.next_link_id <= maximum_link_id:
+        _append_once(errors, &"invalid_next_link_id")
     if expected_occupancy.size() != state.occupied_cells.size():
         errors.append(&"invalid_occupancy")
     else:
@@ -206,6 +219,8 @@ func _check_worker_job(
     if worker.job_id <= 0:
         if worker.action != WorkerState.IDLE:
             _append_once(errors, &"assignment_mismatch")
+        if worker.link_id != 0:
+            _append_once(errors, &"worker_link_mismatch")
         if not worker.cargo_resource_id.is_empty():
             _append_once(errors, &"cargo_job_mismatch")
         return
@@ -213,6 +228,8 @@ func _check_worker_job(
     if job == null or job.worker_id != worker.id:
         _append_once(errors, &"assignment_mismatch")
         return
+    if worker.link_id != job.link_id:
+        _append_once(errors, &"worker_link_mismatch")
     if assigned_jobs.has(job.id):
         _append_once(errors, &"duplicate_job_assignment")
     assigned_jobs[job.id] = worker.id
@@ -262,29 +279,43 @@ func _check_cell_reservations(state: SimulationState, errors: Array[StringName])
             _append_once(errors, &"invalid_cell_reservation")
 
 
-func _check_delivery_flows(state: SimulationState, errors: Array[StringName]) -> void:
-    var flow_ids: Dictionary = {}
-    for flow: DeliveryFlowState in state.delivery_flows:
-        if flow == null or flow.id <= 0 or flow_ids.has(flow.id):
-            _append_once(errors, &"invalid_delivery_flow")
+func _check_logistics_links(state: SimulationState, errors: Array[StringName]) -> void:
+    if not state.delivery_flows.is_empty():
+        _append_once(errors, &"legacy_delivery_flows_in_state")
+    var endpoints: Dictionary = {}
+    var system := LogisticsLinkSystem.new()
+    for key: Variant in state.logistics_links.keys():
+        var link_id := key as int
+        var link := state.logistics_links[key] as LogisticsLinkState
+        if link == null or link.id <= 0 or link.id != link_id:
+            _append_once(errors, &"invalid_logistics_link")
             continue
-        flow_ids[flow.id] = true
-        var source := state.get_building(flow.source_id)
-        var destination := state.get_building(flow.destination_id)
+        var source := state.get_building(link.source_id)
+        var destination := state.get_building(link.destination_id)
         if source == null or destination == null or source.id == destination.id:
-            _append_once(errors, &"invalid_flow_endpoint")
+            _append_once(errors, &"invalid_link_endpoint")
             continue
-        var source_definition := state.catalog.get_building(source.definition_id)
+        var endpoint_key := "%d:%d:%s" % [link.source_id, link.destination_id, link.resource_id]
+        if endpoints.has(endpoint_key):
+            _append_once(errors, &"duplicate_link")
+        endpoints[endpoint_key] = true
         if (
-            state.catalog.get_resource(flow.resource_id) == null
-            or flow.priority < 0
-            or flow.priority > 4
-            or source_definition == null
-            or not source_definition.is_source()
-            or source_definition.source_resource_id != flow.resource_id
-            or destination.inventory_capacity <= 0
+            state.catalog.get_resource(link.resource_id) == null
+            or link.quota < 0
+            or link.priority < 0
+            or link.priority > 4
+            or (link.is_closing and link.dispatch_enabled)
         ):
-            _append_once(errors, &"invalid_delivery_flow")
+            _append_once(errors, &"invalid_logistics_link")
+        if not link.is_closing and not system.is_compatible(
+            state,
+            link.source_id,
+            link.destination_id,
+            link.resource_id
+        ):
+            _append_once(errors, &"incompatible_link")
+        if system.would_create_cycle(state, link.source_id, link.destination_id, link.id):
+            _append_once(errors, &"link_cycle")
 
 
 func _check_reservation_ledger(state: SimulationState, errors: Array[StringName]) -> void:

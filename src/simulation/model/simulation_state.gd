@@ -17,6 +17,7 @@ var jobs: Dictionary = {}
 var delivery_flows: Array[DeliveryFlowState] = []
 var logistics_links: Dictionary = {}
 var next_link_id: int = 1
+var logistics_topology_dirty: bool = false
 var worker_occupancy: Dictionary = {}
 var cell_reservations: Dictionary = {}
 var next_job_id: int = 1

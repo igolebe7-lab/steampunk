@@ -38,6 +38,7 @@ func run(state: SimulationState, pathfinder: Pathfinder, target_tick: int) -> vo
         job.state = DeliveryJob.ASSIGNED
         job.wait_reason = &""
         selected_worker.job_id = job.id
+        selected_worker.link_id = job.link_id
         selected_worker.action = WorkerState.ASSIGNED
         selected_worker.wait_reason = &""
         selected_worker.wait_ticks = 0

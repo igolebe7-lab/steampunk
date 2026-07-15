@@ -15,6 +15,16 @@ func apply(state: SimulationState, command: SimulationCommand) -> CommandResult:
         return _apply_place_depot(state, command as DepotCommand)
     if command.type == SimulationCommand.DEMOLISH_DEPOT:
         return _apply_demolish_depot(state, command as DepotCommand)
+    if command.type == SimulationCommand.CREATE_LINK:
+        return _apply_create_link(state, command as LinkCommand)
+    if command.type == SimulationCommand.REMOVE_LINK:
+        return _apply_remove_link(state, command as LinkCommand)
+    if command.type == SimulationCommand.RESET_AUTOMATIC_LINK:
+        return _apply_reset_automatic_link(state, command as LinkCommand)
+    if command.type == SimulationCommand.SET_LINK_SETTINGS:
+        return _apply_link_settings(state, command as LinkSettingsCommand)
+    if command.type == SimulationCommand.SET_DISPATCH_POLICY:
+        return _apply_dispatch_policy(state, command as DispatchPolicyCommand)
     return CommandResult.rejected(&"unsupported_command", command.id)
 
 
@@ -141,6 +151,7 @@ func _apply_place_depot(state: SimulationState, command: DepotCommand) -> Comman
     state.occupied_cells[coord.key()] = building_id
     state.next_entity_id += 1
     state.consumed_totals[WOOD] = (state.consumed_totals.get(WOOD, 0) as int) + 10
+    state.logistics_topology_dirty = true
     return CommandResult.success(command.id, {&"building_id": building_id, &"cost": 10})
 
 
@@ -167,7 +178,79 @@ func _apply_demolish_depot(state: SimulationState, command: DepotCommand) -> Com
     state.buildings.erase(depot.id)
     state.occupied_cells.erase(depot.coord.key())
     state.consumed_totals[WOOD] = maxi((state.consumed_totals.get(WOOD, 0) as int) - 5, 0)
+    var link_ids: Array[int] = []
+    for value: Variant in state.logistics_links.values():
+        var link := value as LogisticsLinkState
+        if link.source_id == depot.id or link.destination_id == depot.id:
+            link_ids.append(link.id)
+    for link_id: int in link_ids:
+        LogisticsLinkSystem.new().remove_link(state, link_id, command.id)
+    state.logistics_topology_dirty = true
     return CommandResult.success(command.id, {&"refund": 5})
+
+
+func _apply_create_link(state: SimulationState, command: LinkCommand) -> CommandResult:
+    if command == null:
+        return CommandResult.rejected(&"invalid_command")
+    return LogisticsLinkSystem.new().create_manual_link(
+        state,
+        Pathfinder.new(),
+        command.source_id,
+        command.destination_id,
+        command.resource_id,
+        command.id
+    )
+
+
+func _apply_remove_link(state: SimulationState, command: LinkCommand) -> CommandResult:
+    if command == null:
+        return CommandResult.rejected(&"invalid_command")
+    return LogisticsLinkSystem.new().remove_link(state, command.link_id, command.id)
+
+
+func _apply_reset_automatic_link(state: SimulationState, command: LinkCommand) -> CommandResult:
+    if command == null or state.get_building(command.source_id) == null:
+        return CommandResult.rejected(&"unknown_building", &"" if command == null else command.id)
+    var system := LogisticsLinkSystem.new()
+    system.remove_source_links(state, command.source_id, command.resource_id)
+    system.run(state, Pathfinder.new())
+    return CommandResult.success(command.id)
+
+
+func _apply_link_settings(state: SimulationState, command: LinkSettingsCommand) -> CommandResult:
+    if command == null:
+        return CommandResult.rejected(&"invalid_command")
+    var link := state.logistics_links.get(command.link_id) as LogisticsLinkState
+    if link == null:
+        return CommandResult.rejected(&"unknown_link", command.id)
+    if command.quota < 0 or command.priority < 0 or command.priority > 4:
+        return CommandResult.rejected(&"invalid_link_settings", command.id)
+    link.quota = command.quota
+    link.priority = command.priority
+    link.dispatch_enabled = command.dispatch_enabled and not link.is_closing
+    return CommandResult.success(command.id, {&"link_id": link.id})
+
+
+func _apply_dispatch_policy(state: SimulationState, command: DispatchPolicyCommand) -> CommandResult:
+    if command == null:
+        return CommandResult.rejected(&"invalid_command")
+    var source := state.get_building(command.building_id)
+    if source == null:
+        return CommandResult.rejected(&"unknown_building", command.id)
+    var definition := state.catalog.get_building(source.definition_id)
+    if definition == null or definition.role != LogisticsPortDef.ROLE_SOURCE:
+        return CommandResult.rejected(&"invalid_dispatch_source", command.id)
+    source.allows_direct_delivery_to_main = command.allows_direct_delivery_to_main
+    if not source.allows_direct_delivery_to_main:
+        var ids: Array[int] = []
+        for value: Variant in state.logistics_links.values():
+            var link := value as LogisticsLinkState
+            if link.source_id == source.id and link.destination_id == state.main_warehouse_id:
+                ids.append(link.id)
+        for link_id: int in ids:
+            LogisticsLinkSystem.new().remove_link(state, link_id, command.id)
+    state.logistics_topology_dirty = true
+    return CommandResult.success(command.id, {&"building_id": source.id})
 
 
 func _has_positive_reservations(reservations: Dictionary) -> bool:

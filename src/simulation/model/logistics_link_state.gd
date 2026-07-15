@@ -16,6 +16,8 @@ var resource_id: StringName:
 var is_automatic: bool
 var quota: int
 var priority: int
+var dispatch_enabled: bool
+var is_closing: bool
 
 var _id: int
 var _source_id: int
@@ -30,7 +32,9 @@ func _init(
     p_resource_id: StringName,
     p_is_automatic: bool,
     p_quota: int,
-    p_priority: int
+    p_priority: int,
+    p_dispatch_enabled: bool = true,
+    p_is_closing: bool = false
 ) -> void:
     _id = p_id
     _source_id = p_source_id
@@ -39,3 +43,5 @@ func _init(
     is_automatic = p_is_automatic
     quota = p_quota
     priority = p_priority
+    dispatch_enabled = p_dispatch_enabled
+    is_closing = p_is_closing
