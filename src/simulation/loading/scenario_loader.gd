@@ -201,6 +201,18 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
             else:
                 boiler_production.linked_building_id = hammer_id
                 hammer_production.linked_building_id = boiler_id
+                var pump_id := 0
+                if not definition.pump_station_key.is_empty():
+                    if not scenario_keys.has(definition.pump_station_key):
+                        errors.append(&"unknown_pump_station")
+                    else:
+                        pump_id = scenario_keys[definition.pump_station_key] as int
+                state.scenario_progress.configure(
+                    definition.observation_ticks,
+                    boiler_id,
+                    hammer_id,
+                    pump_id
+                )
     errors.append_array(InvariantChecker.new().check(state))
     if not errors.is_empty():
         return ScenarioLoadResult.new(null, errors)

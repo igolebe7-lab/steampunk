@@ -33,6 +33,7 @@ var telemetry_window := TelemetryWindow.new()
 var diagnostic_report := DiagnosticReport.new()
 var production_states: Dictionary = {}
 var utility_network := UtilityNetworkState.new()
+var scenario_progress := ScenarioProgressState.new()
 
 
 func _init(

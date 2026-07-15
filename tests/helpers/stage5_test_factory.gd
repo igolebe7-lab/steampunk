@@ -11,6 +11,10 @@ static func production_state() -> SimulationState:
     return result.state
 
 
+static func scenario_state() -> SimulationState:
+    return production_state()
+
+
 static func building(state: SimulationState, definition_id: StringName) -> BuildingState:
     var ids: Array[int] = []
     for key: Variant in state.buildings.keys():
