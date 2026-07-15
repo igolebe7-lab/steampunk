@@ -34,6 +34,7 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
     var occupied_cells: Dictionary = {}
     var scenario_keys: Dictionary = {}
     var next_entity_id := 1
+    var main_warehouse_id := 0
 
     for initial in definition.initial_buildings:
         if initial == null or initial.definition_id.is_empty():
@@ -74,7 +75,13 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
             initial.priority
         )
         building.inventory_capacity = building_def.inventory_capacity
+        building.allows_direct_delivery_to_main = building_def.allows_direct_delivery_to_main
         buildings[next_entity_id] = building
+        if building_def.role == LogisticsPortDef.ROLE_MAIN_WAREHOUSE:
+            if main_warehouse_id != 0:
+                errors.append(&"multiple_main_warehouses")
+            else:
+                main_warehouse_id = next_entity_id
         if not initial.scenario_key.is_empty():
             if scenario_keys.has(initial.scenario_key):
                 errors.append(&"duplicate_scenario_key")
@@ -161,6 +168,7 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
         next_entity_id
     )
     state.workers = workers
+    state.main_warehouse_id = main_warehouse_id
     state.worker_occupancy = worker_occupancy
     state.delivery_flows = delivery_flows
     state.worker_ticks_per_hex = definition.worker_ticks_per_hex

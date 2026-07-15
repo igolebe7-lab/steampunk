@@ -45,6 +45,23 @@ func run() -> Array[String]:
         InvariantChecker.new().check(missing_cell_reservation).has(&"invalid_cell_reservation"),
         "segment target без reservation обнаруживается"
     )
+
+    var duplicate_depot := ScenarioLoader.new().load_scenario(scenario).state
+    var definition := duplicate_depot.catalog.get_building(&"transfer_depot")
+    var first := BuildingState.new(duplicate_depot.next_entity_id, definition.id, HexCoord.new(1, 1), 2)
+    first.inventory_capacity = definition.inventory_capacity
+    duplicate_depot.buildings[first.id] = first
+    duplicate_depot.occupied_cells[first.coord.key()] = first.id
+    duplicate_depot.next_entity_id += 1
+    var second := BuildingState.new(duplicate_depot.next_entity_id, definition.id, HexCoord.new(2, 1), 2)
+    second.inventory_capacity = definition.inventory_capacity
+    duplicate_depot.buildings[second.id] = second
+    duplicate_depot.occupied_cells[second.coord.key()] = second.id
+    duplicate_depot.next_entity_id += 1
+    assert_true(
+        InvariantChecker.new().check(duplicate_depot).has(&"multiple_transfer_depots"),
+        "инвариант запрещает более одного перевалочного склада"
+    )
     return finish()
 
 

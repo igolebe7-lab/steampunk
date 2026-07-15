@@ -22,6 +22,7 @@ var cell_reservations: Dictionary = {}
 var next_job_id: int = 1
 var generated_totals: Dictionary = {}
 var delivered_totals: Dictionary = {}
+var consumed_totals: Dictionary = {}
 var worker_ticks_per_hex: int = 4
 var load_ticks: int = 2
 var unload_ticks: int = 2

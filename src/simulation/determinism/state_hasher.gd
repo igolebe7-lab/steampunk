@@ -3,13 +3,14 @@ extends RefCounted
 
 
 func canonicalize(state: SimulationState) -> String:
-    return "v=4|tick=%d|revision=%d|seed=%d|next=%d|next_job=%d|next_link=%d|map=%d,%d|timings=%d,%d,%d,%d|road_defs=[%s]|building_defs=[%s]|cells=[%s]|buildings=[%s]|workers=[%s]|jobs=[%s]|flows=[%s]|links=[%s]|worker_occupancy=[%s]|cell_reservations=[%s]|generated=[%s]|delivered=[%s]" % [
+    return "v=4|tick=%d|revision=%d|seed=%d|next=%d|next_job=%d|next_link=%d|main=%d|map=%d,%d|timings=%d,%d,%d,%d|road_defs=[%s]|building_defs=[%s]|cells=[%s]|buildings=[%s]|workers=[%s]|jobs=[%s]|flows=[%s]|links=[%s]|worker_occupancy=[%s]|cell_reservations=[%s]|generated=[%s]|delivered=[%s]|consumed=[%s]" % [
         state.tick,
         state.revision,
         state.seed,
         state.next_entity_id,
         state.next_job_id,
         state.next_link_id,
+        state.main_warehouse_id,
         state.map_state.width,
         state.map_state.height,
         state.worker_ticks_per_hex,
@@ -28,6 +29,7 @@ func canonicalize(state: SimulationState) -> String:
         _encode_int_dictionary(state.cell_reservations),
         _encode_int_dictionary(state.generated_totals),
         _encode_int_dictionary(state.delivered_totals),
+        _encode_int_dictionary(state.consumed_totals),
     ]
 
 

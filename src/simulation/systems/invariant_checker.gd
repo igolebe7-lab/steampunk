@@ -24,6 +24,7 @@ func check(state: SimulationState) -> Array[StringName]:
 
     var expected_occupancy: Dictionary = {}
     var maximum_id := 0
+    var transfer_depot_count := 0
     for key in state.buildings:
         var entity_id := key as int
         var building := state.buildings[key] as BuildingState
@@ -40,6 +41,8 @@ func check(state: SimulationState) -> Array[StringName]:
         if definition == null:
             errors.append(&"unknown_building_definition")
             continue
+        if definition.role == LogisticsPortDef.ROLE_TRANSFER_DEPOT:
+            transfer_depot_count += 1
         _check_building_inventory(state, building, errors)
         for coord in _footprint_coords(building.coord, definition.footprint):
             if not state.map_state.contains(coord):
@@ -49,6 +52,8 @@ func check(state: SimulationState) -> Array[StringName]:
                 errors.append(&"building_overlap")
             else:
                 expected_occupancy[coord.key()] = entity_id
+    if transfer_depot_count > 1:
+        _append_once(errors, &"multiple_transfer_depots")
 
     var expected_worker_occupancy: Dictionary = {}
     var assigned_jobs: Dictionary = {}
@@ -380,7 +385,8 @@ func _check_resource_conservation(state: SimulationState, errors: Array[StringNa
     for key: Variant in resource_ids.keys():
         var generated: int = state.generated_totals.get(key, 0) as int
         var present: int = world_totals.get(key, 0) as int
-        if generated < 0 or generated != present:
+        var consumed: int = state.consumed_totals.get(key, 0) as int
+        if generated < 0 or consumed < 0 or generated != present + consumed:
             _append_once(errors, &"resource_conservation")
 
 

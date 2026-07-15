@@ -11,6 +11,10 @@ func apply(state: SimulationState, command: SimulationCommand) -> CommandResult:
         return _apply_building_priority(state, command as BuildingPriorityCommand)
     if command.type == SimulationCommand.BUILD_ROAD:
         return _apply_build_road(state, command as BuildRoadCommand)
+    if command.type == SimulationCommand.PLACE_DEPOT:
+        return _apply_place_depot(state, command as DepotCommand)
+    if command.type == SimulationCommand.DEMOLISH_DEPOT:
+        return _apply_demolish_depot(state, command as DepotCommand)
     return CommandResult.rejected(&"unsupported_command", command.id)
 
 
@@ -86,6 +90,7 @@ func _apply_build_road(state: SimulationState, command: BuildRoadCommand) -> Com
 
     if total_cost > 0 and not payer.remove_amount(WOOD, total_cost):
         return CommandResult.rejected(&"insufficient_wood", command.id)
+    state.consumed_totals[WOOD] = (state.consumed_totals.get(WOOD, 0) as int) + total_cost
     for upgrade in upgrades:
         var cell := upgrade[&"cell"] as HexCellState
         cell.road_level = upgrade[&"level"] as int
@@ -93,6 +98,76 @@ func _apply_build_road(state: SimulationState, command: BuildRoadCommand) -> Com
         command.id,
         {&"cost": total_cost, &"cell_count": upgrades.size()}
     )
+
+
+func _apply_place_depot(state: SimulationState, command: DepotCommand) -> CommandResult:
+    if command == null or command.coord == null:
+        return CommandResult.rejected(&"invalid_command")
+    var payer_result := _validate_payer(state, command.id)
+    if payer_result != null:
+        return payer_result
+    for value: Variant in state.buildings.values():
+        if (value as BuildingState).definition_id == &"transfer_depot":
+            return CommandResult.rejected(&"transfer_depot_exists", command.id)
+    var coord := command.coord
+    if not state.map_state.contains(coord):
+        return _cell_rejection(&"cell_missing", command.id, coord, 0)
+    var cell := state.map_state.get_cell(coord)
+    if not cell.traversable:
+        return _cell_rejection(&"cell_not_traversable", command.id, coord, 0)
+    if state.occupied_cells.has(coord.key()):
+        return _cell_rejection(&"cell_occupied", command.id, coord, 0)
+    var has_road := false
+    for neighbor: HexCoord in coord.neighbors():
+        if state.map_state.contains(neighbor) and state.map_state.get_cell(neighbor).road_level >= RoadLevelDef.LEVEL_PATH:
+            has_road = true
+            break
+    if not has_road:
+        return CommandResult.rejected(&"depot_not_adjacent_to_road", command.id)
+    var payer := state.get_building(state.main_warehouse_id)
+    var available := payer.get_amount(WOOD) - payer.get_outgoing_reserved(WOOD)
+    if available < 10:
+        return CommandResult.rejected(&"insufficient_wood", command.id, {&"required": 10, &"available": available})
+    var definition := state.catalog.get_building(&"transfer_depot")
+    if definition == null:
+        return CommandResult.rejected(&"unknown_building_definition", command.id)
+    if not payer.remove_amount(WOOD, 10):
+        return CommandResult.rejected(&"insufficient_wood", command.id)
+    var building_id := state.next_entity_id
+    var depot := BuildingState.new(building_id, definition.id, coord, 2)
+    depot.inventory_capacity = definition.inventory_capacity
+    depot.allows_direct_delivery_to_main = definition.allows_direct_delivery_to_main
+    state.buildings[building_id] = depot
+    state.occupied_cells[coord.key()] = building_id
+    state.next_entity_id += 1
+    state.consumed_totals[WOOD] = (state.consumed_totals.get(WOOD, 0) as int) + 10
+    return CommandResult.success(command.id, {&"building_id": building_id, &"cost": 10})
+
+
+func _apply_demolish_depot(state: SimulationState, command: DepotCommand) -> CommandResult:
+    if command == null:
+        return CommandResult.rejected(&"invalid_command")
+    var depot := state.get_building(command.building_id)
+    if depot == null or depot.definition_id != &"transfer_depot":
+        return CommandResult.rejected(&"unknown_transfer_depot", command.id)
+    if depot.inventory_total() > 0:
+        return CommandResult.rejected(&"depot_not_empty", command.id)
+    if not depot.incoming_reserved.is_empty() or not depot.outgoing_reserved.is_empty():
+        return CommandResult.rejected(&"depot_has_reservations", command.id)
+    for value: Variant in state.jobs.values():
+        var job := value as DeliveryJob
+        if job.source_id == depot.id or job.destination_id == depot.id:
+            return CommandResult.rejected(&"depot_has_active_jobs", command.id)
+    var payer_result := _validate_payer(state, command.id)
+    if payer_result != null:
+        return payer_result
+    var payer := state.get_building(state.main_warehouse_id)
+    if not payer.add_amount(WOOD, 5):
+        return CommandResult.rejected(&"main_warehouse_full", command.id)
+    state.buildings.erase(depot.id)
+    state.occupied_cells.erase(depot.coord.key())
+    state.consumed_totals[WOOD] = maxi((state.consumed_totals.get(WOOD, 0) as int) - 5, 0)
+    return CommandResult.success(command.id, {&"refund": 5})
 
 
 func _validate_payer(state: SimulationState, command_id: StringName) -> CommandResult:

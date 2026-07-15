@@ -7,6 +7,7 @@ resource.iron.name,Железо,Iron
 resource.coal.name,Уголь,Coal
 resource.water.name,Вода,Water
 building.transfer_depot.name,Перевалочный склад,Transfer Depot
+building.main_warehouse.name,Главный склад,Main Warehouse
 building.boiler.name,Котёл,Boiler
 building.steam_hammer.name,Паровой молот,Steam Hammer
 building.wood_source.name,Источник древесины,Wood Source
