@@ -44,24 +44,158 @@ script = ExtResource("5_logistics")
 [node name="UI" type="CanvasLayer" parent="."]
 layer = 10
 
-[node name="Margin" type="MarginContainer" parent="UI"]
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 380.0
-offset_bottom = 112.0
+[node name="TopBar" type="PanelContainer" parent="UI"]
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 1268.0
+offset_bottom = 76.0
 
-[node name="VBox" type="VBoxContainer" parent="UI/Margin"]
+[node name="Margin" type="MarginContainer" parent="UI/TopBar"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
 
-[node name="Title" type="Label" parent="UI/Margin/VBox"]
+[node name="HBox" type="HBoxContainer" parent="UI/TopBar/Margin"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.94, 0.76, 0.47, 1)
-theme_override_font_sizes/font_size = 24
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="UI/TopBar/Margin/HBox"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "ui.app.title"
 
-[node name="Status" type="Label" parent="UI/Margin/VBox"]
+[node name="Wood" type="Label" parent="UI/TopBar/Margin/HBox"]
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 0.87, 0.88, 1)
-theme_override_font_sizes/font_size = 18
+text = "ui.hud.wood"
+
+[node name="Throughput" type="Label" parent="UI/TopBar/Margin/HBox"]
+custom_minimum_size = Vector2(170, 0)
+layout_mode = 2
+text = "ui.hud.throughput"
+
+[node name="Tick" type="Label" parent="UI/TopBar/Margin/HBox"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "ui.hud.tick"
+
+[node name="Status" type="Label" parent="UI/TopBar/Margin/HBox"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+size_flags_horizontal = 3
 text = "ui.status.select_hex"
+
+[node name="Pause" type="Button" parent="UI/TopBar/Margin/HBox"]
+layout_mode = 2
+text = "ui.hud.pause"
+
+[node name="Speed1" type="Button" parent="UI/TopBar/Margin/HBox"]
+layout_mode = 2
+text = "ui.hud.speed_1"
+
+[node name="Speed2" type="Button" parent="UI/TopBar/Margin/HBox"]
+layout_mode = 2
+text = "ui.hud.speed_2"
+
+[node name="Speed4" type="Button" parent="UI/TopBar/Margin/HBox"]
+layout_mode = 2
+text = "ui.hud.speed_4"
+
+[node name="LeftPanel" type="PanelContainer" parent="UI"]
+offset_left = 12.0
+offset_top = 92.0
+offset_right = 212.0
+offset_bottom = 270.0
+
+[node name="Margin" type="MarginContainer" parent="UI/LeftPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Layers" type="VBoxContainer" parent="UI/LeftPanel/Margin"]
+layout_mode = 2
+
+[node name="Links" type="CheckButton" parent="UI/LeftPanel/Margin/Layers"]
+layout_mode = 2
+button_pressed = true
+text = "ui.layer.links"
+
+[node name="Routes" type="CheckButton" parent="UI/LeftPanel/Margin/Layers"]
+layout_mode = 2
+button_pressed = true
+text = "ui.layer.routes"
+
+[node name="Load" type="CheckButton" parent="UI/LeftPanel/Margin/Layers"]
+layout_mode = 2
+button_pressed = true
+text = "ui.layer.load"
+
+[node name="RightPanel" type="PanelContainer" parent="UI"]
+offset_left = 980.0
+offset_top = 92.0
+offset_right = 1268.0
+offset_bottom = 640.0
+
+[node name="Margin" type="MarginContainer" parent="UI/RightPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="UI/RightPanel/Margin"]
+layout_mode = 2
+
+[node name="Scroll" type="ScrollContainer" parent="UI/RightPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Inspector" type="RichTextLabel" parent="UI/RightPanel/Margin/VBox/Scroll"]
+custom_minimum_size = Vector2(245, 500)
+layout_mode = 2
+fit_content = true
+text = "ui.inspector.empty"
+
+[node name="BottomBar" type="PanelContainer" parent="UI"]
+offset_left = 300.0
+offset_top = 650.0
+offset_right = 960.0
+offset_bottom = 708.0
+
+[node name="Margin" type="MarginContainer" parent="UI/BottomBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="Tools" type="HBoxContainer" parent="UI/BottomBar/Margin"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="Inspect" type="Button" parent="UI/BottomBar/Margin/Tools"]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "ui.tool.inspect"
+
+[node name="Road" type="Button" parent="UI/BottomBar/Margin/Tools"]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "ui.tool.road"
+
+[node name="Depot" type="Button" parent="UI/BottomBar/Margin/Tools"]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "ui.tool.depot"
+
+[node name="Link" type="Button" parent="UI/BottomBar/Margin/Tools"]
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+text = "ui.tool.link"

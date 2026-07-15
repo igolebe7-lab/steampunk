@@ -2,6 +2,7 @@ class_name HexGridView
 extends Node2D
 
 signal hex_selected(coord: HexCoord)
+signal local_position_selected(local_position: Vector2)
 
 const CELL_COLOR_A := Color("#34493d")
 const CELL_COLOR_B := Color("#3d5345")
@@ -63,6 +64,7 @@ func select_at_local_position(local_position: Vector2) -> bool:
 
     _selected_coord = coord
     queue_redraw()
+    local_position_selected.emit(local_position)
     hex_selected.emit(coord)
     return true
 
