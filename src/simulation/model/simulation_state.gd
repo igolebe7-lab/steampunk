@@ -8,6 +8,7 @@ var map_state: HexMapState
 var catalog: DefinitionCatalog
 var buildings: Dictionary = {}
 var occupied_cells: Dictionary = {}
+var main_warehouse_id: int = 0
 var next_entity_id: int = 1
 var last_events: Array[StringName] = []
 var events: Array[SimulationEvent] = []

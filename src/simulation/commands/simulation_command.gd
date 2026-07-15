@@ -2,6 +2,14 @@ class_name SimulationCommand
 extends RefCounted
 
 const SET_BUILDING_PRIORITY := &"set_building_priority"
+const BUILD_ROAD := &"build_road"
+const PLACE_DEPOT := &"place_depot"
+const DEMOLISH_DEPOT := &"demolish_depot"
+const CREATE_LINK := &"create_link"
+const REMOVE_LINK := &"remove_link"
+const RESET_AUTOMATIC_LINK := &"reset_automatic_link"
+const SET_LINK_SETTINGS := &"set_link_settings"
+const SET_DISPATCH_POLICY := &"set_dispatch_policy"
 
 var id: StringName:
     get:
@@ -15,34 +23,21 @@ var target_tick: int:
 var sequence: int:
     get:
         return _sequence
-var building_id: int:
-    get:
-        return _building_id
-var priority: int:
-    get:
-        return _priority
-
 var _id: StringName
 var _type: StringName
 var _target_tick: int
 var _sequence: int
-var _building_id: int
-var _priority: int
 
 
 func _init(
     p_type: StringName,
     p_target_tick: int,
-    p_sequence: int,
-    p_building_id: int,
-    p_priority: int
+    p_sequence: int
 ) -> void:
     _id = StringName("%d:%d" % [p_target_tick, p_sequence])
     _type = p_type
     _target_tick = p_target_tick
     _sequence = p_sequence
-    _building_id = p_building_id
-    _priority = p_priority
 
 
 static func set_building_priority(
@@ -51,14 +46,8 @@ static func set_building_priority(
     p_building_id: int,
     p_priority: int
 ) -> SimulationCommand:
-    return SimulationCommand.new(
-        SET_BUILDING_PRIORITY,
-        p_target_tick,
-        p_sequence,
-        p_building_id,
-        p_priority
-    )
+    return BuildingPriorityCommand.new(p_target_tick, p_sequence, p_building_id, p_priority)
 
 
 func snapshot() -> SimulationCommand:
-    return SimulationCommand.new(type, target_tick, sequence, building_id, priority)
+    return SimulationCommand.new(type, target_tick, sequence)
