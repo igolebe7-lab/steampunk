@@ -192,7 +192,7 @@ func _apply_demolish_depot(state: SimulationState, command: DepotCommand) -> Com
     if payer_result != null:
         return payer_result
     var payer := state.get_building(state.main_warehouse_id)
-    if payer.inventory_total() + 5 > payer.inventory_capacity:
+    if payer.free_capacity() < 5:
         return CommandResult.rejected(&"main_warehouse_full", command.id)
     var link_system := LogisticsLinkSystem.new()
     for link_id: int in link_ids:

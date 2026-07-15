@@ -12,6 +12,7 @@ func run() -> Array[String]:
     _assert_demolish_removes_idle_links_atomically()
     _assert_demolish_rejects_active_cargo_atomically()
     _assert_failed_refund_preserves_links()
+    _assert_reserved_capacity_blocks_refund_atomically()
     _assert_demolish_refunds_and_releases_occupancy()
     return finish()
 
@@ -158,6 +159,32 @@ func _assert_failed_refund_preserves_links() -> void:
     assert_eq(result.code, &"main_warehouse_full", "невозможный refund отклоняется до мутаций")
     assert_true(state.get_building(depot.id) != null, "ошибка refund сохраняет депо")
     assert_true(state.logistics_links.has(link.id), "ошибка refund сохраняет связь")
+
+
+func _assert_reserved_capacity_blocks_refund_atomically() -> void:
+    var state := _state_with_depot()
+    var depot := _transfer_depot(state)
+    var link := LogisticsLinkState.new(1, depot.id, state.main_warehouse_id, WOOD, false, 1, 2)
+    state.logistics_links[link.id] = link
+    state.next_link_id = 2
+    var worker := WorkerState.new(state.next_entity_id, HexCoord.new(1, 0))
+    worker.link_id = link.id
+    state.workers[worker.id] = worker
+    state.worker_occupancy[worker.coord.key()] = worker.id
+    state.next_entity_id += 1
+    var main := _main_warehouse(state)
+    main.inventories[WOOD] = 95
+    main.incoming_reserved[WOOD] = 5
+    var before_hash := StateHasher.new().hash_state(state)
+
+    var result := CommandSystem.new().apply(state, DepotCommand.demolish(2, 54, depot.id))
+
+    assert_eq(result.code, &"main_warehouse_full", "incoming reservation блокирует refund")
+    assert_eq(
+        StateHasher.new().hash_state(state),
+        before_hash,
+        "отказ refund при reserved capacity полностью сохраняет состояние"
+    )
 
 
 func _assert_demolish_refunds_and_releases_occupancy() -> void:
