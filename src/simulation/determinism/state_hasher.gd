@@ -3,7 +3,7 @@ extends RefCounted
 
 
 func canonicalize(state: SimulationState) -> String:
-    return "v=4|tick=%d|revision=%d|seed=%d|next=%d|next_job=%d|next_link=%d|map=%d,%d|timings=%d,%d,%d,%d|road_defs=[%s]|cells=[%s]|buildings=[%s]|workers=[%s]|jobs=[%s]|flows=[%s]|links=[%s]|worker_occupancy=[%s]|cell_reservations=[%s]|generated=[%s]|delivered=[%s]" % [
+    return "v=4|tick=%d|revision=%d|seed=%d|next=%d|next_job=%d|next_link=%d|map=%d,%d|timings=%d,%d,%d,%d|road_defs=[%s]|building_defs=[%s]|cells=[%s]|buildings=[%s]|workers=[%s]|jobs=[%s]|flows=[%s]|links=[%s]|worker_occupancy=[%s]|cell_reservations=[%s]|generated=[%s]|delivered=[%s]" % [
         state.tick,
         state.revision,
         state.seed,
@@ -17,6 +17,7 @@ func canonicalize(state: SimulationState) -> String:
         state.unload_ticks,
         state.repath_after_ticks,
         _encode_road_definitions(state),
+        _encode_building_definitions(state),
         _encode_cells(state),
         _encode_buildings(state),
         _encode_workers(state),
@@ -64,6 +65,9 @@ func _encode_buildings(state: SimulationState) -> String:
         var role := &""
         var max_level := 1
         var outgoing_worker_slots := 0
+        var worker_slots_by_level: Array[int] = []
+        var logistics_ports: Array[LogisticsPortDef] = []
+        var definition_allows_main := true
         if definition != null:
             source_resource = definition.source_resource_id
             source_interval = definition.source_interval_ticks
@@ -71,7 +75,10 @@ func _encode_buildings(state: SimulationState) -> String:
             role = definition.role
             max_level = definition.max_level
             outgoing_worker_slots = definition.outgoing_worker_slots(building.level)
-        parts.append("%d,%s,%d,%d,%d,%d,%d,%d,%d,%s,%d,%s,%d,%d,slots=%d,inv=[%s],out=[%s],in=[%s]" % [
+            worker_slots_by_level = definition.outgoing_worker_slots_by_level
+            logistics_ports = definition.logistics_ports
+            definition_allows_main = definition.allows_direct_delivery_to_main
+        parts.append("%d,%s,%d,%d,%d,%d,%d,%d,%d,%s,%d,%s,%d,%d,slots=%d,levels=[%s],ports=[%s],def_main=%d,inv=[%s],out=[%s],in=[%s]" % [
             building.id,
             _encode_identifier(building.definition_id),
             building.coord.q,
@@ -87,6 +94,9 @@ func _encode_buildings(state: SimulationState) -> String:
             source_interval,
             source_capacity,
             outgoing_worker_slots,
+            _encode_int_array(worker_slots_by_level),
+            _encode_ports(logistics_ports),
+            int(definition_allows_main),
             _encode_int_dictionary(building.inventories),
             _encode_int_dictionary(building.outgoing_reserved),
             _encode_int_dictionary(building.incoming_reserved),
@@ -184,6 +194,35 @@ func _encode_road_definitions(state: SimulationState) -> String:
     return ";".join(parts)
 
 
+func _encode_building_definitions(state: SimulationState) -> String:
+    var definitions := state.catalog.buildings.duplicate()
+    definitions.sort_custom(_sort_building_definitions)
+    var parts: PackedStringArray = []
+    for definition: BuildingDef in definitions:
+        parts.append("%s,role=%s,max=%d,direct=%d,capacity=%d,source=%s,%d,%d,slots=[%s],ports=[%s],footprint=[%s]" % [
+            _encode_identifier(definition.id),
+            _encode_identifier(definition.role),
+            definition.max_level,
+            int(definition.allows_direct_delivery_to_main),
+            definition.inventory_capacity,
+            _encode_identifier(definition.source_resource_id),
+            definition.source_interval_ticks,
+            definition.source_capacity,
+            _encode_int_array(definition.outgoing_worker_slots_by_level),
+            _encode_ports(definition.logistics_ports),
+            _encode_footprint(definition.footprint),
+        ])
+    return ";".join(parts)
+
+
+func _encode_footprint(footprint: Array[Vector2i]) -> String:
+    var cells: PackedStringArray = []
+    for offset: Vector2i in footprint:
+        cells.append("%d:%d" % [offset.x, offset.y])
+    cells.sort()
+    return ",".join(cells)
+
+
 func _encode_route(route: Array[HexCoord]) -> String:
     var parts: PackedStringArray = []
     for coord: HexCoord in route:
@@ -206,6 +245,29 @@ func _encode_int_dictionary(values: Dictionary) -> String:
     for key: String in keys:
         var identifier := StringName(key)
         parts.append("%s=%d" % [_encode_identifier(identifier), values[identifier] as int])
+    return ";".join(parts)
+
+
+func _encode_int_array(values: Array[int]) -> String:
+    var parts: PackedStringArray = []
+    for value: int in values:
+        parts.append(str(value))
+    return ",".join(parts)
+
+
+func _encode_ports(ports: Array[LogisticsPortDef]) -> String:
+    var parts: PackedStringArray = []
+    for port: LogisticsPortDef in ports:
+        var roles: PackedStringArray = []
+        for role: StringName in port.accepted_building_roles:
+            roles.append(_encode_identifier(role))
+        roles.sort()
+        parts.append("%s,%s,roles=%s" % [
+            _encode_identifier(port.direction),
+            _encode_identifier(port.resource_id),
+            ",".join(roles),
+        ])
+    parts.sort()
     return ";".join(parts)
 
 
@@ -234,3 +296,7 @@ func _sort_flows(left: DeliveryFlowState, right: DeliveryFlowState) -> bool:
 
 func _sort_road_definitions(left: RoadLevelDef, right: RoadLevelDef) -> bool:
     return left.level < right.level
+
+
+func _sort_building_definitions(left: BuildingDef, right: BuildingDef) -> bool:
+    return String(left.id) < String(right.id)

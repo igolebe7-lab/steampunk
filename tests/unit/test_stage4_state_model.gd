@@ -4,6 +4,7 @@ extends TestCase
 func run() -> Array[String]:
     _assert_road_levels()
     _assert_building_management_definition()
+    _assert_loaded_source_definition()
     _assert_logistics_link_state()
     _assert_link_references_and_revision()
     return finish()
@@ -60,6 +61,17 @@ func _assert_building_management_definition() -> void:
     var building := BuildingState.new(1, &"wood_source", HexCoord.new(), 2)
     assert_eq(building.level, 1, "здание создаётся на первом уровне")
     assert_true(building.allows_direct_delivery_to_main, "состояние хранит изменяемую политику доставки")
+
+
+func _assert_loaded_source_definition() -> void:
+    var catalog := load("res://data/catalog.tres") as DefinitionCatalog
+    var source := catalog.get_building(&"wood_source")
+    assert_eq(source.role, LogisticsPortDef.ROLE_SOURCE, "реальный источник имеет роль source")
+    assert_eq(source.outgoing_worker_slots(1), 2, "реальный источник первого уровня имеет два места")
+    assert_eq(source.logistics_ports.size(), 1, "реальный источник имеет выходной порт древесины")
+    if source.logistics_ports.size() == 1:
+        assert_eq(source.logistics_ports[0].direction, LogisticsPortDef.DIRECTION_OUTPUT, "порт источника исходящий")
+        assert_eq(source.logistics_ports[0].resource_id, &"wood", "порт источника передаёт древесину")
 
 
 func _assert_logistics_link_state() -> void:

@@ -61,6 +61,23 @@ func _assert_stage4_state_changes_hash(
     changed_link.logistics_links[2] = LogisticsLinkState.new(2, 1, 3, &"wood", false, 1, 2)
     assert_true(initial_hash != hasher.hash_state(changed_link), "логистическая связь должна менять v=4 hash")
 
+    var changed_slots := ScenarioLoader.new().load_scenario(scenario).state
+    var source_definition := changed_slots.catalog.get_building(&"wood_source")
+    var original_slots := source_definition.outgoing_worker_slots_by_level.duplicate()
+    source_definition.outgoing_worker_slots_by_level = [2, 4, 6]
+    assert_true(initial_hash != hasher.hash_state(changed_slots), "полная таблица рабочих мест должна менять v=4 hash")
+    source_definition.outgoing_worker_slots_by_level = original_slots
+
+    var changed_ports := ScenarioLoader.new().load_scenario(scenario).state
+    source_definition = changed_ports.catalog.get_building(&"wood_source")
+    var extra_port := LogisticsPortDef.new()
+    extra_port.direction = LogisticsPortDef.DIRECTION_OUTPUT
+    extra_port.resource_id = &"wood"
+    extra_port.accepted_building_roles = [LogisticsPortDef.ROLE_MAIN_WAREHOUSE]
+    source_definition.logistics_ports.append(extra_port)
+    assert_true(initial_hash != hasher.hash_state(changed_ports), "совместимость логистических портов должна менять v=4 hash")
+    source_definition.logistics_ports.pop_back()
+
 
 func _assert_logistics_dictionary_order_is_ignored(hasher: StateHasher) -> void:
     var scenario := load("res://data/scenarios/physical_logistics.tres") as ScenarioDef
