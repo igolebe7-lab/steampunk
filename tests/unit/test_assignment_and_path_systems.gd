@@ -6,6 +6,7 @@ func run() -> Array[String]:
     var state := ScenarioLoader.new().load_scenario(scenario).state
     for tick in range(1, 11):
         SourceSystem.new().run(state, tick)
+    WorkforceSystem.new().run(state, 10)
     JobSystem.new().run(state, 10)
 
     var finder := Pathfinder.new()

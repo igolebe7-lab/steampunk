@@ -8,7 +8,7 @@
 
 [sub_resource type="Resource" id="Building_depot"]
 script = ExtResource("2_building")
-definition_id = &"transfer_depot"
+definition_id = &"main_warehouse"
 scenario_key = &"depot"
 offset_coord = Vector2i(9, 8)
 priority = 2

@@ -5,7 +5,8 @@ func run() -> Array[String]:
     var scenario := load("res://data/scenarios/physical_logistics.tres") as ScenarioDef
     var state := ScenarioLoader.new().load_scenario(scenario).state
     var finder := Pathfinder.new()
-    var goals := finder.interaction_cells(state, state.delivery_flows[0].source_id)
+    var link := state.logistics_links[1] as LogisticsLinkState
+    var goals := finder.interaction_cells(state, link.source_id)
     var worker_ids: Array = state.workers.keys()
     worker_ids.sort()
     var start := state.get_worker(worker_ids[0]).coord

@@ -15,6 +15,15 @@ func _assert_conflict_resolution_and_arrival() -> void:
     assert_eq(state.cell_reservations.size(), 1, "клетка имеет одну reservation")
     assert_eq(state.cell_reservations.values()[0], 1, "при равном ожидании выигрывает меньший ID")
     assert_eq(state.get_worker(2).wait_reason, &"cell_reserved", "проигравший объясняет ожидание")
+    var conflict_event: SimulationEvent
+    for event: SimulationEvent in state.events:
+        if event.code == &"worker_waiting" and event.entity_id == 2:
+            conflict_event = event
+            break
+    assert_true(conflict_event != null, "movement публикует telemetry event конфликта")
+    if conflict_event != null:
+        assert_eq(conflict_event.cell_key, &"2:1", "конфликт привязан к целевой клетке")
+        assert_eq(conflict_event.reason, &"cell_reserved", "причина конфликта структурирована")
     for tick in range(2, 6):
         MovementSystem.new().run(state, Pathfinder.new(), tick)
     assert_eq(state.worker_occupancy.get(&"2:1", 0), 1, "занятость атомарно переходит в target")
@@ -83,6 +92,7 @@ func _assigned_state() -> SimulationState:
     var state := ScenarioLoader.new().load_scenario(scenario).state
     for tick in range(1, 11):
         SourceSystem.new().run(state, tick)
+    WorkforceSystem.new().run(state, 10)
     JobSystem.new().run(state, 10)
     AssignmentSystem.new().run(state, Pathfinder.new(), 10)
     PathSystem.new().run(state, Pathfinder.new(), 10)

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="DefinitionCatalog" load_steps=12 format=3]
+[gd_resource type="Resource" script_class="DefinitionCatalog" load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://src/simulation/definitions/definition_catalog.gd" id="1_catalog"]
 [ext_resource type="Script" path="res://src/simulation/definitions/resource_def.gd" id="2_resource"]
@@ -11,8 +11,13 @@
 [ext_resource type="Resource" path="res://data/buildings/boiler.tres" id="9_boiler"]
 [ext_resource type="Resource" path="res://data/buildings/steam_hammer.tres" id="10_hammer"]
 [ext_resource type="Resource" path="res://data/buildings/wood_source.tres" id="11_source"]
+[ext_resource type="Resource" path="res://data/buildings/main_warehouse.tres" id="12_main"]
+[ext_resource type="Resource" path="res://data/roads/open_ground.tres" id="13_open"]
+[ext_resource type="Resource" path="res://data/roads/path.tres" id="14_path"]
+[ext_resource type="Resource" path="res://data/roads/dirt_road.tres" id="15_road"]
 
 [resource]
 script = ExtResource("1_catalog")
 resources = Array[ExtResource("2_resource")]([ExtResource("4_wood"), ExtResource("5_iron"), ExtResource("6_coal"), ExtResource("7_water")])
-buildings = Array[ExtResource("3_building")]([ExtResource("8_depot"), ExtResource("9_boiler"), ExtResource("10_hammer"), ExtResource("11_source")])
+buildings = Array[ExtResource("3_building")]([ExtResource("8_depot"), ExtResource("9_boiler"), ExtResource("10_hammer"), ExtResource("11_source"), ExtResource("12_main")])
+road_levels = Array[ExtResource("13_open")]([ExtResource("13_open"), ExtResource("14_path"), ExtResource("15_road")])

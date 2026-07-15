@@ -42,6 +42,16 @@ func _assert_atomic_delivery() -> void:
     assert_eq(worker.job_id, 0, "после разгрузки worker освобождается")
     assert_eq(state.get_job(job.id), null, "завершённый job удаляется из активных")
     assert_eq(state.delivered_totals.get(&"wood", 0), 1, "счётчик доставки увеличивается")
+    var delivery_event: SimulationEvent
+    for event: SimulationEvent in state.events:
+        if event.code == &"cargo_delivered":
+            delivery_event = event
+            break
+    assert_true(delivery_event != null, "разгрузка публикует telemetry event")
+    if delivery_event != null:
+        assert_eq(delivery_event.link_id, job.link_id, "delivery event сохраняет link после удаления job")
+        assert_eq(delivery_event.destination_id, job.destination_id, "delivery event различает main и relay")
+        assert_eq(delivery_event.metric_value, 12 - job.created_tick, "delivery event измеряет полную latency job")
     assert_true(InvariantChecker.new().check(state).is_empty(), "после доставки все инварианты соблюдены")
 
 
@@ -71,6 +81,7 @@ func _prepared_state() -> SimulationState:
     var state := ScenarioLoader.new().load_scenario(scenario).state
     for tick in range(1, 11):
         SourceSystem.new().run(state, tick)
+    WorkforceSystem.new().run(state, 10)
     JobSystem.new().run(state, 10)
     AssignmentSystem.new().run(state, Pathfinder.new(), 10)
     return state

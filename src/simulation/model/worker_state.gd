@@ -19,6 +19,7 @@ var segment_duration: int = 0
 var route: Array[HexCoord] = []
 var route_index: int = 0
 var job_id: int = 0
+var link_id: int = 0
 var cargo_resource_id: StringName
 var action: StringName = IDLE
 var wait_reason: StringName = &"no_job"

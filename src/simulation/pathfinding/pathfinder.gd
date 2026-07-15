@@ -46,7 +46,7 @@ func find_path(
             var cell := state.map_state.get_cell(neighbor)
             if not cell.traversable or state.occupied_cells.has(neighbor_key) or dynamic_blocked.has(neighbor_key):
                 continue
-            var tentative := (g_score[current_key] as int) + cell.movement_cost
+            var tentative := (g_score[current_key] as int) + _cell_cost(state, cell)
             if g_score.has(neighbor_key) and tentative >= (g_score[neighbor_key] as int):
                 continue
             came_from[neighbor_key] = current_key
@@ -58,6 +58,11 @@ func find_path(
                 "f": tentative + _heuristic(neighbor, goals),
             })
     return PathResult.new()
+
+
+func _cell_cost(state: SimulationState, cell: HexCellState) -> int:
+    var road := state.catalog.get_road_level(cell.road_level)
+    return cell.movement_cost if road == null else cell.movement_cost * road.traversal_ticks
 
 
 func interaction_cells(state: SimulationState, building_id: int) -> Array[HexCoord]:

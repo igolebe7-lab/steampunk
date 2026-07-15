@@ -7,6 +7,106 @@ resource.iron.name,Железо,Iron
 resource.coal.name,Уголь,Coal
 resource.water.name,Вода,Water
 building.transfer_depot.name,Перевалочный склад,Transfer Depot
+building.main_warehouse.name,Главный склад,Main Warehouse
 building.boiler.name,Котёл,Boiler
 building.steam_hammer.name,Паровой молот,Steam Hammer
 building.wood_source.name,Источник древесины,Wood Source
+ui.hud.wood,Дерево: {value},Wood: {value}
+ui.hud.throughput,Поток: {value}/мин,Throughput: {value}/min
+ui.hud.tick,Тик: {value},Tick: {value}
+ui.hud.pause,Пауза,Pause
+ui.hud.resume,Продолжить,Resume
+ui.hud.speed_1,×1,×1
+ui.hud.speed_2,×2,×2
+ui.hud.speed_4,×4,×4
+ui.layer.links,Связи,Links
+ui.layer.routes,Маршруты,Routes
+ui.layer.load,Загрузка,Load
+ui.tool.inspect,Осмотр,Inspect
+ui.tool.road,Дорога,Road
+ui.tool.depot,Склад,Depot
+ui.tool.link,Связь,Link
+ui.inspector.empty,Ничего не выбрано,Nothing selected
+ui.inspector.worker,Работник #{id},Worker #{id}
+ui.inspector.building,Здание #{id},Building #{id}
+ui.inspector.link,Связь #{id},Link #{id}
+ui.inspector.worker.body,"Действие: {action}\nГруз: {cargo}\nПричина: {reason}\nОжидание: {wait}\nСвязь: {link}\nЗадание: {job}","Action: {action}\nCargo: {cargo}\nReason: {reason}\nWait: {wait}\nLink: {link}\nJob: {job}"
+ui.inspector.building.body,"{name}\nЗапасы: {inventory}/{capacity}\nУровень: {level}\nПриоритет: {priority}\nПрямой маршрут: {direct}","{name}\nInventory: {inventory}/{capacity}\nLevel: {level}\nPriority: {priority}\nDirect policy: {direct}"
+ui.inspector.link.body,"Откуда: {source}\nКуда: {destination}\nКвота: {quota}\nПриоритет: {priority}\nОтправка: {dispatch}\nПолитика: {policy}\nПоток: {throughput}/мин","Source: {source}\nDestination: {destination}\nQuota: {quota}\nPriority: {priority}\nDispatch: {dispatch}\nPolicy: {policy}\nThroughput: {throughput}/min"
+ui.value.none,Нет,None
+ui.value.yes,Да,Yes
+ui.value.no,Нет,No
+ui.value.auto,Автоматическая,Automatic
+ui.value.manual,Ручная,Manual
+ui.status.tool.inspect,Режим осмотра,Inspect mode
+ui.status.tool.road,Выберите гекс для дороги,Select a hex for a road
+ui.status.tool.depot,Выберите гекс для склада,Select a hex for a depot
+ui.status.tool.link,Выберите исходное здание,Select an origin building
+ui.status.tool.link_destination,Выберите целевое здание,Select a destination building
+reason.no_destination,Нет назначения,No destination
+reason.destination_full,Назначение заполнено,Destination full
+reason.source_full,Источник заполнен,Source full
+reason.worker_shortage,Не хватает работников,Worker shortage
+reason.route_conflict,Конфликт маршрутов,Route conflict
+reason.relay_backlog,Перевалочный склад переполнен,Relay backlog
+reason.no_path,Нет пути,No path
+reason.cell_reserved,Клетка зарезервирована,Cell reserved
+reason.cell_occupied,Клетка занята,Cell occupied
+reason.missing_cargo,Нет груза,Missing cargo
+reason.unload_blocked,Разгрузка заблокирована,Unload blocked
+reason.no_job,Нет задания,No job
+command.accepted,Команда выполнена,Command completed
+command.invalid_command,Некорректная команда,Invalid command
+command.insufficient_wood,Недостаточно дерева,Not enough wood
+command.cell_missing,Клетка не существует,Cell missing
+command.cell_not_traversable,Клетка недоступна,Cell not traversable
+command.cell_occupied,Клетка занята,Cell occupied
+command.road_level_max,Дорога уже максимального уровня,Road already at maximum level
+command.depot_exists,Склад уже построен,Depot already exists
+command.link_cycle,Связь создаёт цикл,Link creates a cycle
+command.incompatible_link,Несовместимая связь,Incompatible link
+command.no_path,Нет пути,No path
+command.source_slots_exceeded,Превышена квота источника,Source quota exceeded
+command.unknown,Неизвестный результат команды,Unknown command result
+command.past_tick,Команда назначена на прошедший такт,Command targets a past tick
+command.duplicate_sequence,Повторная последовательность команды,Duplicate command sequence
+command.unsupported_command,Команда не поддерживается,Unsupported command
+command.unknown_building,Здание не найдено,Building not found
+command.invalid_priority,Недопустимый приоритет,Invalid priority
+command.empty_road_batch,Не выбраны клетки дороги,No road cells selected
+command.duplicate_cell,Клетка дороги указана повторно,Road cell selected twice
+command.invalid_road_level,Недопустимый уровень дороги,Invalid road level
+command.missing_road_level,Уровень дороги не определён,Road level definition missing
+command.transfer_depot_exists,Перевалочный склад уже построен,Transfer depot already exists
+command.depot_not_adjacent_to_road,Склад должен примыкать к дороге,Depot must be adjacent to a road
+command.unknown_building_definition,Определение здания не найдено,Building definition not found
+command.unknown_transfer_depot,Перевалочный склад не найден,Transfer depot not found
+command.depot_not_empty,Склад необходимо опустошить,Depot must be empty
+command.depot_has_reservations,У склада есть активные резервы,Depot has active reservations
+command.depot_has_active_jobs,У склада есть активные задания,Depot has active jobs
+command.depot_has_active_cargo,Работник ещё перевозит груз склада,A worker is still carrying depot cargo
+command.main_warehouse_full,Главный склад заполнен,Main warehouse is full
+command.duplicate_link,Такая связь уже существует,Link already exists
+command.unknown_link,Связь не найдена,Link not found
+command.invalid_link_settings,Недопустимые настройки связи,Invalid link settings
+command.link_quota_in_use,Квота занята активными работниками,Link quota is in use
+command.invalid_dispatch_source,Политика доставки доступна только источнику,Dispatch policy requires a source
+command.unknown_main_warehouse,Главный склад не найден,Main warehouse not found
+ui.management.quota,Квота,Quota
+ui.management.priority,Приоритет,Priority
+ui.management.dispatch,Отгрузка включена,Dispatch enabled
+ui.management.apply_link,Применить настройки,Apply settings
+ui.management.remove_link,Удалить связь,Remove link
+ui.management.reset_link,Вернуть автомаршрут,Reset automatic route
+ui.management.direct_main,Разрешить доставку напрямую,Allow direct delivery
+ui.management.apply_direct,Применить политику,Apply policy
+ui.management.demolish_depot,Разобрать склад,Demolish depot
+action.idle,Свободен,Idle
+action.assigned,Назначен,Assigned
+action.awaiting_source_path,Ожидает путь к источнику,Awaiting source path
+action.to_source,Идёт к источнику,Moving to source
+action.loading,Загружает,Loading
+action.awaiting_destination_path,Ожидает путь к назначению,Awaiting destination path
+action.to_destination,Идёт к назначению,Moving to destination
+action.unloading,Разгружает,Unloading
+action.blocked,Заблокирован,Blocked

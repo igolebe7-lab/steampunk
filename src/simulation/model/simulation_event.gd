@@ -6,6 +6,11 @@ var tick: int
 var entity_id: int
 var job_id: int
 var resource_id: StringName
+var link_id: int = 0
+var destination_id: int = 0
+var metric_value: int = 0
+var cell_key: StringName = &""
+var reason: StringName = &""
 
 
 func _init(p_code: StringName, p_tick: int, p_entity_id: int = 0, p_job_id: int = 0, p_resource_id: StringName = &"") -> void:

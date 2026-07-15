@@ -1,10 +1,10 @@
 extends TestCase
 
 const LOGISTICS_CHECKPOINTS := [
-    "a6a281eccaefd1fe7853d3ba178846fb03cc9feb69aa4a63ec2db6abf5d62219",
-    "3a088f2923aa6e366c798e6b996bffef80c64ad976345834c190e97732dfcb5c",
-    "2e5ef91648e02235e2bde2cf386390897dc3860e5db70e914d5fe884302d2466",
-    "d4712851628889fa5364e39a0d3380db675b6c662aadc6d8eec0be1cad4bfc61",
+    "8a19f5626873d3c7168a6a7920e4f17280e622f9f45369fba7ce95a218c8d9cd",
+    "273f6d562943b99313a2b7a6322b725db356974f5a46c0503b53c7a06fba7167",
+    "221d212e5699d9ae1af57915a3c6e48172a83a403455e22d64e093e705ec11ea",
+    "469fcb75da574f5d469229ee2c872a8128a2617173a4514a1e5ff416e23c168c",
 ]
 
 
@@ -20,8 +20,8 @@ func run() -> Array[String]:
         "replay совпадает с golden-хэшами отдельного процесса"
     )
     assert_true(
-        StateHasher.new().canonicalize(first.state).begins_with("v=3|"),
-        "формат должен быть v3"
+        StateHasher.new().canonicalize(first.state).begins_with("v=4|"),
+        "формат должен быть v4"
     )
     return finish()
 

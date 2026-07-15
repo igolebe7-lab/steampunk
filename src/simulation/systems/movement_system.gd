@@ -34,7 +34,7 @@ func _advance_segment(state: SimulationState, worker: WorkerState, target_tick: 
         worker.segment_target = null
         worker.segment_progress = 0
         worker.segment_duration = 0
-        _record_wait(state, worker, &"cell_occupied", target_tick)
+        _record_wait(state, worker, &"cell_occupied", target_tick, target_key)
         return
 
     if (state.worker_occupancy.get(worker.coord.key(), 0) as int) == worker.id:
@@ -62,25 +62,30 @@ func _try_start_segment(
     var target_key := target.key()
     var occupancy_owner: int = state.worker_occupancy.get(target_key, 0) as int
     if occupancy_owner != 0 and occupancy_owner != worker.id:
-        _record_wait(state, worker, &"cell_occupied", target_tick)
+        _record_wait(state, worker, &"cell_occupied", target_tick, target_key)
         _try_repath(state, pathfinder, worker, target_tick)
         return
     var reservation_owner: int = state.cell_reservations.get(target_key, 0) as int
     if reservation_owner != 0 and reservation_owner != worker.id:
-        _record_wait(state, worker, &"cell_reserved", target_tick)
+        _record_wait(state, worker, &"cell_reserved", target_tick, target_key)
         _try_repath(state, pathfinder, worker, target_tick)
         return
 
     var cell := state.map_state.get_cell(target)
     if cell == null or not cell.traversable or state.occupied_cells.has(target_key):
-        _record_wait(state, worker, &"no_path", target_tick)
+        _record_wait(state, worker, &"no_path", target_tick, target_key)
         _try_repath(state, pathfinder, worker, target_tick)
         return
 
     state.cell_reservations[target_key] = worker.id
     worker.segment_target = target
     worker.segment_progress = 0
-    worker.segment_duration = state.worker_ticks_per_hex * cell.movement_cost
+    var road := state.catalog.get_road_level(cell.road_level)
+    worker.segment_duration = (
+        state.worker_ticks_per_hex * cell.movement_cost
+        if road == null
+        else road.traversal_ticks * cell.movement_cost
+    )
     worker.wait_reason = &""
     worker.wait_ticks = 0
     state.events.append(SimulationEvent.new(&"movement_started", target_tick, worker.id, worker.job_id))
@@ -104,10 +109,20 @@ func _start_operation(state: SimulationState, worker: WorkerState, target_tick: 
         state.events.append(SimulationEvent.new(&"unloading_started", target_tick, worker.id, job.id, job.resource_id))
 
 
-func _record_wait(state: SimulationState, worker: WorkerState, reason: StringName, target_tick: int) -> void:
+func _record_wait(
+    state: SimulationState,
+    worker: WorkerState,
+    reason: StringName,
+    target_tick: int,
+    cell_key: StringName = &""
+) -> void:
     worker.wait_reason = reason
     worker.wait_ticks += 1
-    state.events.append(SimulationEvent.new(&"worker_waiting", target_tick, worker.id, worker.job_id))
+    var event := SimulationEvent.new(&"worker_waiting", target_tick, worker.id, worker.job_id)
+    event.link_id = worker.link_id
+    event.cell_key = cell_key
+    event.reason = reason
+    state.events.append(event)
 
 
 func _try_repath(state: SimulationState, pathfinder: Pathfinder, worker: WorkerState, target_tick: int) -> void:

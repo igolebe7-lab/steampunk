@@ -8,6 +8,7 @@ func run() -> Array[String]:
     for tick in range(1, 11):
         source_system.run(state, tick)
     assert_eq(state.generated_totals.get(&"wood", 0), 2, "два источника создают две единицы")
+    WorkforceSystem.new().run(state, 10)
     JobSystem.new().run(state, 10)
     assert_eq(state.jobs.size(), 2, "создаются два задания")
     JobSystem.new().run(state, 10)
@@ -20,7 +21,7 @@ func run() -> Array[String]:
 
 func _assert_source_respects_incoming_capacity(scenario: ScenarioDef) -> void:
     var state := ScenarioLoader.new().load_scenario(scenario).state
-    var source := state.get_building(state.delivery_flows[0].source_id)
+    var source := state.get_building((state.logistics_links[1] as LogisticsLinkState).source_id)
     source.add_amount(&"wood", 7)
     source.reserve_incoming(&"wood", 1)
     source.source_progress_ticks = 9
