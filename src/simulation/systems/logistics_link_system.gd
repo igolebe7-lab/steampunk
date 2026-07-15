@@ -26,7 +26,11 @@ func create_manual_link(
     resource_id: StringName,
     command_id: StringName
 ) -> CommandResult:
-    if _find_duplicate(state, source_id, destination_id, resource_id) != null:
+    var existing := _find_duplicate(state, source_id, destination_id, resource_id)
+    if existing != null and existing.is_automatic:
+        existing.is_automatic = false
+        return CommandResult.success(command_id, {&"link_id": existing.id})
+    if existing != null:
         return CommandResult.rejected(&"duplicate_link", command_id)
     if would_create_cycle(state, source_id, destination_id):
         return CommandResult.rejected(&"link_cycle", command_id)

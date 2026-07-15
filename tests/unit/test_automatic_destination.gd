@@ -30,6 +30,18 @@ func _assert_nearest_destination_and_stable_tie() -> void:
 
 
 func _assert_automatic_link_is_pinned() -> void:
+    var same_destination := LogisticsGraphTestFactory.basic(false)
+    LogisticsLinkSystem.new().run(same_destination, Pathfinder.new())
+    var converted := CommandSystem.new().apply(
+        same_destination,
+        LinkCommand.create(1, 9, 1, 2, WOOD)
+    )
+    assert_true(converted.accepted, "ручной выбор текущего auto-назначения должен приниматься")
+    assert_true(
+        not _source_link(same_destination, 1).is_automatic,
+        "текущая автоматическая связь должна стать ручной"
+    )
+
     var state := LogisticsGraphTestFactory.basic(false)
     LogisticsLinkSystem.new().run(state, Pathfinder.new())
     var original_destination := _source_link(state, 1).destination_id
