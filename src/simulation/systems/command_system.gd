@@ -152,7 +152,7 @@ func _apply_demolish_depot(state: SimulationState, command: DepotCommand) -> Com
         return CommandResult.rejected(&"unknown_transfer_depot", command.id)
     if depot.inventory_total() > 0:
         return CommandResult.rejected(&"depot_not_empty", command.id)
-    if not depot.incoming_reserved.is_empty() or not depot.outgoing_reserved.is_empty():
+    if _has_positive_reservations(depot.incoming_reserved) or _has_positive_reservations(depot.outgoing_reserved):
         return CommandResult.rejected(&"depot_has_reservations", command.id)
     for value: Variant in state.jobs.values():
         var job := value as DeliveryJob
@@ -168,6 +168,13 @@ func _apply_demolish_depot(state: SimulationState, command: DepotCommand) -> Com
     state.occupied_cells.erase(depot.coord.key())
     state.consumed_totals[WOOD] = maxi((state.consumed_totals.get(WOOD, 0) as int) - 5, 0)
     return CommandResult.success(command.id, {&"refund": 5})
+
+
+func _has_positive_reservations(reservations: Dictionary) -> bool:
+    for amount: Variant in reservations.values():
+        if (amount as int) > 0:
+            return true
+    return false
 
 
 func _validate_payer(state: SimulationState, command_id: StringName) -> CommandResult:

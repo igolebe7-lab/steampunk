@@ -104,9 +104,11 @@ func _assert_demolish_refunds_and_releases_occupancy() -> void:
     var coord_key := depot.coord.key()
     var next_id := state.next_entity_id
     var initial_wood := _main_warehouse(state).get_amount(WOOD)
+    depot.incoming_reserved[WOOD] = 0
+    depot.outgoing_reserved[WOOD] = 0
 
     var result := CommandSystem.new().apply(state, DepotCommand.demolish(2, 30, depot_id))
-    assert_true(result.accepted, "пустой склад без резервов и jobs должен разбираться")
+    assert_true(result.accepted, "пустой склад с нулевыми ledger-записями должен разбираться")
     assert_eq(result.parameters.get(&"refund"), 5, "результат сообщает возврат 5 древесины")
     assert_eq(state.get_building(depot_id), null, "разобранный склад удаляется")
     assert_true(not state.occupied_cells.has(coord_key), "занятая клетка освобождается")
