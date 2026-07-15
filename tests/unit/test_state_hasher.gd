@@ -10,6 +10,10 @@ func run() -> Array[String]:
         return finish()
 
     var hasher := StateHasher.new()
+    assert_true(
+        hasher.canonicalize(first).begins_with("v=4|"),
+        "каноническое представление должно использовать формат v=4"
+    )
     assert_eq(
         hasher.canonicalize(first),
         hasher.canonicalize(second),
@@ -35,14 +39,35 @@ func run() -> Array[String]:
         initial_hash != hasher.hash_state(changed_map),
         "изменение клетки карты должно менять хэш состояния"
     )
+    _assert_stage4_state_changes_hash(hasher, scenario, initial_hash)
     _assert_logistics_dictionary_order_is_ignored(hasher)
     return finish()
+
+
+func _assert_stage4_state_changes_hash(
+    hasher: StateHasher,
+    scenario: ScenarioDef,
+    initial_hash: String
+) -> void:
+    var changed_road := ScenarioLoader.new().load_scenario(scenario).state
+    changed_road.map_state.get_cells()[0].road_level = RoadLevelDef.LEVEL_PATH
+    assert_true(initial_hash != hasher.hash_state(changed_road), "уровень дороги должен менять v=4 hash")
+
+    var changed_revision := ScenarioLoader.new().load_scenario(scenario).state
+    changed_revision.revision = 1
+    assert_true(initial_hash != hasher.hash_state(changed_revision), "ревизия должна менять v=4 hash")
+
+    var changed_link := ScenarioLoader.new().load_scenario(scenario).state
+    changed_link.logistics_links[2] = LogisticsLinkState.new(2, 1, 3, &"wood", false, 1, 2)
+    assert_true(initial_hash != hasher.hash_state(changed_link), "логистическая связь должна менять v=4 hash")
 
 
 func _assert_logistics_dictionary_order_is_ignored(hasher: StateHasher) -> void:
     var scenario := load("res://data/scenarios/physical_logistics.tres") as ScenarioDef
     var state := ScenarioLoader.new().load_scenario(scenario).state
     SimulationRunner.new(state).run_ticks(100)
+    state.logistics_links[2] = LogisticsLinkState.new(2, 1, 3, &"wood", false, 1, 2)
+    state.logistics_links[1] = LogisticsLinkState.new(1, 2, 3, &"wood", true, 1, 1)
     var expected := hasher.hash_state(state)
 
     state.buildings = _reversed_dictionary(state.buildings)
@@ -52,6 +77,7 @@ func _assert_logistics_dictionary_order_is_ignored(hasher: StateHasher) -> void:
     state.cell_reservations = _reversed_dictionary(state.cell_reservations)
     state.generated_totals = _reversed_dictionary(state.generated_totals)
     state.delivered_totals = _reversed_dictionary(state.delivered_totals)
+    state.logistics_links = _reversed_dictionary(state.logistics_links)
     state.delivery_flows.reverse()
     for value: Variant in state.buildings.values():
         var building := value as BuildingState
@@ -62,7 +88,7 @@ func _assert_logistics_dictionary_order_is_ignored(hasher: StateHasher) -> void:
     assert_eq(
         hasher.hash_state(state),
         expected,
-        "порядок всех logistics Dictionary и flows не влияет на v3 hash"
+        "порядок всех logistics Dictionary и flows не влияет на v4 hash"
     )
 
 

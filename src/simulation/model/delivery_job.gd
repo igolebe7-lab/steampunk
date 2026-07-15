@@ -18,6 +18,7 @@ var priority: int
 var created_tick: int
 var state: StringName = QUEUED
 var worker_id: int = 0
+var link_id: int = 0
 var wait_reason: StringName
 
 

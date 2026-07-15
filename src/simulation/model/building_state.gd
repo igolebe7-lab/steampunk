@@ -16,6 +16,8 @@ var inventories: Dictionary = {}
 var outgoing_reserved: Dictionary = {}
 var incoming_reserved: Dictionary = {}
 var source_progress_ticks: int = 0
+var level: int = 1
+var allows_direct_delivery_to_main: bool = true
 
 var _id: int
 var _definition_id: StringName

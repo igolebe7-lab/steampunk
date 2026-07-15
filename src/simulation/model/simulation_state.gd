@@ -2,6 +2,7 @@ class_name SimulationState
 extends RefCounted
 
 var tick: int = 0
+var revision: int = 0
 var seed: int
 var map_state: HexMapState
 var catalog: DefinitionCatalog
@@ -13,6 +14,8 @@ var events: Array[SimulationEvent] = []
 var workers: Dictionary = {}
 var jobs: Dictionary = {}
 var delivery_flows: Array[DeliveryFlowState] = []
+var logistics_links: Dictionary = {}
+var next_link_id: int = 1
 var worker_occupancy: Dictionary = {}
 var cell_reservations: Dictionary = {}
 var next_job_id: int = 1
