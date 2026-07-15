@@ -29,6 +29,8 @@ var load_ticks: int = 2
 var unload_ticks: int = 2
 var repath_after_ticks: int = 10
 var telemetry: Dictionary = {}
+var telemetry_window := TelemetryWindow.new()
+var diagnostic_report := DiagnosticReport.new()
 
 
 func _init(

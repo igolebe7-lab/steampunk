@@ -41,6 +41,7 @@ func run() -> Array[String]:
     )
     _assert_stage4_state_changes_hash(hasher, scenario, initial_hash)
     _assert_logistics_dictionary_order_is_ignored(hasher)
+    _assert_telemetry_changes_hash_deterministically(hasher, scenario)
     return finish()
 
 
@@ -116,3 +117,23 @@ func _reversed_dictionary(source: Dictionary) -> Dictionary:
     for key: Variant in keys:
         result[key] = source[key]
     return result
+
+
+func _assert_telemetry_changes_hash_deterministically(hasher: StateHasher, scenario: ScenarioDef) -> void:
+    var first := ScenarioLoader.new().load_scenario(scenario).state
+    var second := ScenarioLoader.new().load_scenario(scenario).state
+    first.telemetry_window.append_sample({
+        &"tick": 1,
+        &"losses": {&"no_path": 2, &"route_conflict": 1},
+        &"link_load": {2: 1, 1: 3},
+    })
+    second.telemetry_window.append_sample({
+        &"link_load": {1: 3, 2: 1},
+        &"losses": {&"route_conflict": 1, &"no_path": 2},
+        &"tick": 1,
+    })
+    first.diagnostic_report = DiagnosticReport.new(&"no_path", 2, 2, &"3:4")
+    second.diagnostic_report = DiagnosticReport.new(&"no_path", 2, 2, &"3:4")
+    assert_eq(hasher.hash_state(first), hasher.hash_state(second), "порядок telemetry Dictionary не влияет на hash")
+    second.telemetry_window.append_sample({&"tick": 2, &"losses": {&"no_path": 1}})
+    assert_true(hasher.hash_state(first) != hasher.hash_state(second), "сохранённое telemetry window меняет hash")

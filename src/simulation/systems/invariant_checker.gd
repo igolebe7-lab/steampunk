@@ -21,6 +21,7 @@ func check(state: SimulationState) -> Array[StringName]:
         or state.repath_after_ticks <= 0
     ):
         _append_once(errors, &"invalid_simulation_timing")
+    _check_telemetry(state, errors)
 
     var expected_occupancy: Dictionary = {}
     var maximum_id := 0
@@ -130,6 +131,31 @@ func check(state: SimulationState) -> Array[StringName]:
                 errors.append(&"invalid_occupancy")
                 break
     return errors
+
+
+func _check_telemetry(state: SimulationState, errors: Array[StringName]) -> void:
+    if (
+        state.telemetry_window == null
+        or state.telemetry_window.size() > TelemetryWindow.WINDOW_TICKS
+        or state.telemetry_window.total_samples < state.telemetry_window.size()
+    ):
+        _append_once(errors, &"invalid_telemetry_window")
+    else:
+        var previous_tick := -1
+        for sample: Dictionary in state.telemetry_window.ordered_samples():
+            var tick := sample.get(&"tick", -1) as int
+            if tick <= previous_tick:
+                _append_once(errors, &"invalid_telemetry_window")
+                break
+            previous_tick = tick
+    var report := state.diagnostic_report
+    if report == null:
+        _append_once(errors, &"invalid_diagnostic_report")
+    elif report.code.is_empty():
+        if report.loss_ticks != 0 or report.link_id != 0 or not report.cell_key.is_empty():
+            _append_once(errors, &"invalid_diagnostic_report")
+    elif not DiagnosticReport.is_supported_code(report.code) or report.loss_ticks <= 0:
+        _append_once(errors, &"invalid_diagnostic_report")
 
 
 func _check_building_inventory(

@@ -79,7 +79,11 @@ func _advance_unloading(state: SimulationState, worker: WorkerState, target_tick
     var delivered: int = state.delivered_totals.get(job.resource_id, 0) as int
     state.delivered_totals[job.resource_id] = delivered + 1
     state.jobs.erase(job.id)
-    state.events.append(SimulationEvent.new(&"cargo_delivered", target_tick, worker.id, job.id, job.resource_id))
+    var event := SimulationEvent.new(&"cargo_delivered", target_tick, worker.id, job.id, job.resource_id)
+    event.link_id = job.link_id
+    event.destination_id = job.destination_id
+    event.metric_value = maxi(target_tick - job.created_tick, 0)
+    state.events.append(event)
 
 
 func _block_operation(worker: WorkerState, job: DeliveryJob, reason: StringName) -> void:

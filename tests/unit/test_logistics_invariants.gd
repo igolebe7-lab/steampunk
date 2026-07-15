@@ -62,7 +62,25 @@ func run() -> Array[String]:
         InvariantChecker.new().check(duplicate_depot).has(&"multiple_transfer_depots"),
         "инвариант запрещает более одного перевалочного склада"
     )
+    _assert_telemetry_invariants(scenario)
     return finish()
+
+
+func _assert_telemetry_invariants(scenario: ScenarioDef) -> void:
+    var state := ScenarioLoader.new().load_scenario(scenario).state
+    state.telemetry_window.append_sample({&"tick": 2})
+    state.telemetry_window.append_sample({&"tick": 1})
+    assert_true(
+        InvariantChecker.new().check(state).has(&"invalid_telemetry_window"),
+        "telemetry ticks должны быть строго возрастающими"
+    )
+
+    state = ScenarioLoader.new().load_scenario(scenario).state
+    state.diagnostic_report = DiagnosticReport.new(&"free_text_reason", 1)
+    assert_true(
+        InvariantChecker.new().check(state).has(&"invalid_diagnostic_report"),
+        "diagnostic report принимает только структурированные codes"
+    )
 
 
 func _state_with_jobs() -> SimulationState:

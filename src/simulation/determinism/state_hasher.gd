@@ -3,7 +3,7 @@ extends RefCounted
 
 
 func canonicalize(state: SimulationState) -> String:
-    return "v=4|tick=%d|revision=%d|seed=%d|next=%d|next_job=%d|next_link=%d|main=%d|topology=%d|map=%d,%d|timings=%d,%d,%d,%d|road_defs=[%s]|building_defs=[%s]|cells=[%s]|buildings=[%s]|workers=[%s]|jobs=[%s]|flows=[%s]|links=[%s]|worker_occupancy=[%s]|cell_reservations=[%s]|generated=[%s]|delivered=[%s]|consumed=[%s]" % [
+    return "v=4|tick=%d|revision=%d|seed=%d|next=%d|next_job=%d|next_link=%d|main=%d|topology=%d|map=%d,%d|timings=%d,%d,%d,%d|road_defs=[%s]|building_defs=[%s]|cells=[%s]|buildings=[%s]|workers=[%s]|jobs=[%s]|flows=[%s]|links=[%s]|worker_occupancy=[%s]|cell_reservations=[%s]|generated=[%s]|delivered=[%s]|consumed=[%s]|telemetry=[%s]|diagnostic=[%s]" % [
         state.tick,
         state.revision,
         state.seed,
@@ -31,6 +31,8 @@ func canonicalize(state: SimulationState) -> String:
         _encode_int_dictionary(state.generated_totals),
         _encode_int_dictionary(state.delivered_totals),
         _encode_int_dictionary(state.consumed_totals),
+        _encode_telemetry_window(state.telemetry_window),
+        _encode_diagnostic_report(state.diagnostic_report),
     ]
 
 
@@ -39,6 +41,58 @@ func hash_state(state: SimulationState) -> String:
     context.start(HashingContext.HASH_SHA256)
     context.update(canonicalize(state).to_utf8_buffer())
     return context.finish().hex_encode()
+
+
+func _encode_telemetry_window(window: TelemetryWindow) -> String:
+    return "total=%d,cumulative_main=%s,cumulative_links=%s,cumulative_jobs=%d,samples=%s" % [
+        window.total_samples,
+        _encode_variant(window.cumulative_main_deliveries),
+        _encode_variant(window.cumulative_link_deliveries),
+        window.cumulative_completed_jobs,
+        "|".join(window.ordered_fingerprints()),
+    ]
+
+
+func _encode_diagnostic_report(report: DiagnosticReport) -> String:
+    return "%s,%d,%d,%s" % [
+        _encode_identifier(report.code),
+        report.loss_ticks,
+        report.link_id,
+        _encode_identifier(report.cell_key),
+    ]
+
+
+func _encode_variant(value: Variant) -> String:
+    match typeof(value):
+        TYPE_DICTIONARY:
+            var dictionary := value as Dictionary
+            var keys := dictionary.keys()
+            keys.sort_custom(func(left: Variant, right: Variant) -> bool:
+                return _encode_variant(left) < _encode_variant(right)
+            )
+            var parts: PackedStringArray = []
+            for key: Variant in keys:
+                parts.append("%s=%s" % [_encode_variant(key), _encode_variant(dictionary[key])])
+            return "d{%s}" % ";".join(parts)
+        TYPE_ARRAY:
+            var parts: PackedStringArray = []
+            for item: Variant in value as Array:
+                parts.append(_encode_variant(item))
+            return "a[%s]" % ";".join(parts)
+        TYPE_STRING_NAME:
+            return "n:%s" % _encode_identifier(value as StringName)
+        TYPE_STRING:
+            return "s:%s" % (value as String).uri_encode()
+        TYPE_INT:
+            return "i:%d" % (value as int)
+        TYPE_FLOAT:
+            return "f:%s" % var_to_str(value)
+        TYPE_BOOL:
+            return "b:%d" % int(value as bool)
+        TYPE_NIL:
+            return "null"
+        _:
+            return "v:%s" % var_to_str(value)
 
 
 func _encode_cells(state: SimulationState) -> String:
