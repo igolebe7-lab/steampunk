@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/simulation/definitions/building_def.gd" id="1"]
+[ext_resource type="Script" path="res://src/simulation/definitions/utility_port_def.gd" id="2_utility"]
+
+[sub_resource type="Resource" id="UtilityPort_water_output"]
+script = ExtResource("2_utility")
+direction = &"output"
+commodity_id = &"water"
+
+[resource]
+script = ExtResource("1")
+id = &"pump_station"
+display_name_key = &"building.pump_station.name"
+inventory_capacity = 0
+role = &"storage"
+outgoing_worker_slots_by_level = Array[int]([0])
+utility_ports = Array[ExtResource("2_utility")]([SubResource("UtilityPort_water_output")])

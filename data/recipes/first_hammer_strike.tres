@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RecipeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/simulation/definitions/recipe_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"first_hammer_strike"
+input_resource_ids = Array[StringName]([&"iron"])
+input_amounts = Array[int]([2])
+duration_ticks = 60
+result_code = &"hammer_struck"
+display_name_key = &"recipe.first_hammer_strike.name"
+description_key = &"recipe.first_hammer_strike.description"

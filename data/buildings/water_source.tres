@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/simulation/definitions/building_def.gd" id="1"]
+[ext_resource type="Script" path="res://src/simulation/definitions/logistics_port_def.gd" id="2_port"]
+
+[sub_resource type="Resource" id="LogisticsPort_output"]
+script = ExtResource("2_port")
+direction = &"output"
+resource_id = &"water"
+accepted_building_roles = Array[StringName]([&"main_warehouse", &"transfer_depot"])
+
+[resource]
+script = ExtResource("1")
+id = &"water_source"
+display_name_key = &"building.water_source.name"
+inventory_capacity = 8
+source_resource_id = &"water"
+source_interval_ticks = 10
+source_capacity = 8
+role = &"source"
+max_level = 3
+outgoing_worker_slots_by_level = Array[int]([2, 3, 4])
+logistics_ports = Array[ExtResource("2_port")]([SubResource("LogisticsPort_output")])

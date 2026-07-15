@@ -180,6 +180,27 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
     state.load_ticks = definition.load_ticks
     state.unload_ticks = definition.unload_ticks
     state.repath_after_ticks = definition.repath_after_ticks
+    for value: Variant in state.buildings.values():
+        var building := value as BuildingState
+        var building_definition := state.catalog.get_building(building.definition_id)
+        if building_definition != null and not building_definition.production_recipe_id.is_empty():
+            state.production_states[building.id] = ProductionState.new(
+                building.id,
+                building_definition.production_recipe_id
+            )
+    if not definition.boiler_key.is_empty() or not definition.hammer_key.is_empty():
+        if not scenario_keys.has(definition.boiler_key) or not scenario_keys.has(definition.hammer_key):
+            errors.append(&"unknown_industrial_pair")
+        else:
+            var boiler_id := scenario_keys[definition.boiler_key] as int
+            var hammer_id := scenario_keys[definition.hammer_key] as int
+            var boiler_production := state.production_states.get(boiler_id) as ProductionState
+            var hammer_production := state.production_states.get(hammer_id) as ProductionState
+            if boiler_production == null or hammer_production == null:
+                errors.append(&"missing_industrial_production")
+            else:
+                boiler_production.linked_building_id = hammer_id
+                hammer_production.linked_building_id = boiler_id
     errors.append_array(InvariantChecker.new().check(state))
     if not errors.is_empty():
         return ScenarioLoadResult.new(null, errors)

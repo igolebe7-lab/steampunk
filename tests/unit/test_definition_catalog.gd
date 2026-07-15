@@ -9,7 +9,8 @@ func run() -> Array[String]:
 
     assert_eq(catalog.validate(), [], "базовый каталог должен быть корректным")
     assert_eq(catalog.resources.size(), 4, "каталог должен содержать четыре ресурса")
-    assert_eq(catalog.buildings.size(), 5, "каталог должен содержать пять определений зданий")
+    assert_eq(catalog.buildings.size(), 9, "каталог должен содержать девять определений зданий")
+    assert_eq(catalog.recipes.size(), 3, "каталог должен содержать три рецепта этапа 5")
     assert_eq(catalog.get_resource(&"wood").display_name_key, &"resource.wood.name", "дерево должно иметь ключ названия")
     assert_eq(catalog.get_building(&"steam_hammer").footprint.size(), 3, "паровой молот должен занимать три гекса")
 

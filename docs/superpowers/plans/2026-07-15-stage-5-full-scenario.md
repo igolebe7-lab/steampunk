@@ -198,7 +198,7 @@ func run() -> Array[String]:
     assert_true(result.is_success(), "сценарий этапа 5 загружается")
     assert_eq(_count_sources(result.state), 4, "загружены четыре разных источника")
     assert_true(_find_building(result.state, &"pump_station") != null, "насосная существует")
-    assert_eq(result.state.production_states.size(), 3, "площадка, котёл и молот имеют состояние")
+    assert_eq(result.state.production_states.size(), 2, "котёл и молот имеют состояние")
     return finish()
 ```
 

@@ -12,3 +12,7 @@ extends Resource
 @export_range(1, 100) var load_ticks: int = 2
 @export_range(1, 100) var unload_ticks: int = 2
 @export_range(1, 100) var repath_after_ticks: int = 10
+@export_range(1, 100000) var observation_ticks: int = 900
+@export var boiler_key: StringName
+@export var hammer_key: StringName
+@export var pump_station_key: StringName

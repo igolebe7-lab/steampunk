@@ -1,10 +1,32 @@
-[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://src/simulation/definitions/building_def.gd" id="1"]
+[ext_resource type="Script" path="res://src/simulation/definitions/logistics_port_def.gd" id="2_logistics"]
+[ext_resource type="Script" path="res://src/simulation/definitions/utility_port_def.gd" id="3_utility"]
+
+[sub_resource type="Resource" id="LogisticsPort_coal"]
+script = ExtResource("2_logistics")
+direction = &"input"
+resource_id = &"coal"
+
+[sub_resource type="Resource" id="LogisticsPort_water"]
+script = ExtResource("2_logistics")
+direction = &"input"
+resource_id = &"water"
+
+[sub_resource type="Resource" id="UtilityPort_water"]
+script = ExtResource("3_utility")
+direction = &"input"
+commodity_id = &"water"
 
 [resource]
 script = ExtResource("1")
 id = &"boiler"
 display_name_key = &"building.boiler.name"
 footprint = Array[Vector2i]([Vector2i(0, 0), Vector2i(1, 0)])
-inventory_capacity = 20
+inventory_capacity = 9
+role = &"production"
+outgoing_worker_slots_by_level = Array[int]([0])
+logistics_ports = Array[ExtResource("2_logistics")]([SubResource("LogisticsPort_coal"), SubResource("LogisticsPort_water")])
+production_recipe_id = &"boiler_heat_cycle"
+utility_ports = Array[ExtResource("3_utility")]([SubResource("UtilityPort_water")])

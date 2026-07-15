@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RecipeDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/simulation/definitions/recipe_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"industrial_site_construction"
+input_resource_ids = Array[StringName]([&"wood", &"iron"])
+input_amounts = Array[int]([12, 8])
+duration_ticks = 1
+result_code = &"industrial_site_ready"
+display_name_key = &"recipe.industrial_site.name"
+description_key = &"recipe.industrial_site.description"
