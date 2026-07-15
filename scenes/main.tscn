@@ -157,10 +157,72 @@ size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
 [node name="Inspector" type="RichTextLabel" parent="UI/RightPanel/Margin/VBox/Scroll"]
-custom_minimum_size = Vector2(245, 500)
+custom_minimum_size = Vector2(245, 210)
 layout_mode = 2
 fit_content = true
 text = "ui.inspector.empty"
+
+[node name="LinkControls" type="VBoxContainer" parent="UI/RightPanel/Margin/VBox"]
+visible = false
+layout_mode = 2
+
+[node name="QuotaRow" type="HBoxContainer" parent="UI/RightPanel/Margin/VBox/LinkControls"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="UI/RightPanel/Margin/VBox/LinkControls/QuotaRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui.management.quota"
+
+[node name="Quota" type="SpinBox" parent="UI/RightPanel/Margin/VBox/LinkControls/QuotaRow"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+max_value = 8.0
+
+[node name="PriorityRow" type="HBoxContainer" parent="UI/RightPanel/Margin/VBox/LinkControls"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="UI/RightPanel/Margin/VBox/LinkControls/PriorityRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui.management.priority"
+
+[node name="Priority" type="SpinBox" parent="UI/RightPanel/Margin/VBox/LinkControls/PriorityRow"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+max_value = 4.0
+
+[node name="Dispatch" type="CheckButton" parent="UI/RightPanel/Margin/VBox/LinkControls"]
+layout_mode = 2
+text = "ui.management.dispatch"
+
+[node name="Apply" type="Button" parent="UI/RightPanel/Margin/VBox/LinkControls"]
+layout_mode = 2
+text = "ui.management.apply_link"
+
+[node name="Remove" type="Button" parent="UI/RightPanel/Margin/VBox/LinkControls"]
+layout_mode = 2
+text = "ui.management.remove_link"
+
+[node name="Reset" type="Button" parent="UI/RightPanel/Margin/VBox/LinkControls"]
+layout_mode = 2
+text = "ui.management.reset_link"
+
+[node name="BuildingControls" type="VBoxContainer" parent="UI/RightPanel/Margin/VBox"]
+visible = false
+layout_mode = 2
+
+[node name="DirectMain" type="CheckButton" parent="UI/RightPanel/Margin/VBox/BuildingControls"]
+layout_mode = 2
+text = "ui.management.direct_main"
+
+[node name="ApplyDirect" type="Button" parent="UI/RightPanel/Margin/VBox/BuildingControls"]
+layout_mode = 2
+text = "ui.management.apply_direct"
+
+[node name="Demolish" type="Button" parent="UI/RightPanel/Margin/VBox/BuildingControls"]
+layout_mode = 2
+text = "ui.management.demolish_depot"
 
 [node name="BottomBar" type="PanelContainer" parent="UI"]
 offset_left = 300.0

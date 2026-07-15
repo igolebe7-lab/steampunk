@@ -25,3 +25,7 @@ func run(state: SimulationState, target_tick: int) -> void:
     _inventory_system.run(state, target_tick)
     _telemetry_system.run(state, target_tick)
     _diagnostics_system.run(state)
+
+
+func reconcile_topology(state: SimulationState) -> void:
+    _logistics_link_system.run(state, _pathfinder)

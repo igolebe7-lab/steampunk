@@ -7,6 +7,7 @@ func run() -> Array[String]:
     _assert_loader_converts_flows()
     _assert_compatibility_duplicates_and_cycles()
     _assert_dispatch_stop()
+    _assert_removal_releases_idle_workers()
     _assert_removal_finishes_active_cargo()
     return finish()
 
@@ -68,6 +69,27 @@ func _assert_dispatch_stop() -> void:
     assert_true(result.accepted, "остановка отгрузки должна применяться")
     JobSystem.new().run(state, 1)
     assert_eq(state.jobs.size(), 0, "остановленная связь не создаёт jobs")
+
+
+func _assert_removal_releases_idle_workers() -> void:
+    var state := LogisticsGraphTestFactory.basic(false)
+    var link := LogisticsLinkState.new(1, 1, 2, WOOD, false, 1, 2)
+    state.logistics_links[link.id] = link
+    state.next_link_id = 2
+    var worker := WorkerState.new(3, HexCoord.new(1, 0))
+    worker.link_id = link.id
+    state.workers[worker.id] = worker
+    state.worker_occupancy[worker.coord.key()] = worker.id
+    state.next_entity_id = 4
+
+    var removed := LogisticsLinkSystem.new().remove_link(state, link.id, &"test")
+    assert_true(removed.accepted, "удаление связи принимается")
+    assert_true(not state.logistics_links.has(link.id), "связь без груза удаляется сразу")
+    assert_eq(worker.link_id, 0, "удаление связи освобождает безопасно простаивающего работника")
+    assert_true(
+        not InvariantChecker.new().check(state).has(&"worker_link_mismatch"),
+        "после удаления не остаётся dangling worker.link_id"
+    )
 
 
 func _assert_removal_finishes_active_cargo() -> void:

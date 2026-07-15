@@ -65,6 +65,41 @@ func submit_intent(intent: Dictionary) -> StringName:
                 intent.get(&"destination_id", 0) as int,
                 &"wood"
             )
+        &"link_settings":
+            command = LinkSettingsCommand.new(
+                target_tick,
+                _sequence,
+                intent.get(&"link_id", 0) as int,
+                intent.get(&"quota", 0) as int,
+                intent.get(&"priority", 0) as int,
+                intent.get(&"dispatch_enabled", true) as bool
+            )
+        &"dispatch_policy":
+            command = DispatchPolicyCommand.new(
+                target_tick,
+                _sequence,
+                intent.get(&"building_id", 0) as int,
+                intent.get(&"allows_direct", true) as bool
+            )
+        &"remove_link":
+            command = LinkCommand.remove(
+                target_tick,
+                _sequence,
+                intent.get(&"link_id", 0) as int
+            )
+        &"reset_link":
+            command = LinkCommand.reset_automatic(
+                target_tick,
+                _sequence,
+                intent.get(&"source_id", 0) as int,
+                intent.get(&"resource_id", &"wood") as StringName
+            )
+        &"demolish_depot":
+            command = DepotCommand.demolish(
+                target_tick,
+                _sequence,
+                intent.get(&"building_id", 0) as int
+            )
         _:
             return &"invalid_command"
     var queued := _runner.enqueue(command)
@@ -82,7 +117,9 @@ func localized_reason(code: StringName) -> String:
 
 
 func localized_command_message(code: StringName) -> String:
-    return tr(StringName("command.%s" % code))
+    var key := StringName("command.%s" % code)
+    var translated := tr(key)
+    return tr(&"command.unknown") if translated == String(key) else translated
 
 
 func _set_label(key: StringName, value: String) -> void:

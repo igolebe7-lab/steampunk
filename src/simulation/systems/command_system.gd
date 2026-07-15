@@ -169,22 +169,39 @@ func _apply_demolish_depot(state: SimulationState, command: DepotCommand) -> Com
         var job := value as DeliveryJob
         if job.source_id == depot.id or job.destination_id == depot.id:
             return CommandResult.rejected(&"depot_has_active_jobs", command.id)
-    var payer_result := _validate_payer(state, command.id)
-    if payer_result != null:
-        return payer_result
-    var payer := state.get_building(state.main_warehouse_id)
-    if not payer.add_amount(WOOD, 5):
-        return CommandResult.rejected(&"main_warehouse_full", command.id)
-    state.buildings.erase(depot.id)
-    state.occupied_cells.erase(depot.coord.key())
-    state.consumed_totals[WOOD] = maxi((state.consumed_totals.get(WOOD, 0) as int) - 5, 0)
     var link_ids: Array[int] = []
+    var connected_link_ids: Dictionary = {}
     for value: Variant in state.logistics_links.values():
         var link := value as LogisticsLinkState
         if link.source_id == depot.id or link.destination_id == depot.id:
             link_ids.append(link.id)
+            connected_link_ids[link.id] = true
+    link_ids.sort()
+    for value: Variant in state.workers.values():
+        var worker := value as WorkerState
+        if (
+            connected_link_ids.has(worker.link_id)
+            and (
+                worker.job_id > 0
+                or not worker.cargo_resource_id.is_empty()
+                or worker.action != WorkerState.IDLE
+            )
+        ):
+            return CommandResult.rejected(&"depot_has_active_cargo", command.id)
+    var payer_result := _validate_payer(state, command.id)
+    if payer_result != null:
+        return payer_result
+    var payer := state.get_building(state.main_warehouse_id)
+    if payer.inventory_total() + 5 > payer.inventory_capacity:
+        return CommandResult.rejected(&"main_warehouse_full", command.id)
+    var link_system := LogisticsLinkSystem.new()
     for link_id: int in link_ids:
-        LogisticsLinkSystem.new().remove_link(state, link_id, command.id)
+        link_system.remove_link(state, link_id, command.id)
+    var refunded := payer.add_amount(WOOD, 5)
+    assert(refunded, "вместимость возврата проверена до мутаций")
+    state.buildings.erase(depot.id)
+    state.occupied_cells.erase(depot.coord.key())
+    state.consumed_totals[WOOD] = maxi((state.consumed_totals.get(WOOD, 0) as int) - 5, 0)
     state.logistics_topology_dirty = true
     return CommandResult.success(command.id, {&"refund": 5})
 

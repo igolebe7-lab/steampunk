@@ -9,6 +9,9 @@ func run() -> Array[String]:
     _assert_place_requires_a_valid_roadside_cell()
     _assert_only_one_transfer_depot_is_allowed()
     _assert_demolish_requires_an_idle_empty_depot()
+    _assert_demolish_removes_idle_links_atomically()
+    _assert_demolish_rejects_active_cargo_atomically()
+    _assert_failed_refund_preserves_links()
     _assert_demolish_refunds_and_releases_occupancy()
     return finish()
 
@@ -90,11 +93,71 @@ func _assert_demolish_requires_an_idle_empty_depot() -> void:
     var reservation_depot := _transfer_depot(reservation_state)
     reservation_depot.incoming_reserved[WOOD] = 1
     _assert_demolish_rejected(reservation_state, reservation_depot.id, &"depot_has_reservations")
+    assert_eq(reservation_depot.get_incoming_reserved(WOOD), 1, "отказ сохраняет reservation ledger")
 
     var job_state := _state_with_depot()
     var job_depot := _transfer_depot(job_state)
     job_state.jobs[1] = DeliveryJob.new(1, job_state.main_warehouse_id, job_depot.id, WOOD, 2, 0)
     _assert_demolish_rejected(job_state, job_depot.id, &"depot_has_active_jobs")
+    assert_true(job_state.jobs.has(1), "отказ сохраняет active job")
+
+
+func _assert_demolish_removes_idle_links_atomically() -> void:
+    var state := _state_with_depot()
+    var depot := _transfer_depot(state)
+    var link := LogisticsLinkState.new(1, depot.id, state.main_warehouse_id, WOOD, false, 1, 2)
+    state.logistics_links[link.id] = link
+    state.next_link_id = 2
+    var worker := WorkerState.new(state.next_entity_id, HexCoord.new(1, 0))
+    worker.link_id = link.id
+    state.workers[worker.id] = worker
+    state.worker_occupancy[worker.coord.key()] = worker.id
+    state.next_entity_id += 1
+
+    var result := CommandSystem.new().apply(state, DepotCommand.demolish(2, 51, depot.id))
+    assert_true(result.accepted, "связанный только idle-связями склад разбирается атомарно")
+    assert_true(not state.logistics_links.has(link.id), "idle-связь удаляется до здания")
+    assert_eq(worker.link_id, 0, "idle worker отвязывается при атомарном демонтаже")
+    assert_eq(state.get_building(depot.id), null, "здание удаляется после безопасных связей")
+
+
+func _assert_demolish_rejects_active_cargo_atomically() -> void:
+    var state := _state_with_depot()
+    var depot := _transfer_depot(state)
+    var link := LogisticsLinkState.new(1, depot.id, state.main_warehouse_id, WOOD, false, 1, 2)
+    state.logistics_links[link.id] = link
+    state.next_link_id = 2
+    var worker := WorkerState.new(state.next_entity_id, HexCoord.new(1, 0))
+    worker.link_id = link.id
+    worker.cargo_resource_id = WOOD
+    worker.action = WorkerState.TO_DESTINATION
+    state.workers[worker.id] = worker
+    state.worker_occupancy[worker.coord.key()] = worker.id
+    state.next_entity_id += 1
+    var initial_wood := _main_warehouse(state).get_amount(WOOD)
+
+    var result := CommandSystem.new().apply(state, DepotCommand.demolish(2, 52, depot.id))
+    assert_eq(result.code, &"depot_has_active_cargo", "активный груз запрещает демонтаж")
+    assert_true(state.get_building(depot.id) != null, "отказ с грузом сохраняет склад")
+    assert_true(state.logistics_links.has(link.id), "отказ с грузом сохраняет связь")
+    assert_eq(worker.link_id, link.id, "отказ с грузом сохраняет worker binding")
+    assert_eq(worker.cargo_resource_id, WOOD, "отказ с грузом сохраняет груз")
+    assert_eq(_main_warehouse(state).get_amount(WOOD), initial_wood, "отказ с грузом не возвращает дерево")
+
+
+func _assert_failed_refund_preserves_links() -> void:
+    var state := _state_with_depot()
+    var depot := _transfer_depot(state)
+    var link := LogisticsLinkState.new(1, depot.id, state.main_warehouse_id, WOOD, false, 1, 2)
+    state.logistics_links[link.id] = link
+    state.next_link_id = 2
+    var main := _main_warehouse(state)
+    assert_true(main.add_amount(WOOD, main.free_capacity()), "тест заполняет главный склад")
+
+    var result := CommandSystem.new().apply(state, DepotCommand.demolish(2, 53, depot.id))
+    assert_eq(result.code, &"main_warehouse_full", "невозможный refund отклоняется до мутаций")
+    assert_true(state.get_building(depot.id) != null, "ошибка refund сохраняет депо")
+    assert_true(state.logistics_links.has(link.id), "ошибка refund сохраняет связь")
 
 
 func _assert_demolish_refunds_and_releases_occupancy() -> void:

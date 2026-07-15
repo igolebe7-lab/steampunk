@@ -32,7 +32,16 @@ func _ready() -> void:
     logistics_world_view.configure(_runner.state, _hex_layout)
     simulation_controller.configure(_runner)
     _selection_controller.configure(_runner.state, _hex_layout, logistics_world_view)
-    _inspector_controller.configure($UI/RightPanel/Margin/VBox/Scroll/Inspector)
+    _inspector_controller.configure($UI/RightPanel/Margin/VBox/Scroll/Inspector, {
+        &"link_controls": $UI/RightPanel/Margin/VBox/LinkControls,
+        &"quota": $UI/RightPanel/Margin/VBox/LinkControls/QuotaRow/Quota,
+        &"priority": $UI/RightPanel/Margin/VBox/LinkControls/PriorityRow/Priority,
+        &"dispatch": $UI/RightPanel/Margin/VBox/LinkControls/Dispatch,
+        &"building_controls": $UI/RightPanel/Margin/VBox/BuildingControls,
+        &"direct_main": $UI/RightPanel/Margin/VBox/BuildingControls/DirectMain,
+        &"apply_direct": $UI/RightPanel/Margin/VBox/BuildingControls/ApplyDirect,
+        &"demolish": $UI/RightPanel/Margin/VBox/BuildingControls/Demolish,
+    })
     _hud_controller.configure(_runner, simulation_controller, logistics_world_view.get_diagnostics_view(), {
         &"wood": $UI/TopBar/Margin/HBox/Wood,
         &"throughput": $UI/TopBar/Margin/HBox/Throughput,
@@ -76,6 +85,11 @@ func _connect_ui() -> void:
     $UI/BottomBar/Margin/Tools/Road.pressed.connect(_begin_road)
     $UI/BottomBar/Margin/Tools/Depot.pressed.connect(_begin_depot)
     $UI/BottomBar/Margin/Tools/Link.pressed.connect(_begin_link)
+    $UI/RightPanel/Margin/VBox/LinkControls/Apply.pressed.connect(_apply_link_settings)
+    $UI/RightPanel/Margin/VBox/LinkControls/Remove.pressed.connect(_remove_selected_link)
+    $UI/RightPanel/Margin/VBox/LinkControls/Reset.pressed.connect(_reset_selected_link)
+    $UI/RightPanel/Margin/VBox/BuildingControls/ApplyDirect.pressed.connect(_apply_dispatch_policy)
+    $UI/RightPanel/Margin/VBox/BuildingControls/Demolish.pressed.connect(_demolish_selected_depot)
 
 
 func _on_world_position_selected(local_position: Vector2) -> void:
@@ -137,6 +151,58 @@ func _begin_depot() -> void:
 func _begin_link() -> void:
     _tool_controller.begin_link()
     status_label.text = tr(&"ui.status.tool.link")
+
+
+func _apply_link_settings() -> void:
+    if _inspector_controller.selected_kind != &"link":
+        return
+    _submit_inspector_intent({
+        &"code": &"link_settings",
+        &"link_id": _inspector_controller.selected_id,
+        &"quota": int(($UI/RightPanel/Margin/VBox/LinkControls/QuotaRow/Quota as SpinBox).value),
+        &"priority": int(($UI/RightPanel/Margin/VBox/LinkControls/PriorityRow/Priority as SpinBox).value),
+        &"dispatch_enabled": ($UI/RightPanel/Margin/VBox/LinkControls/Dispatch as CheckButton).button_pressed,
+    })
+
+
+func _remove_selected_link() -> void:
+    if _inspector_controller.selected_kind == &"link":
+        _submit_inspector_intent({&"code": &"remove_link", &"link_id": _inspector_controller.selected_id})
+
+
+func _reset_selected_link() -> void:
+    if _inspector_controller.selected_kind != &"link":
+        return
+    var link := _runner.state.logistics_links.get(_inspector_controller.selected_id) as LogisticsLinkState
+    if link != null:
+        _submit_inspector_intent({
+            &"code": &"reset_link",
+            &"source_id": link.source_id,
+            &"resource_id": link.resource_id,
+        })
+
+
+func _apply_dispatch_policy() -> void:
+    if _inspector_controller.selected_kind != &"building":
+        return
+    _submit_inspector_intent({
+        &"code": &"dispatch_policy",
+        &"building_id": _inspector_controller.selected_id,
+        &"allows_direct": ($UI/RightPanel/Margin/VBox/BuildingControls/DirectMain as CheckButton).button_pressed,
+    })
+
+
+func _demolish_selected_depot() -> void:
+    if _inspector_controller.selected_kind == &"building":
+        _submit_inspector_intent({
+            &"code": &"demolish_depot",
+            &"building_id": _inspector_controller.selected_id,
+        })
+
+
+func _submit_inspector_intent(intent: Dictionary) -> void:
+    var result := _hud_controller.submit_intent(intent)
+    status_label.text = _hud_controller.localized_command_message(result)
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

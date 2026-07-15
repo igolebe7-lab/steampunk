@@ -2,16 +2,56 @@ class_name InspectorController
 extends RefCounted
 
 var _label: RichTextLabel
+var _controls: Dictionary = {}
+var selected_kind: StringName = &""
+var selected_id: int = 0
 
 
-func configure(label: RichTextLabel) -> void:
+func configure(label: RichTextLabel, controls: Dictionary = {}) -> void:
     _label = label
+    _controls = controls
     _label.text = tr(&"ui.inspector.empty")
+    _set_controls_visible(false, false)
 
 
 func show_selection(state: SimulationState, kind: StringName, entity_id: int) -> void:
+    selected_kind = kind
+    selected_id = entity_id
     if _label != null:
         _label.text = build_text(state, kind, entity_id)
+    _refresh_controls(state)
+
+
+func _refresh_controls(state: SimulationState) -> void:
+    var link := state.logistics_links.get(selected_id) as LogisticsLinkState if state != null and selected_kind == &"link" else null
+    var building := state.get_building(selected_id) if state != null and selected_kind == &"building" else null
+    _set_controls_visible(link != null, building != null)
+    if link != null:
+        (_controls.get(&"quota") as SpinBox).value = link.quota
+        (_controls.get(&"priority") as SpinBox).value = link.priority
+        (_controls.get(&"dispatch") as CheckButton).button_pressed = link.dispatch_enabled
+    if building != null:
+        (_controls.get(&"direct_main") as CheckButton).button_pressed = building.allows_direct_delivery_to_main
+        var definition := state.catalog.get_building(building.definition_id)
+        var is_source := definition != null and definition.role == LogisticsPortDef.ROLE_SOURCE
+        var direct_main := _controls.get(&"direct_main") as CheckButton
+        var apply_direct := _controls.get(&"apply_direct") as Button
+        var demolish := _controls.get(&"demolish") as Button
+        if direct_main != null:
+            direct_main.visible = is_source
+        if apply_direct != null:
+            apply_direct.visible = is_source
+        if demolish != null:
+            demolish.visible = definition != null and definition.role == LogisticsPortDef.ROLE_TRANSFER_DEPOT
+
+
+func _set_controls_visible(link_visible: bool, building_visible: bool) -> void:
+    var link_controls := _controls.get(&"link_controls") as Control
+    var building_controls := _controls.get(&"building_controls") as Control
+    if link_controls != null:
+        link_controls.visible = link_visible
+    if building_controls != null:
+        building_controls.visible = building_visible
 
 
 func build_text(state: SimulationState, kind: StringName, entity_id: int) -> String:

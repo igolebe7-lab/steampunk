@@ -206,6 +206,7 @@ func _add_link(
 
 func _begin_removal(state: SimulationState, link: LogisticsLinkState) -> void:
     link.dispatch_enabled = false
+    _release_idle_workers(state, link.id)
     var has_active_cargo := false
     var job_ids: Array[int] = []
     for key: Variant in state.jobs.keys():
@@ -255,7 +256,20 @@ func _cleanup_closing_links(state: SimulationState) -> void:
         if link.is_closing and not active_link_ids.has(link.id):
             ids.append(link.id)
     for link_id: int in ids:
+        _release_idle_workers(state, link_id)
         state.logistics_links.erase(link_id)
+
+
+func _release_idle_workers(state: SimulationState, link_id: int) -> void:
+    for value: Variant in state.workers.values():
+        var worker := value as WorkerState
+        if (
+            worker.link_id == link_id
+            and worker.job_id == 0
+            and worker.cargo_resource_id.is_empty()
+            and worker.action == WorkerState.IDLE
+        ):
+            worker.link_id = 0
 
 
 func _remove_automatic_links(state: SimulationState, source_id: int, resource_id: StringName) -> void:

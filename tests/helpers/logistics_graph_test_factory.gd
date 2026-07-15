@@ -10,6 +10,12 @@ static func basic(include_transfer: bool = true) -> SimulationState:
     wood.id = WOOD
     wood.display_name_key = &"resource.wood.name"
     catalog.resources = [wood]
+    for level in range(RoadLevelDef.LEVEL_OPEN_GROUND, RoadLevelDef.LEVEL_DIRT_ROAD + 1):
+        var road := RoadLevelDef.new()
+        road.level = level
+        road.traversal_ticks = 4 - level
+        road.upgrade_cost = level
+        catalog.road_levels.append(road)
 
     var source_definition := BuildingDef.new()
     source_definition.id = &"wood_source"

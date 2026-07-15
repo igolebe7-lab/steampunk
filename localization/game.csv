@@ -67,6 +67,40 @@ command.link_cycle,Связь создаёт цикл,Link creates a cycle
 command.incompatible_link,Несовместимая связь,Incompatible link
 command.no_path,Нет пути,No path
 command.source_slots_exceeded,Превышена квота источника,Source quota exceeded
+command.unknown,Неизвестный результат команды,Unknown command result
+command.past_tick,Команда назначена на прошедший такт,Command targets a past tick
+command.duplicate_sequence,Повторная последовательность команды,Duplicate command sequence
+command.unsupported_command,Команда не поддерживается,Unsupported command
+command.unknown_building,Здание не найдено,Building not found
+command.invalid_priority,Недопустимый приоритет,Invalid priority
+command.empty_road_batch,Не выбраны клетки дороги,No road cells selected
+command.duplicate_cell,Клетка дороги указана повторно,Road cell selected twice
+command.invalid_road_level,Недопустимый уровень дороги,Invalid road level
+command.missing_road_level,Уровень дороги не определён,Road level definition missing
+command.transfer_depot_exists,Перевалочный склад уже построен,Transfer depot already exists
+command.depot_not_adjacent_to_road,Склад должен примыкать к дороге,Depot must be adjacent to a road
+command.unknown_building_definition,Определение здания не найдено,Building definition not found
+command.unknown_transfer_depot,Перевалочный склад не найден,Transfer depot not found
+command.depot_not_empty,Склад необходимо опустошить,Depot must be empty
+command.depot_has_reservations,У склада есть активные резервы,Depot has active reservations
+command.depot_has_active_jobs,У склада есть активные задания,Depot has active jobs
+command.depot_has_active_cargo,Работник ещё перевозит груз склада,A worker is still carrying depot cargo
+command.main_warehouse_full,Главный склад заполнен,Main warehouse is full
+command.duplicate_link,Такая связь уже существует,Link already exists
+command.unknown_link,Связь не найдена,Link not found
+command.invalid_link_settings,Недопустимые настройки связи,Invalid link settings
+command.link_quota_in_use,Квота занята активными работниками,Link quota is in use
+command.invalid_dispatch_source,Политика доставки доступна только источнику,Dispatch policy requires a source
+command.unknown_main_warehouse,Главный склад не найден,Main warehouse not found
+ui.management.quota,Квота,Quota
+ui.management.priority,Приоритет,Priority
+ui.management.dispatch,Отгрузка включена,Dispatch enabled
+ui.management.apply_link,Применить настройки,Apply settings
+ui.management.remove_link,Удалить связь,Remove link
+ui.management.reset_link,Вернуть автомаршрут,Reset automatic route
+ui.management.direct_main,Разрешить доставку напрямую,Allow direct delivery
+ui.management.apply_direct,Применить политику,Apply policy
+ui.management.demolish_depot,Разобрать склад,Demolish depot
 action.idle,Свободен,Idle
 action.assigned,Назначен,Assigned
 action.awaiting_source_path,Ожидает путь к источнику,Awaiting source path

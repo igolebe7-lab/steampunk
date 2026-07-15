@@ -21,6 +21,7 @@ func check(state: SimulationState) -> Array[StringName]:
         or state.repath_after_ticks <= 0
     ):
         _append_once(errors, &"invalid_simulation_timing")
+    _check_road_levels(state, errors)
     _check_telemetry(state, errors)
 
     var expected_occupancy: Dictionary = {}
@@ -131,6 +132,17 @@ func check(state: SimulationState) -> Array[StringName]:
                 errors.append(&"invalid_occupancy")
                 break
     return errors
+
+
+func _check_road_levels(state: SimulationState, errors: Array[StringName]) -> void:
+    for cell: HexCellState in state.map_state.get_cells():
+        if (
+            cell.road_level < RoadLevelDef.LEVEL_OPEN_GROUND
+            or cell.road_level > RoadLevelDef.LEVEL_DIRT_ROAD
+            or state.catalog.get_road_level(cell.road_level) == null
+        ):
+            _append_once(errors, &"invalid_road_level")
+            return
 
 
 func _check_telemetry(state: SimulationState, errors: Array[StringName]) -> void:

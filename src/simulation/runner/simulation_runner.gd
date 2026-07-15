@@ -33,6 +33,7 @@ func step() -> String:
 func flush_commands() -> String:
     _begin_transaction()
     _apply_commands_for_tick(state.tick + 1)
+    _logistics_pipeline.reconcile_topology(state)
     return _validate_and_hash()
 
 

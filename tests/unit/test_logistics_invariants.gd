@@ -63,6 +63,7 @@ func run() -> Array[String]:
         "инвариант запрещает более одного перевалочного склада"
     )
     _assert_telemetry_invariants(scenario)
+    _assert_road_definitions_are_enforced(scenario)
     return finish()
 
 
@@ -80,6 +81,25 @@ func _assert_telemetry_invariants(scenario: ScenarioDef) -> void:
     assert_true(
         InvariantChecker.new().check(state).has(&"invalid_diagnostic_report"),
         "diagnostic report принимает только структурированные codes"
+    )
+
+
+func _assert_road_definitions_are_enforced(scenario: ScenarioDef) -> void:
+    var invalid_level := ScenarioLoader.new().load_scenario(scenario).state
+    invalid_level.map_state.get_cells()[0].road_level = RoadLevelDef.LEVEL_DIRT_ROAD + 1
+    assert_true(
+        InvariantChecker.new().check(invalid_level).has(&"invalid_road_level"),
+        "road_level вне диапазона 0..2 нарушает инвариант"
+    )
+
+    var missing_definition := ScenarioLoader.new().load_scenario(scenario).state
+    missing_definition.catalog.road_levels = missing_definition.catalog.road_levels.filter(
+        func(definition: RoadLevelDef) -> bool:
+            return definition.level != RoadLevelDef.LEVEL_OPEN_GROUND
+    )
+    assert_true(
+        InvariantChecker.new().check(missing_definition).has(&"invalid_road_level"),
+        "каждый road_level клетки должен иметь определение в каталоге"
     )
 
 
