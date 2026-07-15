@@ -9,6 +9,8 @@ var total_samples: int = 0
 var cumulative_main_deliveries: Dictionary = {}
 var cumulative_link_deliveries: Dictionary = {}
 var cumulative_completed_jobs: int = 0
+var cumulative_manual_water_delivered: int = 0
+var cumulative_pipe_water_delivered: int = 0
 
 var _samples: Array[Dictionary] = []
 var _fingerprints: PackedStringArray = []

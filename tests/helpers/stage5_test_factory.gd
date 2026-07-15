@@ -89,6 +89,13 @@ static func pipe_path() -> Array[HexCoord]:
     return [HexCoord.new(2, 0), HexCoord.new(3, 0), HexCoord.new(4, 0)]
 
 
+static func connected_pipe_state() -> SimulationState:
+    var state := pipe_state(10)
+    var result := CommandSystem.new().apply(state, PipeCommand.build(1, 1, pipe_path()))
+    assert(result.accepted, "тестовая труба должна строиться")
+    return state
+
+
 static func _resource(id: StringName) -> ResourceDef:
     var definition := ResourceDef.new()
     definition.id = id

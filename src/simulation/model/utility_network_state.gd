@@ -3,6 +3,7 @@ extends RefCounted
 
 var segments: Dictionary = {}
 var topology_revision: int = 0
+var resolved_topology_revision: int = -1
 var pipe_water_delivered: int = 0
 var manual_water_delivered: int = 0
 

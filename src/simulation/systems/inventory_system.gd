@@ -82,6 +82,14 @@ func _advance_unloading(state: SimulationState, worker: WorkerState, target_tick
         worker.link_id = 0
     var delivered: int = state.delivered_totals.get(job.resource_id, 0) as int
     state.delivered_totals[job.resource_id] = delivered + 1
+    var destination_definition := state.catalog.get_building(destination.definition_id)
+    if (
+        job.resource_id == &"water"
+        and destination_definition != null
+        and destination_definition.role == LogisticsPortDef.ROLE_PRODUCTION
+    ):
+        state.utility_network.manual_water_delivered += 1
+        state.telemetry_window.cumulative_manual_water_delivered += 1
     state.jobs.erase(job.id)
     var event := SimulationEvent.new(&"cargo_delivered", target_tick, worker.id, job.id, job.resource_id)
     event.link_id = job.link_id
