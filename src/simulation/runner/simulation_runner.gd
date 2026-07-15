@@ -22,21 +22,42 @@ func enqueue(command: SimulationCommand) -> CommandResult:
 
 
 func step() -> String:
+    _begin_transaction()
+    var target_tick := state.tick + 1
+    _apply_commands_for_tick(target_tick)
+    _logistics_pipeline.run(state, target_tick)
+    state.tick = target_tick
+    return _validate_and_hash()
+
+
+func flush_commands() -> String:
+    _begin_transaction()
+    _apply_commands_for_tick(state.tick + 1)
+    return _validate_and_hash()
+
+
+func _begin_transaction() -> void:
     state.last_events.clear()
     state.events.clear()
-    var target_tick := state.tick + 1
-    for command in _queue.take_for_tick(target_tick):
+
+
+func _apply_commands_for_tick(target_tick: int) -> void:
+    var commands := _queue.take_for_tick(target_tick)
+    if commands.is_empty():
+        return
+    for command: SimulationCommand in commands:
         var result := _command_system.apply(state, command)
         state.last_events.append(result.code)
+    state.revision += 1
 
-    _logistics_pipeline.run(state, target_tick)
+
+func _validate_and_hash() -> String:
     var invariant_errors := _invariant_checker.check(state)
     if not invariant_errors.is_empty():
         var message := "Нарушены инварианты симуляции: %s" % [invariant_errors]
         push_error(message)
         assert(false, message)
         return ""
-    state.tick = target_tick
     return _hasher.hash_state(state)
 
 
