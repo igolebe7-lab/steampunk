@@ -76,6 +76,9 @@ func _advance_unloading(state: SimulationState, worker: WorkerState, target_tick
     worker.action = WorkerState.IDLE
     worker.wait_reason = &"no_job"
     worker.wait_ticks = 0
+    var link := state.logistics_links.get(job.link_id) as LogisticsLinkState
+    if link == null or link.is_closing or not link.dispatch_enabled:
+        worker.link_id = 0
     var delivered: int = state.delivered_totals.get(job.resource_id, 0) as int
     state.delivered_totals[job.resource_id] = delivered + 1
     state.jobs.erase(job.id)

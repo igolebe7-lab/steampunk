@@ -80,7 +80,12 @@ func _try_start_segment(
     state.cell_reservations[target_key] = worker.id
     worker.segment_target = target
     worker.segment_progress = 0
-    worker.segment_duration = state.worker_ticks_per_hex * cell.movement_cost
+    var road := state.catalog.get_road_level(cell.road_level)
+    worker.segment_duration = (
+        state.worker_ticks_per_hex * cell.movement_cost
+        if road == null
+        else road.traversal_ticks * cell.movement_cost
+    )
     worker.wait_reason = &""
     worker.wait_ticks = 0
     state.events.append(SimulationEvent.new(&"movement_started", target_tick, worker.id, worker.job_id))

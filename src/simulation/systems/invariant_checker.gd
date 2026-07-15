@@ -333,9 +333,10 @@ func _check_logistics_links(state: SimulationState, errors: Array[StringName]) -
             _append_once(errors, &"invalid_link_endpoint")
             continue
         var endpoint_key := "%d:%d:%s" % [link.source_id, link.destination_id, link.resource_id]
-        if endpoints.has(endpoint_key):
-            _append_once(errors, &"duplicate_link")
-        endpoints[endpoint_key] = true
+        if not link.is_closing:
+            if endpoints.has(endpoint_key):
+                _append_once(errors, &"duplicate_link")
+            endpoints[endpoint_key] = true
         if not link.is_closing:
             source_quotas[link.source_id] = (source_quotas.get(link.source_id, 0) as int) + link.quota
         var link_workers := 0
