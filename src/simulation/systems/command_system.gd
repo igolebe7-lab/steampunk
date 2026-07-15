@@ -225,10 +225,68 @@ func _apply_link_settings(state: SimulationState, command: LinkSettingsCommand) 
         return CommandResult.rejected(&"unknown_link", command.id)
     if command.quota < 0 or command.priority < 0 or command.priority > 4:
         return CommandResult.rejected(&"invalid_link_settings", command.id)
+    var active_workers := 0
+    for worker_value: Variant in state.workers.values():
+        var worker := worker_value as WorkerState
+        if (
+            worker.link_id == link.id
+            and (
+                worker.job_id > 0
+                or not worker.cargo_resource_id.is_empty()
+                or worker.action != WorkerState.IDLE
+            )
+        ):
+            active_workers += 1
+    if command.quota < active_workers:
+        return CommandResult.rejected(
+            &"link_quota_in_use",
+            command.id,
+            {&"active": active_workers, &"requested": command.quota}
+        )
+    var source := state.get_building(link.source_id)
+    var source_definition: BuildingDef = (
+        null if source == null else state.catalog.get_building(source.definition_id)
+    )
+    if source == null or source_definition == null:
+        return CommandResult.rejected(&"unknown_building", command.id)
+    var quota_total := command.quota
+    for value: Variant in state.logistics_links.values():
+        var other := value as LogisticsLinkState
+        if other.id != link.id and other.source_id == link.source_id and not other.is_closing:
+            quota_total += other.quota
+    if quota_total > source_definition.outgoing_worker_slots(source.level):
+        return CommandResult.rejected(
+            &"source_slots_exceeded",
+            command.id,
+            {&"requested": quota_total, &"available": source_definition.outgoing_worker_slots(source.level)}
+        )
     link.quota = command.quota
     link.priority = command.priority
     link.dispatch_enabled = command.dispatch_enabled and not link.is_closing
+    _release_excess_idle_workers(state, link)
     return CommandResult.success(command.id, {&"link_id": link.id})
+
+
+func _release_excess_idle_workers(state: SimulationState, link: LogisticsLinkState) -> void:
+    var workers: Array[WorkerState] = []
+    for value: Variant in state.workers.values():
+        var worker := value as WorkerState
+        if worker.link_id == link.id:
+            workers.append(worker)
+    workers.sort_custom(_worker_id_precedes)
+    var target_count := link.quota if link.dispatch_enabled else 0
+    var assigned_count := workers.size()
+    workers.reverse()
+    for worker: WorkerState in workers:
+        if assigned_count <= target_count:
+            break
+        if worker.job_id == 0 and worker.cargo_resource_id.is_empty() and worker.action == WorkerState.IDLE:
+            worker.link_id = 0
+            assigned_count -= 1
+
+
+func _worker_id_precedes(left: WorkerState, right: WorkerState) -> bool:
+    return left.id < right.id
 
 
 func _apply_dispatch_policy(state: SimulationState, command: DispatchPolicyCommand) -> CommandResult:

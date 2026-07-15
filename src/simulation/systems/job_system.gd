@@ -16,9 +16,14 @@ func run(state: SimulationState, target_tick: int) -> void:
         if source == null or destination == null:
             continue
 
+        var worker_slots := _worker_count(state, link.id)
+        var active_jobs := _job_count(state, link.id)
+        var jobs_to_create := mini(worker_slots, link.quota) - active_jobs
+        if jobs_to_create <= 0:
+            continue
         var available := source.get_amount(link.resource_id) - source.get_outgoing_reserved(link.resource_id)
         var capacity := destination.free_capacity()
-        while available > 0 and capacity > 0:
+        while available > 0 and capacity > 0 and jobs_to_create > 0:
             if not source.reserve_outgoing(link.resource_id, 1):
                 break
             if not destination.reserve_incoming(link.resource_id, 1):
@@ -45,7 +50,24 @@ func run(state: SimulationState, target_tick: int) -> void:
             state.next_job_id += 1
             available -= 1
             capacity -= 1
+            jobs_to_create -= 1
 
 
 func _link_precedes(left: LogisticsLinkState, right: LogisticsLinkState) -> bool:
     return left.id < right.id
+
+
+func _worker_count(state: SimulationState, link_id: int) -> int:
+    var count := 0
+    for value: Variant in state.workers.values():
+        if (value as WorkerState).link_id == link_id:
+            count += 1
+    return count
+
+
+func _job_count(state: SimulationState, link_id: int) -> int:
+    var count := 0
+    for value: Variant in state.jobs.values():
+        if (value as DeliveryJob).link_id == link_id:
+            count += 1
+    return count

@@ -18,6 +18,7 @@ var quota: int
 var priority: int
 var dispatch_enabled: bool
 var is_closing: bool
+var waiting_ticks: int = 0
 
 var _id: int
 var _source_id: int

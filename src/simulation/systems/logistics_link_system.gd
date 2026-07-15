@@ -36,6 +36,8 @@ func create_manual_link(
         return CommandResult.rejected(&"link_cycle", command_id)
     if not is_compatible(state, source_id, destination_id, resource_id):
         return CommandResult.rejected(&"incompatible_link", command_id)
+    if not _manual_quota_fits(state, source_id, resource_id):
+        return CommandResult.rejected(&"source_slots_exceeded", command_id)
     if _path_cost(state, pathfinder, source_id, destination_id) >= INF:
         return CommandResult.rejected(&"no_path", command_id)
 
@@ -283,6 +285,28 @@ func _find_duplicate(
         ):
             return link
     return null
+
+
+func _manual_quota_fits(
+    state: SimulationState,
+    source_id: int,
+    replaced_resource_id: StringName
+) -> bool:
+    var source := state.get_building(source_id)
+    if source == null:
+        return false
+    var definition := state.catalog.get_building(source.definition_id)
+    if definition == null:
+        return false
+    var quota_total := 1
+    for value: Variant in state.logistics_links.values():
+        var link := value as LogisticsLinkState
+        if link.source_id != source_id or link.is_closing:
+            continue
+        if link.is_automatic and link.resource_id == replaced_resource_id:
+            continue
+        quota_total += link.quota
+    return quota_total <= definition.outgoing_worker_slots(source.level)
 
 
 func _output_resources(state: SimulationState, building: BuildingState) -> Array[StringName]:

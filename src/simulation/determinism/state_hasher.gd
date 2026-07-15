@@ -172,7 +172,7 @@ func _encode_links(state: SimulationState) -> String:
     var parts: PackedStringArray = []
     for link_id: int in ids:
         var link := state.logistics_links[link_id] as LogisticsLinkState
-        parts.append("%d,%d,%d,%s,%d,%d,%d,%d,%d" % [
+        parts.append("%d,%d,%d,%s,%d,%d,%d,%d,%d,%d" % [
             link.id,
             link.source_id,
             link.destination_id,
@@ -182,6 +182,7 @@ func _encode_links(state: SimulationState) -> String:
             link.priority,
             int(link.dispatch_enabled),
             int(link.is_closing),
+            link.waiting_ticks,
         ])
     return ";".join(parts)
 

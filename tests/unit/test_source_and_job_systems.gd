@@ -8,6 +8,7 @@ func run() -> Array[String]:
     for tick in range(1, 11):
         source_system.run(state, tick)
     assert_eq(state.generated_totals.get(&"wood", 0), 2, "два источника создают две единицы")
+    WorkforceSystem.new().run(state, 10)
     JobSystem.new().run(state, 10)
     assert_eq(state.jobs.size(), 2, "создаются два задания")
     JobSystem.new().run(state, 10)

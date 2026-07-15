@@ -18,7 +18,11 @@ func run(state: SimulationState, pathfinder: Pathfinder, target_tick: int) -> vo
         var workers: Array[WorkerState] = []
         for value: Variant in state.workers.values():
             var worker := value as WorkerState
-            if worker.job_id == 0 and worker.action == WorkerState.IDLE:
+            if (
+                worker.job_id == 0
+                and worker.action == WorkerState.IDLE
+                and worker.link_id == job.link_id
+            ):
                 workers.append(worker)
         workers.sort_custom(_worker_precedes)
 
@@ -31,7 +35,7 @@ func run(state: SimulationState, pathfinder: Pathfinder, target_tick: int) -> vo
                 selected_cost = result.cost
 
         if selected_worker == null:
-            job.wait_reason = &"no_path"
+            job.wait_reason = &"worker_shortage" if workers.is_empty() else &"no_path"
             continue
 
         job.worker_id = selected_worker.id

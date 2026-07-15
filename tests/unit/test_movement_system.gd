@@ -83,6 +83,7 @@ func _assigned_state() -> SimulationState:
     var state := ScenarioLoader.new().load_scenario(scenario).state
     for tick in range(1, 11):
         SourceSystem.new().run(state, tick)
+    WorkforceSystem.new().run(state, 10)
     JobSystem.new().run(state, 10)
     AssignmentSystem.new().run(state, Pathfinder.new(), 10)
     PathSystem.new().run(state, Pathfinder.new(), 10)

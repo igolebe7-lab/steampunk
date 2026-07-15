@@ -73,7 +73,6 @@ func _advance_unloading(state: SimulationState, worker: WorkerState, target_tick
     worker.route.clear()
     worker.route_index = 0
     worker.job_id = 0
-    worker.link_id = 0
     worker.action = WorkerState.IDLE
     worker.wait_reason = &"no_job"
     worker.wait_ticks = 0
