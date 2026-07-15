@@ -108,6 +108,18 @@ func is_compatible(
             ):
                 return true
         return false
+    if (
+        source_definition.role in [
+            LogisticsPortDef.ROLE_STORAGE,
+            LogisticsPortDef.ROLE_MAIN_WAREHOUSE,
+            LogisticsPortDef.ROLE_TRANSFER_DEPOT,
+        ]
+        and destination_definition.role == LogisticsPortDef.ROLE_PRODUCTION
+    ):
+        for port: LogisticsPortDef in destination_definition.logistics_ports:
+            if port.direction == LogisticsPortDef.DIRECTION_INPUT and port.resource_id == resource_id:
+                return true
+        return false
     return (
         source_definition.role == LogisticsPortDef.ROLE_TRANSFER_DEPOT
         and destination_definition.role == LogisticsPortDef.ROLE_MAIN_WAREHOUSE
@@ -332,8 +344,15 @@ func _output_resources(state: SimulationState, building: BuildingState) -> Array
         for port: LogisticsPortDef in definition.logistics_ports:
             if port.direction == LogisticsPortDef.DIRECTION_OUTPUT and not result.has(port.resource_id):
                 result.append(port.resource_id)
-    elif definition.role == LogisticsPortDef.ROLE_TRANSFER_DEPOT:
-        result.append(WOOD)
+    elif definition.role in [
+        LogisticsPortDef.ROLE_STORAGE,
+        LogisticsPortDef.ROLE_MAIN_WAREHOUSE,
+        LogisticsPortDef.ROLE_TRANSFER_DEPOT,
+    ]:
+        for key: Variant in building.inventories.keys():
+            var resource_id := key as StringName
+            if building.get_amount(resource_id) > 0 and not result.has(resource_id):
+                result.append(resource_id)
     result.sort()
     return result
 

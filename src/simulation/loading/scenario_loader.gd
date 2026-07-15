@@ -175,7 +175,7 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
     state.delivery_flows = []
     state.logistics_links = logistics_links
     state.next_link_id = flow_id
-    state.logistics_topology_dirty = false
+    state.logistics_topology_dirty = true
     state.worker_ticks_per_hex = definition.worker_ticks_per_hex
     state.load_ticks = definition.load_ticks
     state.unload_ticks = definition.unload_ticks

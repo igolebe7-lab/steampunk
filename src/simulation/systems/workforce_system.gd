@@ -68,7 +68,7 @@ func _has_demand(state: SimulationState, link: LogisticsLinkState) -> bool:
         return false
     return (
         source.get_amount(link.resource_id) > 0
-        and destination.free_capacity() > 0
+        and JobSystem.demand_capacity(state, link) > 0
     )
 
 

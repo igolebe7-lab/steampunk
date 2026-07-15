@@ -67,6 +67,7 @@ func _advance_unloading(state: SimulationState, worker: WorkerState, target_tick
     if not destination.add_amount(job.resource_id, 1):
         _block_operation(worker, job, &"unload_blocked")
         return
+    state.logistics_topology_dirty = true
     destination.release_incoming(job.resource_id, 1)
     worker.cargo_resource_id = &""
     worker.operation_progress = 0

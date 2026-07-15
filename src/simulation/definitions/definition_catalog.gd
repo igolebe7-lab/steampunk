@@ -41,6 +41,7 @@ func validate() -> Array[StringName]:
             or definition.display_name_key.is_empty()
             or definition.description_key.is_empty()
             or definition.duration_ticks <= 0
+            or definition.input_buffer_cycles <= 0
             or definition.input_resource_ids.is_empty()
             or definition.input_resource_ids.size() != definition.input_amounts.size()
         ):

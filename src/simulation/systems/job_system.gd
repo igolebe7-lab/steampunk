@@ -22,7 +22,7 @@ func run(state: SimulationState, target_tick: int) -> void:
         if jobs_to_create <= 0:
             continue
         var available := source.get_amount(link.resource_id) - source.get_outgoing_reserved(link.resource_id)
-        var capacity := destination.free_capacity()
+        var capacity := demand_capacity(state, link)
         while available > 0 and capacity > 0 and jobs_to_create > 0:
             if not source.reserve_outgoing(link.resource_id, 1):
                 break
@@ -51,6 +51,35 @@ func run(state: SimulationState, target_tick: int) -> void:
             available -= 1
             capacity -= 1
             jobs_to_create -= 1
+
+
+static func demand_capacity(state: SimulationState, link: LogisticsLinkState) -> int:
+    if link == null:
+        return 0
+    var destination := state.get_building(link.destination_id)
+    if destination == null:
+        return 0
+    var definition := state.catalog.get_building(destination.definition_id)
+    if definition == null or definition.role != LogisticsPortDef.ROLE_PRODUCTION:
+        return destination.free_capacity()
+
+    var production := state.production_states.get(destination.id) as ProductionState
+    if production == null or production.status in [ProductionState.LOCKED, ProductionState.COMPLETED]:
+        return 0
+    var recipe := state.catalog.get_recipe(production.recipe_id)
+    if recipe == null:
+        return 0
+    var amount_per_cycle := recipe.input_amount(link.resource_id)
+    if amount_per_cycle <= 0:
+        return 0
+    if recipe.result_code == &"hammer_struck":
+        var boiler := state.production_states.get(production.linked_building_id) as ProductionState
+        if boiler == null or boiler.heat_level < 5:
+            return 0
+
+    var target := amount_per_cycle * recipe.input_buffer_cycles
+    var missing := target - destination.get_amount(link.resource_id) - destination.get_incoming_reserved(link.resource_id)
+    return mini(maxi(missing, 0), destination.free_capacity())
 
 
 func _link_precedes(left: LogisticsLinkState, right: LogisticsLinkState) -> bool:

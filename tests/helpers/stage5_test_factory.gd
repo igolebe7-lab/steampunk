@@ -5,6 +5,49 @@ const IRON := &"iron"
 const WATER := &"water"
 
 
+static func production_state() -> SimulationState:
+    var scenario := load("res://data/scenarios/full_industrial.tres") as ScenarioDef
+    var result := ScenarioLoader.new().load_scenario(scenario)
+    return result.state
+
+
+static func building(state: SimulationState, definition_id: StringName) -> BuildingState:
+    var ids: Array[int] = []
+    for key: Variant in state.buildings.keys():
+        ids.append(key as int)
+    ids.sort()
+    for id: int in ids:
+        var candidate := state.get_building(id)
+        if candidate.definition_id == definition_id:
+            return candidate
+    return null
+
+
+static func production(state: SimulationState, definition_id: StringName) -> ProductionState:
+    var target := building(state, definition_id)
+    return null if target == null else state.production_states.get(target.id) as ProductionState
+
+
+static func isolate_link(
+    state: SimulationState,
+    source_id: int,
+    destination_id: int,
+    resource_id: StringName,
+    quota: int
+) -> LogisticsLinkState:
+    state.logistics_links.clear()
+    var link := LogisticsLinkState.new(1, source_id, destination_id, resource_id, false, quota, 2)
+    state.logistics_links[link.id] = link
+    state.next_link_id = 2
+    var worker_ids: Array[int] = []
+    for key: Variant in state.workers.keys():
+        worker_ids.append(key as int)
+    worker_ids.sort()
+    for index in mini(quota, worker_ids.size()):
+        (state.get_worker(worker_ids[index]) as WorkerState).link_id = link.id
+    return link
+
+
 static func pipe_state(iron: int = 10) -> SimulationState:
     var catalog := DefinitionCatalog.new()
     catalog.resources = [_resource(IRON), _resource(WATER)]

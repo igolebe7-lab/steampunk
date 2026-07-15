@@ -7,6 +7,7 @@ script = ExtResource("1")
 id = &"boiler_heat_cycle"
 input_resource_ids = Array[StringName]([&"coal", &"water"])
 input_amounts = Array[int]([1, 2])
+input_buffer_cycles = 3
 duration_ticks = 120
 result_code = &"boiler_heat"
 display_name_key = &"recipe.boiler_heat.name"

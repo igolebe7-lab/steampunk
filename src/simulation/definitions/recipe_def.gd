@@ -4,6 +4,7 @@ extends Resource
 @export var id: StringName
 @export var input_resource_ids: Array[StringName] = []
 @export var input_amounts: Array[int] = []
+@export_range(1, 100) var input_buffer_cycles: int = 1
 @export_range(1, 100000) var duration_ticks: int = 1
 @export var result_code: StringName
 @export var display_name_key: StringName
