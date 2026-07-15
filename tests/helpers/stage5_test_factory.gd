@@ -28,6 +28,16 @@ static func production(state: SimulationState, definition_id: StringName) -> Pro
     return null if target == null else state.production_states.get(target.id) as ProductionState
 
 
+static func hot_boiler_state(cycles: int = 5) -> SimulationState:
+    var state := production_state()
+    var boiler := building(state, &"boiler")
+    var production_state := production(state, &"boiler")
+    production_state.status = ProductionState.WAITING_INPUTS
+    boiler.inventories[&"coal"] = cycles
+    boiler.inventories[&"water"] = cycles * 2
+    return state
+
+
 static func isolate_link(
     state: SimulationState,
     source_id: int,
