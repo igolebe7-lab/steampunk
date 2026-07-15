@@ -40,7 +40,7 @@ func _collect_workers(state: SimulationState, sample: Dictionary) -> void:
         if worker.wait_reason == &"no_path":
             _record_loss(sample, &"no_path", worker.link_id, StringName(worker.coord.key()))
         elif worker.wait_reason == &"cell_reserved" or worker.wait_reason == &"cell_occupied":
-            _record_loss(sample, &"route_conflict", worker.link_id, StringName(worker.coord.key()))
+            _record_loss(sample, &"route_conflict", worker.link_id)
     for value: Variant in state.jobs.values():
         var job := value as DeliveryJob
         if job.wait_reason == &"worker_shortage":

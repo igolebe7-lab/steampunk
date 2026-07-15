@@ -83,3 +83,5 @@ func _assert_telemetry_system_collects_events_and_load() -> void:
     assert_eq(state.telemetry_window.cell_conflict_count(&"2:3"), 1, "movement conflict привязан к клетке")
     assert_near(state.telemetry_window.average_link_load(link_id), 1.0, 0.001, "назначенный worker создаёт load link")
     assert_true(not (state.telemetry.get(&"ready", true) as bool), "публичная telemetry отмечает warmup")
+    DiagnosticsSystem.new().run(state)
+    assert_eq(state.diagnostic_report.cell_key, &"2:3", "diagnostic report указывает целевую клетку конфликта")
