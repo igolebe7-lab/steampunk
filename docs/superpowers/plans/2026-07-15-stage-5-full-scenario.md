@@ -1,5 +1,7 @@
 # Этап 5: полный индустриальный сценарий — план реализации
 
+**Статус выполнения:** завершено; 55 тестовых наборов, два одинаковых полных gate-прогона, acceptance воды ×6.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Реализовать детерминированный сценарий на четыре ресурса с производственными циклами, локальной парой котёл–молот, ручной и трубопроводной подачей воды, фазами и итоговым экраном.
