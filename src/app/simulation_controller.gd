@@ -4,6 +4,8 @@ extends Node
 signal tick_completed(state: SimulationState)
 signal interpolation_changed(alpha: float)
 signal commands_flushed(state: SimulationState)
+signal pause_changed(paused: bool)
+signal speed_changed(multiplier: int)
 
 const MAX_CATCH_UP_TICKS := 8
 const PAUSED_MAX_FPS := 10
@@ -24,6 +26,8 @@ func configure(runner: SimulationRunner) -> void:
 
 
 func set_paused(value: bool) -> void:
+    if value == _paused:
+        return
     if value and not _paused:
         _running_max_fps = Engine.max_fps
         Engine.max_fps = PAUSED_MAX_FPS
@@ -31,6 +35,7 @@ func set_paused(value: bool) -> void:
         Engine.max_fps = _running_max_fps
     _paused = value
     OS.low_processor_usage_mode = value
+    pause_changed.emit(value)
 
 
 func is_paused() -> bool:
@@ -40,7 +45,10 @@ func is_paused() -> bool:
 func set_speed_multiplier(value: int) -> bool:
     if not value in [1, 2, 4]:
         return false
+    if value == _speed_multiplier:
+        return true
     _speed_multiplier = value
+    speed_changed.emit(value)
     return true
 
 

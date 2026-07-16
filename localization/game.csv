@@ -157,3 +157,7 @@ command.insufficient_iron,Недостаточно железа,Not enough iron
 command.pipe_segment_missing,На выбранной клетке нет трубы,No pipe exists on the selected cell
 command.incompatible_utility_type,Несовместимый тип инженерной сети,Incompatible utility type
 command.invalid_pipe_path,Путь трубы должен быть непрерывным,Pipe path must be continuous
+playtest.error.invalid_session_id,Некорректный идентификатор плейтест-сессии,Invalid playtest session identifier
+playtest.error.storage_write,Не удалось записать отчёт плейтеста,Could not write the playtest report
+playtest.error.report_too_large,Отчёт плейтеста превысил допустимый размер,The playtest report exceeded the size limit
+playtest.error.recovered_interrupted,Прерванная сессия восстановлена; начните следующую с новым идентификатором,Interrupted session recovered; start the next one with a new identifier

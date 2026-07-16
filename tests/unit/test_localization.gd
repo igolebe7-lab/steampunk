@@ -29,7 +29,9 @@ func run() -> Array[String]:
         &"reason.worker_shortage", &"reason.route_conflict", &"reason.relay_backlog",
         &"reason.no_path", &"command.accepted", &"command.insufficient_wood",
         &"reason.no_coal", &"reason.no_water", &"reason.boiler_not_hot",
-        &"command.unknown",
+        &"command.unknown", &"playtest.error.invalid_session_id",
+        &"playtest.error.storage_write", &"playtest.error.report_too_large",
+        &"playtest.error.recovered_interrupted",
     ]
     var command_codes: Array[StringName] = [
         &"invalid_command", &"past_tick", &"duplicate_sequence", &"unsupported_command",

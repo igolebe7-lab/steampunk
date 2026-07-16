@@ -1,6 +1,13 @@
 class_name HUDController
 extends RefCounted
 
+signal intent_resolved(
+    intent_code: StringName,
+    result_code: StringName,
+    payload: Dictionary
+)
+signal layer_visibility_changed(layer: StringName, visible: bool)
+
 var _runner: SimulationRunner
 var _simulation: SimulationController
 var _diagnostics: DiagnosticsView
@@ -47,19 +54,25 @@ func set_speed_multiplier(value: int) -> bool:
 
 
 func set_layer_visible(layer: StringName, visible: bool) -> bool:
+    var changed := false
     if layer == &"utilities" and _world != null:
         _world.set_utility_layer_visible(visible)
-        return true
-    return _diagnostics.set_layer_visible(layer, visible)
+        changed = true
+    elif _diagnostics != null:
+        changed = _diagnostics.set_layer_visible(layer, visible)
+    if changed:
+        layer_visibility_changed.emit(layer, visible)
+    return changed
 
 
 func submit_intent(intent: Dictionary) -> StringName:
+    var intent_code := intent.get(&"code", &"") as StringName
     if _runner == null or _simulation == null:
-        return &"invalid_command"
+        return _resolve_intent(intent_code, &"invalid_command", intent)
     var target_tick := _runner.state.tick + 1
     _sequence += 1
     var command: SimulationCommand
-    match intent.get(&"code", &"") as StringName:
+    match intent_code:
         &"road_cell":
             command = BuildRoadCommand.new(target_tick, _sequence, [intent.get(&"coord")])
         &"depot_cell":
@@ -112,13 +125,14 @@ func submit_intent(intent: Dictionary) -> StringName:
         &"pipe_remove":
             command = PipeCommand.remove(target_tick, _sequence, intent.get(&"cells", []) as Array)
         _:
-            return &"invalid_command"
+            return _resolve_intent(intent_code, &"invalid_command", intent)
     var queued := _runner.enqueue(command)
     if not queued.accepted:
-        return queued.code
+        return _resolve_intent(intent_code, queued.code, intent)
     _simulation.flush_commands()
     refresh(_runner.state)
-    return &"accepted" if _runner.state.last_events.is_empty() else _runner.state.last_events[-1]
+    var result := &"accepted" if _runner.state.last_events.is_empty() else _runner.state.last_events[-1]
+    return _resolve_intent(intent_code, result, intent)
 
 
 func localized_reason(code: StringName) -> String:
@@ -137,3 +151,12 @@ func _set_label(key: StringName, value: String) -> void:
     var label := _labels.get(key) as Label
     if label != null:
         label.text = value
+
+
+func _resolve_intent(
+    intent_code: StringName,
+    result_code: StringName,
+    intent: Dictionary
+) -> StringName:
+    intent_resolved.emit(intent_code, result_code, intent.duplicate(true))
+    return result_code

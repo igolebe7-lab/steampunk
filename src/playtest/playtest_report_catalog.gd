@@ -96,7 +96,8 @@ const MILESTONES := {
 }
 
 const KNOWN_EVENTS: Array[String] = [
-    "selection", "pause", "speed", "tool", "layer_visibility",
+    "selection", "pause", "speed", "inspect", "road", "depot",
+    "link_origin", "link_destination", "layer_visibility",
     "road_cell", "depot_cell", "link_complete", "link_settings",
     "dispatch_policy", "remove_link", "reset_link", "demolish_depot",
     "pipe_build", "pipe_remove", "scenario_phase_changed",
