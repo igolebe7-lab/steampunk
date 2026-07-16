@@ -10,11 +10,13 @@ var _command_system := CommandSystem.new()
 var _logistics_pipeline := LogisticsPipeline.new()
 var _invariant_checker := InvariantChecker.new()
 var _hasher := StateHasher.new()
+var _verify_each_transaction: bool
 
 
-func _init(p_state: SimulationState) -> void:
+func _init(p_state: SimulationState, verify_each_transaction: bool = true) -> void:
     assert(p_state != null, "SimulationRunner требует загруженное состояние")
     state = p_state
+    _verify_each_transaction = verify_each_transaction
 
 
 func enqueue(command: SimulationCommand) -> CommandResult:
@@ -53,6 +55,8 @@ func _apply_commands_for_tick(target_tick: int) -> void:
 
 
 func _validate_and_hash() -> String:
+    if not _verify_each_transaction:
+        return ""
     var invariant_errors := _invariant_checker.check(state)
     if not invariant_errors.is_empty():
         var message := "Нарушены инварианты симуляции: %s" % [invariant_errors]

@@ -4,11 +4,16 @@ extends RefCounted
 const WOOD := &"wood"
 const INF := 1 << 30
 
+var _routing_signature := ""
+var _path_cost_cache: Dictionary = {}
+var _path_cost_evaluation_count: int = 0
+
 
 func run(state: SimulationState, pathfinder: Pathfinder) -> void:
     _cleanup_closing_links(state)
     if not state.logistics_topology_dirty:
         return
+    _refresh_routing_cache(state)
 
     var source_ids := _sorted_building_ids(state)
     for source_id: int in source_ids:
@@ -26,6 +31,7 @@ func create_manual_link(
     resource_id: StringName,
     command_id: StringName
 ) -> CommandResult:
+    _refresh_routing_cache(state)
     var existing := _find_duplicate(state, source_id, destination_id, resource_id)
     if existing != null and existing.is_automatic:
         existing.is_automatic = false
@@ -363,6 +369,10 @@ func _path_cost(
     source_id: int,
     destination_id: int
 ) -> int:
+    var cache_key := "%d>%d" % [source_id, destination_id]
+    if _path_cost_cache.has(cache_key):
+        return _path_cost_cache[cache_key] as int
+    _path_cost_evaluation_count += 1
     var starts := pathfinder.interaction_cells(state, source_id)
     var goals := pathfinder.interaction_cells(state, destination_id)
     var best := INF
@@ -370,7 +380,37 @@ func _path_cost(
         var result := pathfinder.find_path(state, start, goals)
         if result.is_success():
             best = mini(best, result.cost)
+    _path_cost_cache[cache_key] = best
     return best
+
+
+func get_path_cost_evaluation_count() -> int:
+    return _path_cost_evaluation_count
+
+
+func _refresh_routing_cache(state: SimulationState) -> void:
+    var next_signature := _build_routing_signature(state)
+    if next_signature == _routing_signature:
+        return
+    _routing_signature = next_signature
+    _path_cost_cache.clear()
+
+
+func _build_routing_signature(state: SimulationState) -> String:
+    var parts: PackedStringArray = []
+    for cell: HexCellState in state.map_state.get_cells():
+        parts.append("%s:%d:%d:%d" % [
+            cell.coord.key(),
+            int(cell.traversable),
+            cell.movement_cost,
+            cell.road_level,
+        ])
+    var occupied_keys := state.occupied_cells.keys()
+    occupied_keys.sort()
+    var occupied: PackedStringArray = []
+    for key: Variant in occupied_keys:
+        occupied.append("%s:%d" % [String(key), state.occupied_cells[key] as int])
+    return "%s#%s" % ["|".join(parts), "|".join(occupied)]
 
 
 func _destination_precedes(state: SimulationState, left_id: int, right_id: int) -> bool:

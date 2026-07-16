@@ -100,8 +100,8 @@ func _sync_buildings(state: SimulationState) -> void:
             view = BuildingView.new()
             add_child(view)
             _building_views[building_id] = view
-        view.position = _layout.coord_to_pixel(building.coord)
-        view.configure(building, definition)
+            view.position = _layout.coord_to_pixel(building.coord)
+            view.configure(building, definition)
 
 
 func _sync_workers(state: SimulationState, initial: bool) -> void:

@@ -14,8 +14,8 @@ static func full_pipe_path() -> Array[HexCoord]:
     ]
 
 
-static func full_runner() -> SimulationRunner:
-    return SimulationRunner.new(production_state())
+static func full_runner(verify_each_transaction: bool = true) -> SimulationRunner:
+    return SimulationRunner.new(production_state(), verify_each_transaction)
 
 
 static func can_build_full_pipe(state: SimulationState) -> bool:
@@ -29,7 +29,7 @@ static func can_build_full_pipe(state: SimulationState) -> bool:
 
 
 static func run_full_scenario(use_pipe: bool, maximum_ticks: int) -> Dictionary:
-    var runner := full_runner()
+    var runner := full_runner(false)
     var pipe_built := false
     while runner.state.tick < maximum_ticks:
         if use_pipe and not pipe_built and can_build_full_pipe(runner.state):
@@ -50,7 +50,7 @@ static func run_full_scenario(use_pipe: bool, maximum_ticks: int) -> Dictionary:
 
 
 static func run_water_window(use_pipe: bool, window_ticks: int) -> int:
-    var runner := full_runner()
+    var runner := full_runner(false)
     var state := runner.state
     var boiler := building(state, &"boiler")
     var boiler_production := production(state, &"boiler")

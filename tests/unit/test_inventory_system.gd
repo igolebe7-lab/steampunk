@@ -4,6 +4,7 @@ extends TestCase
 func run() -> Array[String]:
     _assert_atomic_delivery()
     _assert_failed_load_preserves_reservations()
+    _assert_topology_refreshes_only_for_new_outgoing_flow()
     return finish()
 
 
@@ -74,6 +75,49 @@ func _assert_failed_load_preserves_reservations() -> void:
     assert_eq(destination.get_incoming_reserved(job.resource_id), incoming_before, "incoming reserve не теряется")
     assert_eq(state.get_job(job.id), job, "неудачная погрузка сохраняет job")
     assert_eq(worker.wait_reason, &"missing_cargo", "неудачная погрузка имеет явную причину")
+
+
+func _assert_topology_refreshes_only_for_new_outgoing_flow() -> void:
+    var new_flow_state := _prepared_unloading_state()
+    new_flow_state.logistics_topology_dirty = false
+    InventorySystem.new().run(new_flow_state, 12)
+    assert_true(
+        new_flow_state.logistics_topology_dirty,
+        "первый складской ресурс без исходящей связи требует пересчёта топологии"
+    )
+
+    var existing_flow_state := _prepared_unloading_state()
+    var existing_job := existing_flow_state.get_job(1)
+    var storage := existing_flow_state.get_building(existing_job.destination_id)
+    existing_flow_state.logistics_links[99] = LogisticsLinkState.new(
+        99,
+        storage.id,
+        existing_job.source_id,
+        existing_job.resource_id,
+        true,
+        1,
+        2
+    )
+    existing_flow_state.logistics_topology_dirty = false
+    InventorySystem.new().run(existing_flow_state, 12)
+    assert_true(
+        not existing_flow_state.logistics_topology_dirty,
+        "пополнение уже связанного складского ресурса не запускает повторный A*"
+    )
+
+
+func _prepared_unloading_state() -> SimulationState:
+    var state := _prepared_state()
+    var job := state.get_job(1)
+    var worker := state.get_worker(job.worker_id)
+    worker.action = WorkerState.LOADING
+    worker.operation_progress = state.load_ticks - 1
+    job.state = DeliveryJob.LOADING
+    InventorySystem.new().run(state, 11)
+    worker.action = WorkerState.UNLOADING
+    worker.operation_progress = state.unload_ticks - 1
+    job.state = DeliveryJob.UNLOADING
+    return state
 
 
 func _prepared_state() -> SimulationState:

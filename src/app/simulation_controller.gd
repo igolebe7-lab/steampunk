@@ -6,6 +6,7 @@ signal interpolation_changed(alpha: float)
 signal commands_flushed(state: SimulationState)
 
 const MAX_CATCH_UP_TICKS := 8
+const PAUSED_MAX_FPS := 10
 
 var tick_duration := 1.0 / float(SimulationRunner.DEFAULT_TICKS_PER_SECOND)
 
@@ -13,6 +14,7 @@ var _runner: SimulationRunner
 var _accumulator := 0.0
 var _paused := false
 var _speed_multiplier := 1
+var _running_max_fps := -1
 
 
 func configure(runner: SimulationRunner) -> void:
@@ -22,7 +24,13 @@ func configure(runner: SimulationRunner) -> void:
 
 
 func set_paused(value: bool) -> void:
+    if value and not _paused:
+        _running_max_fps = Engine.max_fps
+        Engine.max_fps = PAUSED_MAX_FPS
+    elif not value and _paused and _running_max_fps >= 0:
+        Engine.max_fps = _running_max_fps
     _paused = value
+    OS.low_processor_usage_mode = value
 
 
 func is_paused() -> bool:
@@ -52,7 +60,6 @@ func advance_frame(delta: float) -> void:
     if _runner == null or delta <= 0.0:
         return
     if _paused:
-        interpolation_changed.emit(get_interpolation_alpha())
         return
     _accumulator += delta * float(_speed_multiplier)
     var completed := 0

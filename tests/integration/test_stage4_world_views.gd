@@ -15,11 +15,15 @@ func _assert_road_and_heat_cache() -> void:
     map_state.get_cell(coord).road_level = RoadLevelDef.LEVEL_DIRT_ROAD
     var view := HexGridView.new()
     view.configure(map_state, HexLayout.new(32.0))
+    assert_eq(view.get_rebuild_count(), 1, "первичная настройка строит геометрический кэш один раз")
+    view.capture_tick(map_state)
+    assert_eq(view.get_rebuild_count(), 1, "неизменившаяся карта не пересобирает 324 гекса")
     view.set_heat_overlay({coord.key(): 0.75})
     assert_eq(view.get_cached_road_level(coord), RoadLevelDef.LEVEL_DIRT_ROAD, "road level кэшируется для _draw")
     assert_near(view.get_cached_heat(coord), 0.75, 0.001, "heat overlay кэшируется отдельно от simulation state")
     map_state.get_cell(coord).road_level = RoadLevelDef.LEVEL_PATH
     view.capture_tick(map_state)
+    assert_eq(view.get_rebuild_count(), 3, "изменение дороги пересобирает кэш после heat overlay")
     assert_near(view.get_cached_heat(coord), 0.75, 0.001, "road refresh не очищает включённый heat layer")
     view.free()
 

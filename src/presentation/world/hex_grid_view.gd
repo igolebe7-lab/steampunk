@@ -17,6 +17,8 @@ var _layout: HexLayout
 var _selected_coord: HexCoord
 var _heat_overlay: Dictionary = {}
 var _cell_visuals: Array[Dictionary] = []
+var _cached_road_levels: Dictionary = {}
+var _rebuild_count: int = 0
 
 
 func configure(map_state: HexMapState, layout: HexLayout) -> void:
@@ -28,8 +30,13 @@ func configure(map_state: HexMapState, layout: HexLayout) -> void:
 
 func capture_tick(map_state: HexMapState, heat_overlay: Variant = null) -> void:
     _map_state = map_state
+    var heat_changed := false
     if heat_overlay is Dictionary:
-        _heat_overlay = (heat_overlay as Dictionary).duplicate()
+        var next_heat := (heat_overlay as Dictionary).duplicate()
+        heat_changed = next_heat != _heat_overlay
+        _heat_overlay = next_heat
+    if not heat_changed and not _map_visuals_changed():
+        return
     _rebuild_cache()
     queue_redraw()
 
@@ -52,6 +59,10 @@ func get_cached_heat(coord: HexCoord) -> float:
         if (visual[&"coord"] as HexCoord).equals(coord):
             return visual[&"heat"] as float
     return 0.0
+
+
+func get_rebuild_count() -> int:
+    return _rebuild_count
 
 
 func select_at_local_position(local_position: Vector2) -> bool:
@@ -124,10 +135,12 @@ func _draw() -> void:
 
 func _rebuild_cache() -> void:
     _cell_visuals.clear()
+    _cached_road_levels.clear()
     if _map_state == null or _layout == null:
         return
     for cell: HexCellState in _map_state.get_cells():
         var coord := cell.coord
+        _cached_road_levels[coord.key()] = cell.road_level
         var road_segments: Array[PackedVector2Array] = []
         for neighbor: HexCoord in coord.neighbors():
             if _map_state.contains(neighbor):
@@ -143,6 +156,16 @@ func _rebuild_cache() -> void:
             &"road_segments": road_segments,
             &"heat": float(_heat_overlay.get(coord.key(), 0.0)),
         })
+    _rebuild_count += 1
+
+
+func _map_visuals_changed() -> bool:
+    if _map_state == null or _cached_road_levels.size() != _map_state.get_cells().size():
+        return true
+    for cell: HexCellState in _map_state.get_cells():
+        if (_cached_road_levels.get(cell.coord.key(), -1) as int) != cell.road_level:
+            return true
+    return false
 
 
 func _closed_polygon(points: PackedVector2Array) -> PackedVector2Array:

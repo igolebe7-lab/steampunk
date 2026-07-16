@@ -7,6 +7,7 @@ func run() -> Array[String]:
     _assert_loader_converts_flows()
     _assert_compatibility_duplicates_and_cycles()
     _assert_dispatch_stop()
+    _assert_path_cost_cache_tracks_routing_topology()
     _assert_removal_releases_idle_workers()
     _assert_removal_finishes_active_cargo()
     return finish()
@@ -69,6 +70,32 @@ func _assert_dispatch_stop() -> void:
     assert_true(result.accepted, "остановка отгрузки должна применяться")
     JobSystem.new().run(state, 1)
     assert_eq(state.jobs.size(), 0, "остановленная связь не создаёт jobs")
+
+
+func _assert_path_cost_cache_tracks_routing_topology() -> void:
+    var scenario := load("res://data/scenarios/full_industrial.tres") as ScenarioDef
+    var state := ScenarioLoader.new().load_scenario(scenario).state
+    var system := LogisticsLinkSystem.new()
+    var pathfinder := Pathfinder.new()
+    system.run(state, pathfinder)
+    var initial_searches: int = system.get_path_cost_evaluation_count()
+    assert_true(initial_searches > 0, "первичная топология вычисляет стоимость авторских маршрутов")
+
+    state.logistics_topology_dirty = true
+    system.run(state, pathfinder)
+    assert_eq(
+        system.get_path_cost_evaluation_count(),
+        initial_searches,
+        "неизменившаяся карта повторно использует стоимость маршрутов"
+    )
+
+    state.map_state.get_cell(HexCoord.new(6, 6)).road_level = RoadLevelDef.LEVEL_PATH
+    state.logistics_topology_dirty = true
+    system.run(state, pathfinder)
+    assert_true(
+        system.get_path_cost_evaluation_count() > initial_searches,
+        "изменение дороги инвалидирует производный кэш стоимости"
+    )
 
 
 func _assert_removal_releases_idle_workers() -> void:

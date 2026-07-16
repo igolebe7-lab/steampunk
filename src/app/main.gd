@@ -27,7 +27,7 @@ func _ready() -> void:
         push_error("scenario_load_failed: %s" % [load_result.errors])
         return
 
-    _runner = SimulationRunner.new(load_result.state)
+    _runner = SimulationRunner.new(load_result.state, false)
     _map_state = _runner.state.map_state
     _hex_layout = HexLayout.new(32.0, Vector2.ZERO)
     grid_view.configure(_map_state, _hex_layout)

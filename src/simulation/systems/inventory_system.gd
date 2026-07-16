@@ -64,10 +64,12 @@ func _advance_unloading(state: SimulationState, worker: WorkerState, target_tick
         _block_operation(worker, job, &"unload_blocked")
         return
 
+    var needs_topology_refresh := _needs_outgoing_link(state, destination, job.resource_id)
     if not destination.add_amount(job.resource_id, 1):
         _block_operation(worker, job, &"unload_blocked")
         return
-    state.logistics_topology_dirty = true
+    if needs_topology_refresh:
+        state.logistics_topology_dirty = true
     destination.release_incoming(job.resource_id, 1)
     worker.cargo_resource_id = &""
     worker.operation_progress = 0
@@ -116,3 +118,26 @@ func _release_orphan(worker: WorkerState) -> void:
 
 func _worker_precedes(left: WorkerState, right: WorkerState) -> bool:
     return left.id < right.id
+
+
+func _needs_outgoing_link(
+    state: SimulationState,
+    destination: BuildingState,
+    resource_id: StringName
+) -> bool:
+    var definition := state.catalog.get_building(destination.definition_id)
+    if definition == null or not definition.role in [
+        LogisticsPortDef.ROLE_STORAGE,
+        LogisticsPortDef.ROLE_MAIN_WAREHOUSE,
+        LogisticsPortDef.ROLE_TRANSFER_DEPOT,
+    ]:
+        return false
+    for value: Variant in state.logistics_links.values():
+        var link := value as LogisticsLinkState
+        if (
+            link.source_id == destination.id
+            and link.resource_id == resource_id
+            and not link.is_closing
+        ):
+            return false
+    return true
