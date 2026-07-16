@@ -5,6 +5,7 @@ var _layout: HexLayout
 var _worker_views: Dictionary = {}
 var _building_views: Dictionary = {}
 var _diagnostics_view: DiagnosticsView
+var _utility_network_view: UtilityNetworkView
 
 
 func configure(state: SimulationState, layout: HexLayout) -> void:
@@ -16,6 +17,9 @@ func configure(state: SimulationState, layout: HexLayout) -> void:
     _diagnostics_view = DiagnosticsView.new()
     add_child(_diagnostics_view)
     _diagnostics_view.configure(state, layout)
+    _utility_network_view = UtilityNetworkView.new()
+    add_child(_utility_network_view)
+    _utility_network_view.configure(state, layout)
     _sync_buildings(state)
     _sync_workers(state, true)
 
@@ -26,6 +30,7 @@ func capture_tick(state: SimulationState) -> void:
     _sync_buildings(state)
     _sync_workers(state, false)
     _diagnostics_view.capture_tick(state)
+    _utility_network_view.capture_tick(state)
 
 
 func set_interpolation(alpha: float) -> void:
@@ -47,6 +52,15 @@ func has_building_view(building_id: int) -> bool:
 
 func get_diagnostics_view() -> DiagnosticsView:
     return _diagnostics_view
+
+
+func get_utility_network_view() -> UtilityNetworkView:
+    return _utility_network_view
+
+
+func set_utility_layer_visible(value: bool) -> void:
+    if _utility_network_view != null:
+        _utility_network_view.visible = value
 
 
 func hit_test_worker(local_position: Vector2, radius: float = 14.0) -> int:

@@ -28,11 +28,24 @@ func select_at_local_position(local_position: Vector2) -> StringName:
     var coord := _layout.pixel_to_coord(local_position)
     var worker_id := _world.hit_test_worker(local_position)
     var building_id := _world.hit_test_building(local_position)
+    var utility_coord := _world.get_utility_network_view().hit_test_segment(local_position)
     var link_id := _world.get_diagnostics_view().hit_test_link(local_position)
-    return resolve_hit(worker_id, building_id, link_id, coord if _state.map_state.contains(coord) else null)
+    return resolve_hit(
+        worker_id,
+        building_id,
+        link_id,
+        coord if _state.map_state.contains(coord) else null,
+        utility_coord
+    )
 
 
-func resolve_hit(worker_id: int, building_id: int, link_id: int, coord: HexCoord) -> StringName:
+func resolve_hit(
+    worker_id: int,
+    building_id: int,
+    link_id: int,
+    coord: HexCoord,
+    utility_coord: HexCoord = null
+) -> StringName:
     selected_id = 0
     selected_coord = coord
     if worker_id > 0:
@@ -41,6 +54,9 @@ func resolve_hit(worker_id: int, building_id: int, link_id: int, coord: HexCoord
     elif building_id > 0:
         selected_kind = &"building"
         selected_id = building_id
+    elif utility_coord != null:
+        selected_kind = &"utility_segment"
+        selected_coord = utility_coord
     elif link_id > 0:
         selected_kind = &"link"
         selected_id = link_id

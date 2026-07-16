@@ -4,6 +4,7 @@ extends RefCounted
 var _runner: SimulationRunner
 var _simulation: SimulationController
 var _diagnostics: DiagnosticsView
+var _world: LogisticsWorldView
 var _labels: Dictionary = {}
 var _sequence: int = 1000
 
@@ -12,11 +13,13 @@ func configure(
     runner: SimulationRunner,
     simulation: SimulationController,
     diagnostics: DiagnosticsView,
-    labels: Dictionary = {}
+    labels: Dictionary = {},
+    world: LogisticsWorldView = null
 ) -> void:
     _runner = runner
     _simulation = simulation
     _diagnostics = diagnostics
+    _world = world
     _labels = labels
     refresh(runner.state)
 
@@ -30,6 +33,7 @@ func refresh(state: SimulationState) -> void:
     _set_label(&"wood", tr(&"ui.hud.wood").format({"value": wood}))
     _set_label(&"throughput", tr(&"ui.hud.throughput").format({"value": "%.1f" % throughput}))
     _set_label(&"tick", tr(&"ui.hud.tick").format({"value": state.tick}))
+    _set_label(&"phase", tr(StringName("phase.%s" % state.scenario_progress.phase)))
     var reason := state.diagnostic_report.code
     _set_label(&"status", tr(&"ui.status.select_hex") if reason.is_empty() else localized_reason(reason))
 
@@ -43,6 +47,9 @@ func set_speed_multiplier(value: int) -> bool:
 
 
 func set_layer_visible(layer: StringName, visible: bool) -> bool:
+    if layer == &"utilities" and _world != null:
+        _world.set_utility_layer_visible(visible)
+        return true
     return _diagnostics.set_layer_visible(layer, visible)
 
 
@@ -100,6 +107,10 @@ func submit_intent(intent: Dictionary) -> StringName:
                 _sequence,
                 intent.get(&"building_id", 0) as int
             )
+        &"pipe_build":
+            command = PipeCommand.build(target_tick, _sequence, intent.get(&"cells", []) as Array)
+        &"pipe_remove":
+            command = PipeCommand.remove(target_tick, _sequence, intent.get(&"cells", []) as Array)
         _:
             return &"invalid_command"
     var queued := _runner.enqueue(command)

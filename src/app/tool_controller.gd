@@ -6,9 +6,12 @@ const ROAD := &"road"
 const DEPOT := &"depot"
 const LINK_ORIGIN := &"link_origin"
 const LINK_DESTINATION := &"link_destination"
+const PIPE_BUILD := &"pipe_build"
+const PIPE_REMOVE := &"pipe_remove"
 
 var mode: StringName = INSPECT
 var link_origin_id: int = 0
+var pipe_coords: Array[HexCoord] = []
 
 
 func begin_road() -> void:
@@ -26,12 +29,48 @@ func begin_link() -> void:
     link_origin_id = 0
 
 
+func begin_pipe_build() -> void:
+    mode = PIPE_BUILD
+    link_origin_id = 0
+    pipe_coords.clear()
+
+
+func begin_pipe_remove() -> void:
+    mode = PIPE_REMOVE
+    link_origin_id = 0
+    pipe_coords.clear()
+
+
+func finish_pipe() -> Dictionary:
+    if not mode in [PIPE_BUILD, PIPE_REMOVE] or pipe_coords.is_empty():
+        return {&"code": &"ignored"}
+    var result := {
+        &"code": mode,
+        &"cells": pipe_coords.duplicate(),
+    }
+    cancel()
+    return result
+
+
 func cancel() -> void:
     mode = INSPECT
     link_origin_id = 0
+    pipe_coords.clear()
 
 
 func handle_selection(kind: StringName, entity_id: int, coord: HexCoord) -> Dictionary:
+    if mode in [PIPE_BUILD, PIPE_REMOVE] and kind in [&"hex", &"utility_segment"] and coord != null:
+        if pipe_coords.has(coord):
+            return {&"code": &"ignored"}
+        if not pipe_coords.is_empty() and pipe_coords[-1].distance_to(coord) != 1:
+            return {&"code": &"ignored"}
+        pipe_coords.append(HexCoord.new(coord.q, coord.r))
+        return {
+            &"code": &"pipe_preview",
+            &"operation": mode,
+            &"cells": pipe_coords.duplicate(),
+            &"cost": ceili(float(pipe_coords.size()) / 2.0),
+        }
     if mode == ROAD and kind == &"hex" and coord != null:
         return {&"code": &"road_cell", &"coord": coord}
     if mode == DEPOT and kind == &"hex" and coord != null:

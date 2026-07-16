@@ -2,6 +2,7 @@ extends Node2D
 
 @onready var grid_view: HexGridView = $World/HexGridView
 @onready var logistics_world_view: LogisticsWorldView = $World/LogisticsWorldView
+@onready var industrial_effects_view: IndustrialEffectsView = $World/IndustrialEffectsView
 @onready var simulation_controller: SimulationController = $SimulationController
 @onready var camera_controller: CameraController = $CameraController
 @onready var title_label: Label = $UI/TopBar/Margin/HBox/Title
@@ -19,7 +20,7 @@ var _tool_controller := ToolController.new()
 func _ready() -> void:
     title_label.text = tr(&"ui.app.title")
     status_label.text = tr(&"ui.status.select_hex")
-    var scenario := load("res://data/scenarios/physical_logistics.tres") as ScenarioDef
+    var scenario := load("res://data/scenarios/full_industrial.tres") as ScenarioDef
     var load_result := ScenarioLoader.new().load_scenario(scenario)
     if not load_result.is_success():
         push_error("scenario_load_failed: %s" % [load_result.errors])
@@ -30,6 +31,7 @@ func _ready() -> void:
     _hex_layout = HexLayout.new(32.0, Vector2.ZERO)
     grid_view.configure(_map_state, _hex_layout)
     logistics_world_view.configure(_runner.state, _hex_layout)
+    industrial_effects_view.configure(_hex_layout)
     simulation_controller.configure(_runner)
     _selection_controller.configure(_runner.state, _hex_layout, logistics_world_view)
     _inspector_controller.configure($UI/RightPanel/Margin/VBox/Scroll/Inspector, {
@@ -47,10 +49,12 @@ func _ready() -> void:
         &"throughput": $UI/TopBar/Margin/HBox/Throughput,
         &"tick": $UI/TopBar/Margin/HBox/Tick,
         &"status": status_label,
-    })
+        &"phase": $UI/LeftPanel/Margin/Layers/Phase,
+    }, logistics_world_view)
     _connect_ui()
     camera_controller.configure_bounds(grid_view.get_world_rect().grow(64.0))
     camera_controller.set_zoom_factor(0.75)
+    _hud_controller.refresh(_runner.state)
 
 
 func get_runner() -> SimulationRunner:
@@ -81,10 +85,13 @@ func _connect_ui() -> void:
     $UI/LeftPanel/Margin/Layers/Links.toggled.connect(func(value: bool) -> void: _hud_controller.set_layer_visible(&"links", value))
     $UI/LeftPanel/Margin/Layers/Routes.toggled.connect(func(value: bool) -> void: _hud_controller.set_layer_visible(&"routes", value))
     $UI/LeftPanel/Margin/Layers/Load.toggled.connect(func(value: bool) -> void: _hud_controller.set_layer_visible(&"load", value))
+    $UI/LeftPanel/Margin/Layers/Utilities.toggled.connect(func(value: bool) -> void: _hud_controller.set_layer_visible(&"utilities", value))
     $UI/BottomBar/Margin/Tools/Inspect.pressed.connect(_begin_inspect)
     $UI/BottomBar/Margin/Tools/Road.pressed.connect(_begin_road)
     $UI/BottomBar/Margin/Tools/Depot.pressed.connect(_begin_depot)
     $UI/BottomBar/Margin/Tools/Link.pressed.connect(_begin_link)
+    $UI/BottomBar/Margin/Tools/PipeBuild.pressed.connect(_begin_pipe_build)
+    $UI/BottomBar/Margin/Tools/PipeRemove.pressed.connect(_begin_pipe_remove)
     $UI/RightPanel/Margin/VBox/LinkControls/Apply.pressed.connect(_apply_link_settings)
     $UI/RightPanel/Margin/VBox/LinkControls/Remove.pressed.connect(_remove_selected_link)
     $UI/RightPanel/Margin/VBox/LinkControls/Reset.pressed.connect(_reset_selected_link)
@@ -101,7 +108,12 @@ func _on_world_position_selected(local_position: Vector2) -> void:
     )
     var code := intent.get(&"code", &"") as StringName
     if code == &"inspect":
-        _inspector_controller.show_selection(_runner.state, kind, _selection_controller.selected_id)
+        _inspector_controller.show_selection(
+            _runner.state,
+            kind,
+            _selection_controller.selected_id,
+            _selection_controller.selected_coord
+        )
         if _selection_controller.selected_coord != null:
             status_label.text = tr(&"ui.status.selected_hex").format({
                 "q": _selection_controller.selected_coord.q,
@@ -109,6 +121,11 @@ func _on_world_position_selected(local_position: Vector2) -> void:
             })
     elif code == &"link_origin":
         status_label.text = tr(&"ui.status.tool.link_destination")
+    elif code == &"pipe_preview":
+        status_label.text = tr(&"ui.status.tool.pipe_preview").format({
+            "segments": (intent.get(&"cells", []) as Array).size(),
+            "cost": intent.get(&"cost", 0),
+        })
     elif code != &"ignored":
         var result := _hud_controller.submit_intent(intent)
         status_label.text = _hud_controller.localized_command_message(result)
@@ -117,10 +134,16 @@ func _on_world_position_selected(local_position: Vector2) -> void:
 func _on_state_changed(state: SimulationState) -> void:
     grid_view.capture_tick(state.map_state)
     logistics_world_view.capture_tick(state)
+    industrial_effects_view.capture_tick(state)
     _selection_controller.capture_tick(state)
     _hud_controller.refresh(state)
     if not _selection_controller.selected_kind.is_empty():
-        _inspector_controller.show_selection(state, _selection_controller.selected_kind, _selection_controller.selected_id)
+        _inspector_controller.show_selection(
+            state,
+            _selection_controller.selected_kind,
+            _selection_controller.selected_id,
+            _selection_controller.selected_coord
+        )
 
 
 func _on_interpolation_changed(alpha: float) -> void:
@@ -151,6 +174,30 @@ func _begin_depot() -> void:
 func _begin_link() -> void:
     _tool_controller.begin_link()
     status_label.text = tr(&"ui.status.tool.link")
+
+
+func _begin_pipe_build() -> void:
+    if _tool_controller.mode == ToolController.PIPE_BUILD:
+        _submit_pipe_preview()
+        return
+    _tool_controller.begin_pipe_build()
+    status_label.text = tr(&"ui.status.tool.pipe_build")
+
+
+func _begin_pipe_remove() -> void:
+    if _tool_controller.mode == ToolController.PIPE_REMOVE:
+        _submit_pipe_preview()
+        return
+    _tool_controller.begin_pipe_remove()
+    status_label.text = tr(&"ui.status.tool.pipe_remove")
+
+
+func _submit_pipe_preview() -> void:
+    var intent := _tool_controller.finish_pipe()
+    if (intent.get(&"code", &"ignored") as StringName) == &"ignored":
+        return
+    var result := _hud_controller.submit_intent(intent)
+    status_label.text = _hud_controller.localized_command_message(result)
 
 
 func _apply_link_settings() -> void:
@@ -213,6 +260,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
         KEY_2: _begin_road()
         KEY_3: _begin_depot()
         KEY_4: _begin_link()
+        KEY_5: _begin_pipe_build()
+        KEY_6: _begin_pipe_remove()
         KEY_SPACE: _on_pause_pressed()
         KEY_ESCAPE:
             _tool_controller.cancel()

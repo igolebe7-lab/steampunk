@@ -5,6 +5,7 @@ var _label: RichTextLabel
 var _controls: Dictionary = {}
 var selected_kind: StringName = &""
 var selected_id: int = 0
+var selected_coord: HexCoord
 
 
 func configure(label: RichTextLabel, controls: Dictionary = {}) -> void:
@@ -14,11 +15,12 @@ func configure(label: RichTextLabel, controls: Dictionary = {}) -> void:
     _set_controls_visible(false, false)
 
 
-func show_selection(state: SimulationState, kind: StringName, entity_id: int) -> void:
+func show_selection(state: SimulationState, kind: StringName, entity_id: int, coord: HexCoord = null) -> void:
     selected_kind = kind
     selected_id = entity_id
+    selected_coord = coord
     if _label != null:
-        _label.text = build_text(state, kind, entity_id)
+        _label.text = build_text(state, kind, entity_id, coord)
     _refresh_controls(state)
 
 
@@ -54,7 +56,7 @@ func _set_controls_visible(link_visible: bool, building_visible: bool) -> void:
         building_controls.visible = building_visible
 
 
-func build_text(state: SimulationState, kind: StringName, entity_id: int) -> String:
+func build_text(state: SimulationState, kind: StringName, entity_id: int, coord: HexCoord = null) -> String:
     if state == null:
         return tr(&"ui.inspector.empty")
     if kind == &"worker":
@@ -63,6 +65,8 @@ func build_text(state: SimulationState, kind: StringName, entity_id: int) -> Str
         return _building_text(state, state.get_building(entity_id))
     if kind == &"link":
         return _link_text(state, state.logistics_links.get(entity_id) as LogisticsLinkState)
+    if kind == &"utility_segment":
+        return _utility_text(state, coord)
     return tr(&"ui.inspector.empty")
 
 
@@ -88,7 +92,7 @@ func _building_text(state: SimulationState, building: BuildingState) -> String:
     if building == null:
         return tr(&"ui.inspector.empty")
     var definition := state.catalog.get_building(building.definition_id)
-    return "%s\n%s" % [
+    var text := "%s\n%s" % [
         tr(&"ui.inspector.building").format({"id": building.id}),
         tr(&"ui.inspector.building.body").format({
             "name": tr(definition.display_name_key),
@@ -99,6 +103,28 @@ func _building_text(state: SimulationState, building: BuildingState) -> String:
             "direct": tr(&"ui.value.yes") if building.allows_direct_delivery_to_main else tr(&"ui.value.no"),
         }),
     ]
+    var production := state.production_states.get(building.id) as ProductionState
+    if production != null:
+        text += "\n%s" % tr(&"ui.inspector.production.body").format({
+            "status": tr(StringName("production.status.%s" % production.status)),
+            "progress": production.progress_ticks,
+            "heat": production.heat_level,
+            "cycles": production.completed_cycles,
+            "reason": tr(StringName("reason.%s" % production.blocked_reason)) if not production.blocked_reason.is_empty() else tr(&"ui.value.none"),
+        })
+    return text
+
+
+func _utility_text(state: SimulationState, coord: HexCoord) -> String:
+    var segment := state.utility_network.get_segment(coord)
+    if segment == null:
+        return tr(&"ui.inspector.empty")
+    return tr(&"ui.inspector.utility.body").format({
+        "q": coord.q,
+        "r": coord.r,
+        "commodity": tr(StringName("resource.%s.name" % segment.commodity_id)),
+        "component": segment.component_id,
+    })
 
 
 func _link_text(state: SimulationState, link: LogisticsLinkState) -> String:
