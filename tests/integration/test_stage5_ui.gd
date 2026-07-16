@@ -31,18 +31,17 @@ func _assert_pipe_intent(instance: Node) -> void:
     main.inventories[&"iron"] = 10
     runner.state.generated_totals[&"iron"] = 10
     var path: Array[HexCoord] = [
-        HexCoord.new(13, 8),
-        HexCoord.new(12, 9),
-        HexCoord.new(11, 9),
-        HexCoord.new(10, 9),
-        HexCoord.new(10, 8),
+        HexCoord.new(4, 12),
+        HexCoord.new(3, 13),
+        HexCoord.new(2, 14),
+        HexCoord.new(2, 15),
     ]
     var code := (instance.get_hud_controller() as HUDController).submit_intent({
         &"code": &"pipe_build",
         &"cells": path,
     })
     assert_eq(code, &"accepted", "HUD проводит трубу через command runner")
-    assert_eq(runner.state.utility_network.segments.size(), 5, "пять сегментов применены атомарно")
+    assert_eq(runner.state.utility_network.segments.size(), 4, "четыре сегмента применены атомарно")
 
 
 func _assert_result_and_effects(instance: Node) -> void:

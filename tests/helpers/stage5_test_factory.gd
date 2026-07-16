@@ -5,6 +5,116 @@ const IRON := &"iron"
 const WATER := &"water"
 
 
+static func full_pipe_path() -> Array[HexCoord]:
+    return [
+        HexCoord.new(4, 12),
+        HexCoord.new(3, 13),
+        HexCoord.new(2, 14),
+        HexCoord.new(2, 15),
+    ]
+
+
+static func full_runner() -> SimulationRunner:
+    return SimulationRunner.new(production_state())
+
+
+static func can_build_full_pipe(state: SimulationState) -> bool:
+    if state == null or not state.utility_network.segments.is_empty():
+        return false
+    var main := state.get_building(state.main_warehouse_id)
+    return (
+        main != null
+        and main.get_amount(IRON) - main.get_outgoing_reserved(IRON) >= 2
+    )
+
+
+static func run_full_scenario(use_pipe: bool, maximum_ticks: int) -> Dictionary:
+    var runner := full_runner()
+    var pipe_built := false
+    while runner.state.tick < maximum_ticks:
+        if use_pipe and not pipe_built and can_build_full_pipe(runner.state):
+            runner.enqueue(PipeCommand.build(
+                runner.state.tick + 1,
+                5001,
+                full_pipe_path()
+            ))
+        runner.step()
+        pipe_built = pipe_built or not runner.state.utility_network.segments.is_empty()
+        if runner.state.scenario_progress.phase == ScenarioProgressState.COMPLETED:
+            break
+    return {
+        &"state": runner.state,
+        &"ticks": runner.state.tick,
+        &"pipe_built": pipe_built,
+    }
+
+
+static func run_water_window(use_pipe: bool, window_ticks: int) -> int:
+    var runner := full_runner()
+    var state := runner.state
+    var boiler := building(state, &"boiler")
+    var boiler_production := production(state, &"boiler")
+    var hammer_production := production(state, &"steam_hammer")
+    boiler_production.status = ProductionState.WAITING_INPUTS
+    hammer_production.status = ProductionState.COMPLETED
+    state.scenario_progress.phase = ScenarioProgressState.BOILER_SUPPLY
+    state.scenario_progress.phase_entry_tick = 0
+    var water_link_ids: Array[int] = []
+    for value: Variant in state.logistics_links.values():
+        var link := value as LogisticsLinkState
+        if link.resource_id == WATER:
+            water_link_ids.append(link.id)
+    for link_id: int in water_link_ids:
+        state.logistics_links.erase(link_id)
+    state.logistics_topology_dirty = false
+    var main := state.get_building(state.main_warehouse_id)
+    if use_pipe:
+        main.inventories[IRON] = 2
+        state.generated_totals[IRON] = 2
+        var result := CommandSystem.new().apply(
+            state,
+            PipeCommand.build(1, 6001, full_pipe_path())
+        )
+        assert(result.accepted, "тестовая полная труба должна строиться")
+    else:
+        main.inventories[WATER] = 60
+        state.generated_totals[WATER] = 60
+        var link := LogisticsLinkState.new(
+            state.next_link_id,
+            main.id,
+            boiler.id,
+            WATER,
+            false,
+            1,
+            3
+        )
+        state.logistics_links[link.id] = link
+        state.next_link_id += 1
+    var before := (
+        state.utility_network.pipe_water_delivered
+        if use_pipe
+        else state.utility_network.manual_water_delivered
+    )
+    _consume_test_water(state, boiler)
+    for _index in window_ticks:
+        runner.step()
+        _consume_test_water(state, boiler)
+    var after := (
+        state.utility_network.pipe_water_delivered
+        if use_pipe
+        else state.utility_network.manual_water_delivered
+    )
+    return after - before
+
+
+static func _consume_test_water(state: SimulationState, boiler: BuildingState) -> void:
+    var amount := boiler.get_amount(WATER)
+    if amount <= 0:
+        return
+    boiler.remove_amount(WATER, amount)
+    state.consumed_totals[WATER] = (state.consumed_totals.get(WATER, 0) as int) + amount
+
+
 static func production_state() -> SimulationState:
     var scenario := load("res://data/scenarios/full_industrial.tres") as ScenarioDef
     var result := ScenarioLoader.new().load_scenario(scenario)

@@ -59,17 +59,27 @@ static func demand_capacity(state: SimulationState, link: LogisticsLinkState) ->
     var destination := state.get_building(link.destination_id)
     if destination == null:
         return 0
+    return production_resource_capacity(state, destination, link.resource_id)
+
+
+static func production_resource_capacity(
+    state: SimulationState,
+    destination: BuildingState,
+    resource_id: StringName
+) -> int:
     var definition := state.catalog.get_building(destination.definition_id)
     if definition == null or definition.role != LogisticsPortDef.ROLE_PRODUCTION:
         return destination.free_capacity()
 
     var production := state.production_states.get(destination.id) as ProductionState
-    if production == null or production.status in [ProductionState.LOCKED, ProductionState.COMPLETED]:
+    if production == null:
+        return destination.free_capacity()
+    if production.status in [ProductionState.LOCKED, ProductionState.COMPLETED]:
         return 0
     var recipe := state.catalog.get_recipe(production.recipe_id)
     if recipe == null:
         return 0
-    var amount_per_cycle := recipe.input_amount(link.resource_id)
+    var amount_per_cycle := recipe.input_amount(resource_id)
     if amount_per_cycle <= 0:
         return 0
     if recipe.result_code == &"hammer_struck":
@@ -78,7 +88,7 @@ static func demand_capacity(state: SimulationState, link: LogisticsLinkState) ->
             return 0
 
     var target := amount_per_cycle * recipe.input_buffer_cycles
-    var missing := target - destination.get_amount(link.resource_id) - destination.get_incoming_reserved(link.resource_id)
+    var missing := target - destination.get_amount(resource_id) - destination.get_incoming_reserved(resource_id)
     return mini(maxi(missing, 0), destination.free_capacity())
 
 

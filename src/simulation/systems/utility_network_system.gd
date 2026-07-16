@@ -105,6 +105,6 @@ func _has_port(definition: BuildingDef, direction: StringName, commodity_id: Str
 func _first_available_destination(state: SimulationState, ids: Array[int]) -> BuildingState:
     for building_id: int in ids:
         var building := state.get_building(building_id)
-        if building != null and building.free_capacity() > 0:
+        if building != null and JobSystem.production_resource_capacity(state, building, WATER) > 0:
             return building
     return null
