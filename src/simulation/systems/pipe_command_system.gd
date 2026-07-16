@@ -50,6 +50,9 @@ func _build(state: SimulationState, command: PipeCommand) -> CommandResult:
         assert(added, "сегменты проверены до мутации")
     state.consumed_totals[IRON] = (state.consumed_totals.get(IRON, 0) as int) + cost
     state.utility_network.topology_revision += 1
+    var event := SimulationEvent.new(&"pipe_built", command.target_tick)
+    event.metric_value = coords.size()
+    state.events.append(event)
     return CommandResult.success(command.id, {&"cost": cost, &"segment_count": coords.size()})
 
 
@@ -69,6 +72,9 @@ func _remove(state: SimulationState, command: PipeCommand) -> CommandResult:
         var removed := state.utility_network.remove_segment(coord)
         assert(removed, "сегменты проверены до удаления")
     state.utility_network.topology_revision += 1
+    var event := SimulationEvent.new(&"pipe_removed", command.target_tick)
+    event.metric_value = coords.size()
+    state.events.append(event)
     return CommandResult.success(command.id, {&"segment_count": coords.size()})
 
 

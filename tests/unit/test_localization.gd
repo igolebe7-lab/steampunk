@@ -16,7 +16,10 @@ func run() -> Array[String]:
         &"ui.hud.wood", &"ui.hud.throughput", &"ui.hud.tick", &"ui.hud.pause",
         &"ui.hud.speed_1", &"ui.hud.speed_2", &"ui.hud.speed_4",
         &"ui.layer.links", &"ui.layer.routes", &"ui.layer.load",
+        &"ui.layer.utilities", &"phase.observation", &"phase.site_preparation",
+        &"phase.boiler_supply", &"phase.warming", &"phase.first_strike", &"phase.completed",
         &"ui.tool.inspect", &"ui.tool.road", &"ui.tool.depot", &"ui.tool.link",
+        &"ui.tool.pipe_build", &"ui.tool.pipe_remove", &"ui.result.title", &"ui.result.continue",
         &"ui.management.quota", &"ui.management.priority", &"ui.management.dispatch",
         &"ui.management.apply_link", &"ui.management.remove_link", &"ui.management.reset_link",
         &"ui.management.direct_main", &"ui.management.apply_direct",
@@ -25,6 +28,7 @@ func run() -> Array[String]:
         &"reason.no_destination", &"reason.destination_full", &"reason.source_full",
         &"reason.worker_shortage", &"reason.route_conflict", &"reason.relay_backlog",
         &"reason.no_path", &"command.accepted", &"command.insufficient_wood",
+        &"reason.no_coal", &"reason.no_water", &"reason.boiler_not_hot",
         &"command.unknown",
     ]
     var command_codes: Array[StringName] = [
@@ -38,6 +42,9 @@ func run() -> Array[String]:
         &"duplicate_link", &"link_cycle", &"incompatible_link", &"source_slots_exceeded",
         &"no_path", &"unknown_link", &"invalid_link_settings", &"link_quota_in_use",
         &"invalid_dispatch_source", &"unknown_main_warehouse",
+        &"empty_pipe_path", &"pipe_cell_occupied", &"pipe_segment_exists",
+        &"invalid_pipe_origin", &"invalid_pipe_destination", &"insufficient_iron",
+        &"pipe_segment_missing", &"incompatible_utility_type", &"invalid_pipe_path",
     ]
     for code: StringName in command_codes:
         required_keys.append(StringName("command.%s" % code))

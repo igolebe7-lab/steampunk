@@ -15,6 +15,7 @@ var _hud_controller := HUDController.new()
 var _inspector_controller := InspectorController.new()
 var _selection_controller := SelectionController.new()
 var _tool_controller := ToolController.new()
+var _result_panel_controller := ResultPanelController.new()
 
 
 func _ready() -> void:
@@ -51,6 +52,12 @@ func _ready() -> void:
         &"status": status_label,
         &"phase": $UI/LeftPanel/Margin/Layers/Phase,
     }, logistics_world_view)
+    _result_panel_controller.configure(
+        $UI/ResultPanel,
+        $UI/ResultPanel/Margin/VBox/Title,
+        $UI/ResultPanel/Margin/VBox/Metrics,
+        $UI/ResultPanel/Margin/VBox/Continue
+    )
     _connect_ui()
     camera_controller.configure_bounds(grid_view.get_world_rect().grow(64.0))
     camera_controller.set_zoom_factor(0.75)
@@ -67,6 +74,10 @@ func get_hud_controller() -> HUDController:
 
 func get_inspector_controller() -> InspectorController:
     return _inspector_controller
+
+
+func get_result_panel_controller() -> ResultPanelController:
+    return _result_panel_controller
 
 
 func get_diagnostics_view() -> DiagnosticsView:
@@ -137,6 +148,7 @@ func _on_state_changed(state: SimulationState) -> void:
     industrial_effects_view.capture_tick(state)
     _selection_controller.capture_tick(state)
     _hud_controller.refresh(state)
+    _result_panel_controller.refresh(state)
     if not _selection_controller.selected_kind.is_empty():
         _inspector_controller.show_selection(
             state,

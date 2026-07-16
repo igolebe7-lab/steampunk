@@ -110,3 +110,50 @@ action.awaiting_destination_path,Ожидает путь к назначению
 action.to_destination,Идёт к назначению,Moving to destination
 action.unloading,Разгружает,Unloading
 action.blocked,Заблокирован,Blocked
+building.iron_source.name,Источник железа,Iron Source
+building.coal_source.name,Источник угля,Coal Source
+building.water_source.name,Источник воды,Water Source
+building.pump_station.name,Насосная станция,Pump Station
+recipe.industrial_site.name,Подготовка промышленной площадки,Industrial Site Preparation
+recipe.industrial_site.description,Доставка материалов и подготовка основания,Deliver materials and prepare the foundation
+recipe.boiler_heat.name,Цикл прогрева котла,Boiler Heating Cycle
+recipe.boiler_heat.description,Сжигает уголь и воду для устойчивого прогрева,Consumes coal and water for stable heating
+recipe.first_hammer_strike.name,Первый удар молота,First Hammer Strike
+recipe.first_hammer_strike.description,Пробный удар полностью прогретого парового молота,Test strike of the fully heated steam hammer
+ui.layer.utilities,Инженерные сети,Utilities
+ui.tool.pipe_build,Провести трубу,Build Pipe
+ui.tool.pipe_remove,Разобрать трубу,Remove Pipe
+ui.status.tool.pipe_build,Выберите путь от насосной к котлу; нажмите кнопку повторно для строительства,Select a path from pump to boiler; press the button again to build
+ui.status.tool.pipe_remove,Выберите связный участок трубы; нажмите кнопку повторно для разбора,Select a connected pipe section; press the button again to remove
+ui.status.tool.pipe_preview,"Сегментов: {segments}; стоимость: {cost} железа","Segments: {segments}; cost: {cost} iron"
+phase.inactive,Сценарий не активен,Scenario inactive
+phase.observation,Наблюдение за исходной логистикой,Observe the Initial Logistics
+phase.site_preparation,Подготовка промышленной площадки,Prepare the Industrial Site
+phase.boiler_supply,Организация снабжения котла,Supply the Boiler
+phase.warming,Устойчивый прогрев котла,Heat the Boiler Steadily
+phase.first_strike,Подготовка первого удара,Prepare the First Strike
+phase.completed,Промышленный контур запущен,Industrial Loop Online
+production.status.locked,Заблокировано,Locked
+production.status.waiting_inputs,Ожидает ресурсы,Waiting for Inputs
+production.status.running,В работе,Running
+production.status.blocked,Заблокировано условием,Condition Blocked
+production.status.completed,Завершено,Completed
+ui.inspector.production.body,"Производство: {status}\nПрогресс: {progress}\nЖар: {heat}/5\nЦиклов: {cycles}\nПричина: {reason}","Production: {status}\nProgress: {progress}\nHeat: {heat}/5\nCycles: {cycles}\nReason: {reason}"
+ui.inspector.utility.body,"Водопровод [{q}, {r}]\nСреда: {commodity}\nКомпонент: {component}","Pipe [{q}, {r}]\nCommodity: {commodity}\nComponent: {component}"
+ui.result.title,Промышленный контур запущен,Industrial Loop Online
+ui.result.metrics,"Активное время: {active} тиков\nЗавершено доставок: {jobs}\nВода в бочках: {manual}\nВода по трубе: {pipe}\nУскорение трубы: ×{ratio}","Active time: {active} ticks\nCompleted deliveries: {jobs}\nBarrel water: {manual}\nPipe water: {pipe}\nPipe acceleration: ×{ratio}"
+ui.result.continue,Продолжить симуляцию,Continue Simulation
+reason.no_wood,Не хватает дерева,Not enough wood
+reason.no_iron,Не хватает железа,Not enough iron
+reason.no_coal,Не хватает угля,Not enough coal
+reason.no_water,Не хватает воды,Not enough water
+reason.boiler_not_hot,Котёл ещё не прогрет,Boiler is not hot enough
+command.empty_pipe_path,Не выбран путь трубы,No pipe path selected
+command.pipe_cell_occupied,Клетка трубы занята зданием,Pipe cell is occupied by a building
+command.pipe_segment_exists,На клетке уже есть труба,A pipe already occupies this cell
+command.invalid_pipe_origin,Труба должна начинаться у насосной,Pipe must start next to a pump
+command.invalid_pipe_destination,Труба должна заканчиваться у котла,Pipe must end next to a boiler
+command.insufficient_iron,Недостаточно железа,Not enough iron
+command.pipe_segment_missing,На выбранной клетке нет трубы,No pipe exists on the selected cell
+command.incompatible_utility_type,Несовместимый тип инженерной сети,Incompatible utility type
+command.invalid_pipe_path,Путь трубы должен быть непрерывным,Pipe path must be continuous

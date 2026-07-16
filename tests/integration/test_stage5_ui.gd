@@ -7,6 +7,7 @@ func run() -> Array[String]:
     tree.root.add_child(instance)
     _assert_stage5_nodes(instance)
     _assert_pipe_intent(instance)
+    _assert_result_and_effects(instance)
     instance.free()
     return finish()
 
@@ -42,3 +43,27 @@ func _assert_pipe_intent(instance: Node) -> void:
     })
     assert_eq(code, &"accepted", "HUD проводит трубу через command runner")
     assert_eq(runner.state.utility_network.segments.size(), 5, "пять сегментов применены атомарно")
+
+
+func _assert_result_and_effects(instance: Node) -> void:
+    var effects := instance.get_node("World/IndustrialEffectsView")
+    assert_eq(effects.get_signal_count(), 4, "четыре процедурных звуковых сигнала созданы")
+    assert_true(effects.get_signal_data_size(&"hammer") > 0, "звук молота содержит PCM-данные")
+
+    var state: SimulationState = instance.get_runner().state
+    state.scenario_progress.phase = ScenarioProgressState.COMPLETED
+    state.scenario_progress.hammer_strikes = 1
+    state.scenario_progress.completed_tick = 1200
+    state.scenario_progress.final_metrics = {
+        &"active_ticks": 300,
+        &"manual_water": 2,
+        &"pipe_water": 12,
+        &"completed_jobs": 20,
+    }
+    instance.get_result_panel_controller().refresh(state)
+    var panel := instance.get_node("UI/ResultPanel") as Control
+    assert_true(panel.visible, "итоговая панель показывается после первого удара")
+    assert_true(
+        not (instance.get_node("UI/ResultPanel/Margin/VBox/Metrics") as RichTextLabel).text.contains("ui.result"),
+        "итоговая панель показывает переведённый текст"
+    )
