@@ -43,6 +43,13 @@ func run() -> Array[String]:
     var interaction_hash := StateHasher.new().hash_state(runner.state)
     instance.call("_begin_pipe_build")
     var layout := HexLayout.new(32.0, Vector2.ZERO)
+    var invalid_start := HexCoord.new(8, 4)
+    instance.call("_on_world_position_selected", layout.coord_to_pixel(invalid_start))
+    var tools := instance.get("_tool_controller") as ToolController
+    assert_true(
+        tools.pipe_coords.is_empty(),
+        "заранее недопустимая клетка не попадает в маршрут трубы"
+    )
     for coord: HexCoord in Stage5TestFactory.full_pipe_path():
         var position := layout.coord_to_pixel(coord)
         instance.call("_on_world_position_hovered", position)

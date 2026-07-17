@@ -47,7 +47,9 @@ func present(feedback: InteractionFeedbackState) -> void:
     )
     if feedback.target_state == InteractionFeedbackState.INVALID and feedback.hover_coord != null:
         _target_visual_count += 1
-    _preview_visual_count = feedback.preview_coords.size()
+    _preview_visual_count = feedback.preview_coords.size() + (
+        1 if _has_link_preview(feedback) else 0
+    )
     _target_state = feedback.target_state
     _rebuild_count += 1
     queue_redraw()
@@ -91,6 +93,7 @@ func _draw() -> void:
             _layout.polygon_corners(coord),
             Color(PREVIEW_COLOR, PREVIEW_COLOR.a * 0.32)
         )
+    _draw_link_preview()
     if _feedback.hover_coord != null:
         if _feedback.target_state == InteractionFeedbackState.INVALID:
             _draw_hex_target(
@@ -108,6 +111,36 @@ func _draw() -> void:
     if _feedback.selected_coord != null:
         _draw_outline(_feedback.selected_coord, SELECTED_COLOR, 4.0)
         _draw_outline(_feedback.selected_coord, SELECTED_COLOR.lightened(0.25), 1.5, 5.0)
+
+
+func _draw_link_preview() -> void:
+    if not _has_link_preview(_feedback):
+        return
+    var source := _state.get_building(_feedback.selected_id)
+    var destination := _state.get_building(_feedback.hover_id)
+    if source == null or destination == null:
+        return
+    draw_dashed_line(
+        _layout.coord_to_pixel(source.coord),
+        _layout.coord_to_pixel(destination.coord),
+        PREVIEW_COLOR,
+        3.0,
+        8.0,
+        true
+    )
+
+
+func _has_link_preview(feedback: InteractionFeedbackState) -> bool:
+    return (
+        feedback != null
+        and feedback.mode == ToolController.LINK_DESTINATION
+        and feedback.target_state == InteractionFeedbackState.VALID
+        and feedback.selected_kind == &"building"
+        and feedback.hover_kind == &"building"
+        and feedback.selected_id > 0
+        and feedback.hover_id > 0
+        and feedback.selected_id != feedback.hover_id
+    )
 
 
 func _draw_hex_target(coord: HexCoord, color: Color, state: StringName) -> void:

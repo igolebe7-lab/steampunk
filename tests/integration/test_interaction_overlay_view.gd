@@ -28,6 +28,19 @@ func run() -> Array[String]:
     invalid.set_hover(&"hex", 0, HexCoord.new(6, 6))
     overlay.present(invalid)
     assert_eq(overlay.get_target_visual_count(), 3, "недопустимый hover добавляется отдельно от допустимых целей")
+    var link_preview := InteractionFeedbackState.new()
+    link_preview.mode = ToolController.LINK_DESTINATION
+    link_preview.target_state = InteractionFeedbackState.VALID
+    var source := Stage5TestFactory.building(state, &"wood_source")
+    var destination := state.get_building(state.main_warehouse_id)
+    link_preview.set_selection(&"building", source.id, source.coord)
+    link_preview.set_hover(&"building", destination.id, destination.coord)
+    overlay.present(link_preview)
+    assert_eq(
+        overlay.get_preview_visual_count(),
+        1,
+        "overlay кэширует линию предпросмотра логистической связи"
+    )
     assert_eq(overlay.get_child_count(), 0, "overlay не создаёт Node на каждый гекс")
     overlay.free()
     return finish()

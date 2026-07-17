@@ -165,6 +165,15 @@ func _on_world_position_hovered(local_position: Vector2) -> void:
 
 func _on_world_position_selected(local_position: Vector2) -> void:
     var kind := _selection_controller.select_at_local_position(local_position)
+    var invalid_reason := _known_invalid_target_reason(
+        kind,
+        _selection_controller.selected_id,
+        _selection_controller.selected_coord
+    )
+    if not invalid_reason.is_empty():
+        status_label.text = _hud_controller.localized_command_message(invalid_reason)
+        _refresh_interaction_feedback()
+        return
     var intent := _tool_controller.handle_selection(
         kind,
         _selection_controller.selected_id,
@@ -194,6 +203,28 @@ func _on_world_position_selected(local_position: Vector2) -> void:
         var result := _hud_controller.submit_intent(intent)
         status_label.text = _hud_controller.localized_command_message(result)
     _refresh_interaction_feedback()
+
+
+func _known_invalid_target_reason(
+    kind: StringName,
+    entity_id: int,
+    coord: HexCoord
+) -> StringName:
+    if _tool_controller.mode == ToolController.INSPECT:
+        return &""
+    var feedback := _interaction_feedback_controller.evaluate(
+        _runner.state,
+        _tool_controller,
+        kind,
+        entity_id,
+        coord,
+        _selection_controller.selected_kind,
+        _selection_controller.selected_id,
+        _selection_controller.selected_coord
+    )
+    if feedback.target_state != InteractionFeedbackState.INVALID:
+        return &""
+    return feedback.reason_code
 
 
 func _on_state_changed(state: SimulationState) -> void:
