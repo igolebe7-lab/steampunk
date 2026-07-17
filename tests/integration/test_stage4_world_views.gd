@@ -94,6 +94,18 @@ func _assert_tool_state_machine() -> void:
     tools.cancel()
     assert_eq(tools.mode, ToolController.INSPECT, "cancel всегда возвращает inspect")
 
+    tools.begin_pipe_build()
+    tools.handle_selection(&"hex", 0, HexCoord.new(2, 2))
+    tools.handle_selection(&"hex", 0, HexCoord.new(3, 2))
+    var pipe_intent: Dictionary = tools.prepare_pipe_intent()
+    assert_eq((pipe_intent.get(&"cells", []) as Array).size(), 2, "подготовка intent сохраняет весь путь")
+    tools.resolve_pipe_result(false)
+    assert_eq(tools.mode, ToolController.PIPE_BUILD, "отказ оставляет режим трубы активным")
+    assert_eq(tools.pipe_coords.size(), 2, "отказ сохраняет выбранный маршрут")
+    tools.resolve_pipe_result(true)
+    assert_eq(tools.mode, ToolController.INSPECT, "успех завершает составной инструмент")
+    assert_true(tools.pipe_coords.is_empty(), "успех очищает подтверждённый маршрут")
+
 
 func _state() -> SimulationState:
     var scenario := load("res://data/scenarios/physical_logistics.tres") as ScenarioDef

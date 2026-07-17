@@ -225,10 +225,11 @@ func _begin_pipe_remove() -> void:
 
 
 func _submit_pipe_preview() -> void:
-    var intent := _tool_controller.finish_pipe()
+    var intent := _tool_controller.prepare_pipe_intent()
     if (intent.get(&"code", &"ignored") as StringName) == &"ignored":
         return
     var result := _hud_controller.submit_intent(intent)
+    _tool_controller.resolve_pipe_result(result == &"accepted")
     status_label.text = _hud_controller.localized_command_message(result)
 
 

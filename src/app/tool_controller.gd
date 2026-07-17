@@ -43,15 +43,18 @@ func begin_pipe_remove() -> void:
     pipe_coords.clear()
 
 
-func finish_pipe() -> Dictionary:
+func prepare_pipe_intent() -> Dictionary:
     if not mode in [PIPE_BUILD, PIPE_REMOVE] or pipe_coords.is_empty():
         return {&"code": &"ignored"}
-    var result := {
+    return {
         &"code": mode,
         &"cells": pipe_coords.duplicate(),
     }
-    cancel()
-    return result
+
+
+func resolve_pipe_result(accepted: bool) -> void:
+    if accepted and mode in [PIPE_BUILD, PIPE_REMOVE]:
+        cancel()
 
 
 func cancel() -> void:
