@@ -34,8 +34,38 @@ func run() -> Array[String]:
     )
     assert_eq(
         ProjectSettings.get_setting("display/window/size/viewport_width"),
-        1280,
-        "ширина viewport должна быть 1280"
+        1920,
+        "проектная ширина должна быть 1920"
+    )
+    assert_eq(
+        ProjectSettings.get_setting("display/window/size/viewport_height"),
+        1080,
+        "проектная высота должна быть 1080"
+    )
+    assert_eq(
+        ProjectSettings.get_setting("display/window/size/window_width_override"),
+        1600,
+        "оконный override должен быть 1600"
+    )
+    assert_eq(
+        ProjectSettings.get_setting("display/window/size/window_height_override"),
+        900,
+        "оконный override должен быть 900"
+    )
+    assert_eq(
+        ProjectSettings.get_setting("display/window/size/mode"),
+        2,
+        "игра должна запускаться развёрнутой"
+    )
+    assert_eq(
+        ProjectSettings.get_setting("display/window/stretch/mode"),
+        "canvas_items",
+        "HUD должен масштабироваться как canvas items"
+    )
+    assert_eq(
+        ProjectSettings.get_setting("display/window/stretch/aspect"),
+        "expand",
+        "широкий экран должен расширять полезную область"
     )
 
     var translation_paths: PackedStringArray = ProjectSettings.get_setting(
