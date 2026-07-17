@@ -10,7 +10,24 @@ func run() -> Array[String]:
     var view: Variant = load(script_path).new()
     var map_state := HexMapState.new(18, 18)
     var layout := HexLayout.new(32.0, Vector2.ZERO)
+    var road_center := HexCoord.new(5, 5)
+    map_state.get_cell(road_center).road_level = RoadLevelDef.LEVEL_PATH
+    map_state.get_cell(road_center.neighbor(0)).road_level = RoadLevelDef.LEVEL_PATH
+    map_state.get_cell(road_center.neighbor(3)).road_level = RoadLevelDef.LEVEL_DIRT_ROAD
     view.configure(map_state, layout)
+
+    assert_eq(
+        view.get_cached_road_mask(road_center),
+        (1 << 0) | (1 << 3),
+        "HexGridView не рисует ложные ответвления дороги"
+    )
+    var preview_coord := road_center.neighbor(2)
+    var preview_coords: Array[HexCoord] = [preview_coord]
+    view.set_road_preview(preview_coords)
+    assert_true(
+        ConnectionTopology.has_direction(view.get_cached_road_mask(road_center), 2),
+        "предпросмотр использует будущую сторону соединения"
+    )
 
     assert_true(
         view.get_world_rect().size.y < 1100.0,

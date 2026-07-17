@@ -11,6 +11,11 @@ func run() -> Array[String]:
     tree.root.add_child(view)
     view.configure(state, HexLayout.new(32.0))
     assert_eq(view.get_segment_visual_count(), 3, "представление кэширует сегменты")
+    assert_eq(
+        view.get_cached_connection_mask(HexCoord.new(2, 0)),
+        (1 << 0) | (1 << 3),
+        "крайний сегмент соединяется с трубой и портом насосной"
+    )
     var rebuilds := view.get_rebuild_count()
     view.capture_tick(state)
     assert_eq(view.get_rebuild_count(), rebuilds, "неизменная топология не пересобирает линии")

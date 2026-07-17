@@ -10,6 +10,7 @@ const OUTLINE_COLOR := Color("#788777")
 const SELECTED_COLOR := Color("#d69a4a")
 const PATH_COLOR := Color("#b69a69")
 const ROAD_COLOR := Color("#d0b072")
+const ROAD_PREVIEW_COLOR := Color(0.35, 0.82, 0.78, 0.65)
 const HEAT_COLOR := Color("#d95f45")
 
 var _map_state: HexMapState
@@ -18,6 +19,7 @@ var _selected_coord: HexCoord
 var _heat_overlay: Dictionary = {}
 var _cell_visuals: Array[Dictionary] = []
 var _cached_road_levels: Dictionary = {}
+var _road_preview: Dictionary = {}
 var _rebuild_count: int = 0
 
 
@@ -59,6 +61,25 @@ func get_cached_heat(coord: HexCoord) -> float:
         if (visual[&"coord"] as HexCoord).equals(coord):
             return visual[&"heat"] as float
     return 0.0
+
+
+func get_cached_road_mask(coord: HexCoord) -> int:
+    for visual: Dictionary in _cell_visuals:
+        if (visual[&"coord"] as HexCoord).equals(coord):
+            return visual[&"road_mask"] as int
+    return 0
+
+
+func set_road_preview(coords: Array[HexCoord]) -> void:
+    var next: Dictionary = {}
+    for coord: HexCoord in coords:
+        if coord != null:
+            next[coord.key()] = true
+    if next == _road_preview:
+        return
+    _road_preview = next
+    _rebuild_cache()
+    queue_redraw()
 
 
 func get_rebuild_count() -> int:
@@ -122,9 +143,12 @@ func _draw() -> void:
         draw_polyline(_closed_polygon(points), OUTLINE_COLOR, 1.0, true)
 
         var road_level := visual[&"road_level"] as int
-        if road_level > RoadLevelDef.LEVEL_OPEN_GROUND:
-            var color := PATH_COLOR if road_level == RoadLevelDef.LEVEL_PATH else ROAD_COLOR
-            var width := 5.0 if road_level == RoadLevelDef.LEVEL_PATH else 9.0
+        var road_preview := visual[&"road_preview"] as bool
+        if road_level > RoadLevelDef.LEVEL_OPEN_GROUND or road_preview:
+            var color := ROAD_PREVIEW_COLOR if road_preview else (
+                PATH_COLOR if road_level == RoadLevelDef.LEVEL_PATH else ROAD_COLOR
+            )
+            var width := 5.0 if road_preview or road_level == RoadLevelDef.LEVEL_PATH else 9.0
             draw_circle(_layout.coord_to_pixel(coord), width * 0.55, color)
             for segment: PackedVector2Array in visual[&"road_segments"]:
                 draw_line(segment[0], segment[1], color, width, true)
@@ -142,8 +166,10 @@ func _rebuild_cache() -> void:
         var coord := cell.coord
         _cached_road_levels[coord.key()] = cell.road_level
         var road_segments: Array[PackedVector2Array] = []
-        for neighbor: HexCoord in coord.neighbors():
-            if _map_state.contains(neighbor):
+        var road_mask := ConnectionTopology.road_mask(_map_state, coord, _road_preview)
+        for direction in HexCoord.DIRECTIONS.size():
+            if ConnectionTopology.has_direction(road_mask, direction):
+                var neighbor := coord.neighbor(direction)
                 road_segments.append(PackedVector2Array([
                     _layout.coord_to_pixel(coord),
                     _layout.coord_to_pixel(coord).lerp(_layout.coord_to_pixel(neighbor), 0.48),
@@ -153,6 +179,8 @@ func _rebuild_cache() -> void:
             &"points": _layout.polygon_corners(coord),
             &"fill": CELL_COLOR_A if (coord.q + coord.r) % 2 == 0 else CELL_COLOR_B,
             &"road_level": cell.road_level,
+            &"road_mask": road_mask,
+            &"road_preview": _road_preview.has(coord.key()) and cell.road_level <= RoadLevelDef.LEVEL_OPEN_GROUND,
             &"road_segments": road_segments,
             &"heat": float(_heat_overlay.get(coord.key(), 0.0)),
         })
