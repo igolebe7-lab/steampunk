@@ -316,6 +316,9 @@ func _configure_playtest_from_args() -> void:
     if not options.enabled:
         return
     var storage := PlaytestStorage.new()
+    if storage.has_final_result(options.session_id):
+        push_error(tr(&"playtest.error.result_exists"))
+        return
     var recovered := storage.load_latest_checkpoint(options.session_id)
     if recovered.get("ok", false) as bool:
         _finalize_recovered_session(recovered["data"] as Dictionary, storage)
@@ -454,6 +457,6 @@ func _finalize_recovered_session(data: Dictionary, storage: PlaytestStorage) -> 
 
 func _report_playtest_storage_error(result: Dictionary) -> void:
     var error := result.get("error", "storage_write") as String
-    if error not in ["storage_write", "report_too_large"]:
+    if error not in ["storage_write", "report_too_large", "result_exists"]:
         error = "storage_write"
     push_error(tr(StringName("playtest.error.%s" % error)))

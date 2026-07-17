@@ -15,6 +15,17 @@ func global_root_path() -> String:
     return ProjectSettings.globalize_path(root_path)
 
 
+func has_final_result(session_id: String) -> bool:
+    if not _is_safe_id(session_id):
+        return false
+    return (
+        FileAccess.file_exists(root_path.path_join("%s.json" % session_id))
+        or FileAccess.file_exists(
+            root_path.path_join("%s-report.ru.md" % session_id)
+        )
+    )
+
+
 func write_checkpoint(session: PlaytestSession, json_text: String) -> Dictionary:
     var validation := _validate_write(session, json_text)
     if not validation.is_empty():

@@ -53,6 +53,10 @@ func run() -> Array[String]:
 
     var final_result := storage.write_final(session, json_text, markdown)
     assert_true(final_result["ok"], "два финальных файла записаны")
+    assert_true(
+        storage.has_final_result("PT-REPORT"),
+        "занятый ID определяется до новой сессии"
+    )
     assert_true(FileAccess.file_exists(final_result["json_path"]), "итоговый JSON существует")
     assert_true(
         FileAccess.file_exists(final_result["markdown_path"]),
