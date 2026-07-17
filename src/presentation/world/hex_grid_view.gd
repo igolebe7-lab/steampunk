@@ -111,19 +111,18 @@ func get_selected_coord() -> HexCoord:
 func hover_at_local_position(local_position: Vector2) -> bool:
     if _map_state == null or _layout == null:
         return false
+    local_position_hovered.emit(local_position)
     var coord := _layout.pixel_to_coord(local_position)
     if not _map_state.contains(coord):
         if _hovered_coord == null:
             return false
         _hovered_coord = null
         hex_hovered.emit(null)
-        local_position_hovered.emit(local_position)
         return true
     if _hovered_coord != null and _hovered_coord.equals(coord):
         return false
     _hovered_coord = coord
     hex_hovered.emit(HexCoord.new(coord.q, coord.r))
-    local_position_hovered.emit(local_position)
     return true
 
 

@@ -79,7 +79,13 @@ static func _has_compatible_segment(
     if not preview.has(coord.key()):
         return false
     var preview_value: Variant = preview[coord.key()]
-    return preview_value == true or StringName(preview_value) == commodity_id
+    if preview_value is bool:
+        return preview_value as bool
+    if preview_value is StringName:
+        return (preview_value as StringName) == commodity_id
+    if preview_value is String:
+        return StringName(preview_value as String) == commodity_id
+    return false
 
 
 static func _has_compatible_port(
