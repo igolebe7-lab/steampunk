@@ -293,6 +293,56 @@ custom_minimum_size = Vector2(110, 0)
 layout_mode = 2
 text = "ui.tool.pipe_remove"
 
+[node name="ContextPanel" type="PanelContainer" parent="UI"]
+offset_left = 214.0
+offset_top = 550.0
+offset_right = 966.0
+offset_bottom = 642.0
+
+[node name="Margin" type="MarginContainer" parent="UI/ContextPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 7
+
+[node name="HBox" type="HBoxContainer" parent="UI/ContextPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Copy" type="VBoxContainer" parent="UI/ContextPanel/Margin/HBox"]
+custom_minimum_size = Vector2(540, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="UI/ContextPanel/Margin/HBox/Copy"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "ui.mode.inspect"
+
+[node name="Hint" type="Label" parent="UI/ContextPanel/Margin/HBox/Copy"]
+layout_mode = 2
+autowrap_mode = 2
+text = "ui.hint.inspect"
+
+[node name="Target" type="Label" parent="UI/ContextPanel/Margin/HBox/Copy"]
+layout_mode = 2
+text = ""
+
+[node name="Actions" type="VBoxContainer" parent="UI/ContextPanel/Margin/HBox"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+
+[node name="Confirm" type="Button" parent="UI/ContextPanel/Margin/HBox/Actions"]
+visible = false
+layout_mode = 2
+text = "ui.action.confirm"
+
+[node name="Cancel" type="Button" parent="UI/ContextPanel/Margin/HBox/Actions"]
+visible = false
+layout_mode = 2
+text = "ui.action.cancel"
+
 [node name="ResultPanel" type="PanelContainer" parent="UI"]
 visible = false
 offset_left = 420.0

@@ -17,6 +17,7 @@ var _inspector_controller := InspectorController.new()
 var _selection_controller := SelectionController.new()
 var _tool_controller := ToolController.new()
 var _interaction_feedback_controller := InteractionFeedbackController.new()
+var _interaction_panel_controller := InteractionPanelController.new()
 var _result_panel_controller := ResultPanelController.new()
 var _playtest_recorder: PlaytestRecorder
 var _playtest_storage: PlaytestStorage
@@ -67,6 +68,21 @@ func _ready() -> void:
         $UI/ResultPanel/Margin/VBox/Title,
         $UI/ResultPanel/Margin/VBox/Metrics,
         $UI/ResultPanel/Margin/VBox/Continue
+    )
+    _interaction_panel_controller.configure(
+        $UI/ContextPanel/Margin/HBox/Copy/Title,
+        $UI/ContextPanel/Margin/HBox/Copy/Hint,
+        $UI/ContextPanel/Margin/HBox/Copy/Target,
+        $UI/ContextPanel/Margin/HBox/Actions/Confirm,
+        $UI/ContextPanel/Margin/HBox/Actions/Cancel,
+        {
+            ToolController.INSPECT: $UI/BottomBar/Margin/Tools/Inspect,
+            ToolController.ROAD: $UI/BottomBar/Margin/Tools/Road,
+            ToolController.DEPOT: $UI/BottomBar/Margin/Tools/Depot,
+            ToolController.LINK_ORIGIN: $UI/BottomBar/Margin/Tools/Link,
+            ToolController.PIPE_BUILD: $UI/BottomBar/Margin/Tools/PipeBuild,
+            ToolController.PIPE_REMOVE: $UI/BottomBar/Margin/Tools/PipeRemove,
+        }
     )
     _connect_ui()
     _configure_playtest_from_args()
@@ -135,6 +151,8 @@ func _connect_ui() -> void:
     _tool_controller.mode_changed.connect(
         func(_mode: StringName) -> void: _refresh_interaction_feedback()
     )
+    _interaction_panel_controller.confirm_requested.connect(_submit_pipe_preview)
+    _interaction_panel_controller.cancel_requested.connect(_cancel_active_tool)
 
 
 func _on_world_position_hovered(local_position: Vector2) -> void:
@@ -232,7 +250,6 @@ func _begin_link() -> void:
 
 func _begin_pipe_build() -> void:
     if _tool_controller.mode == ToolController.PIPE_BUILD:
-        _submit_pipe_preview()
         return
     _tool_controller.begin_pipe_build()
     status_label.text = tr(&"ui.status.tool.pipe_build")
@@ -240,7 +257,6 @@ func _begin_pipe_build() -> void:
 
 func _begin_pipe_remove() -> void:
     if _tool_controller.mode == ToolController.PIPE_REMOVE:
-        _submit_pipe_preview()
         return
     _tool_controller.begin_pipe_remove()
     status_label.text = tr(&"ui.status.tool.pipe_remove")
@@ -270,6 +286,7 @@ func _refresh_interaction_feedback() -> void:
         _selection_controller.selected_coord
     )
     interaction_overlay_view.present(feedback)
+    _interaction_panel_controller.present(feedback)
     var road_preview: Array[HexCoord] = []
     var pipe_preview: Array[HexCoord] = []
     if feedback.mode == ToolController.ROAD:
@@ -278,6 +295,12 @@ func _refresh_interaction_feedback() -> void:
         pipe_preview = feedback.preview_coords
     grid_view.set_road_preview(road_preview)
     logistics_world_view.get_utility_network_view().set_pipe_preview(pipe_preview)
+
+
+func _cancel_active_tool() -> void:
+    _tool_controller.cancel()
+    status_label.text = tr(&"ui.status.tool.inspect")
+    _refresh_interaction_feedback()
 
 
 func _apply_link_settings() -> void:
@@ -342,10 +365,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
         KEY_4: _begin_link()
         KEY_5: _begin_pipe_build()
         KEY_6: _begin_pipe_remove()
+        KEY_ENTER, KEY_KP_ENTER:
+            if _tool_controller.mode in [ToolController.PIPE_BUILD, ToolController.PIPE_REMOVE]:
+                _submit_pipe_preview()
         KEY_SPACE: _on_pause_pressed()
         KEY_ESCAPE:
-            _tool_controller.cancel()
-            status_label.text = tr(&"ui.status.tool.inspect")
+            _cancel_active_tool()
 
 
 func _exit_tree() -> void:

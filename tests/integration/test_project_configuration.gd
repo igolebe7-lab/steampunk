@@ -12,6 +12,13 @@ const REQUIRED_KEYS := [
     "building.boiler.name",
     "building.steam_hammer.name",
     "building.wood_source.name",
+    "ui.mode.inspect",
+    "ui.mode.pipe_build",
+    "ui.hint.inspect",
+    "ui.hint.pipe_build",
+    "ui.action.confirm_cost",
+    "ui.action.cancel",
+    "ui.tooltip.pipe_build",
 ]
 
 func run() -> Array[String]:
