@@ -5,6 +5,7 @@ func run() -> Array[String]:
     _assert_road_and_heat_cache()
     _assert_dynamic_world_and_diagnostics()
     _assert_selection_priority()
+    _assert_selection_peek_is_non_mutating()
     _assert_tool_state_machine()
     return finish()
 
@@ -74,6 +75,28 @@ func _assert_selection_priority() -> void:
     assert_eq(controller.resolve_hit(0, 0, 5, coord), &"link", "link выбирается перед hex")
     assert_eq(controller.resolve_hit(0, 0, 0, coord), &"hex", "hex используется как fallback")
     assert_true(controller.selected_coord.equals(coord), "selection хранит stable hex coord")
+
+
+func _assert_selection_peek_is_non_mutating() -> void:
+    var state := _state()
+    var layout := HexLayout.new(32.0)
+    var world := LogisticsWorldView.new()
+    var tree := Engine.get_main_loop() as SceneTree
+    tree.root.add_child(world)
+    world.configure(state, layout)
+    var controller := SelectionController.new()
+    controller.configure(state, layout, world)
+    var selected_coord := HexCoord.new(1, 1)
+    controller.resolve_hit(0, 0, 0, selected_coord)
+    var main := state.get_building(state.main_warehouse_id)
+
+    var hover: Dictionary = controller.peek_at_local_position(layout.coord_to_pixel(main.coord))
+
+    assert_eq(hover.get(&"kind"), &"building", "peek находит здание с обычным приоритетом")
+    assert_eq(hover.get(&"entity_id"), main.id, "peek возвращает stable id здания")
+    assert_eq(controller.selected_kind, &"hex", "peek не меняет тип существующего selection")
+    assert_true(controller.selected_coord.equals(selected_coord), "peek не меняет координату selection")
+    world.free()
 
 
 func _assert_tool_state_machine() -> void:

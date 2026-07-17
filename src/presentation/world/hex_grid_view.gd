@@ -3,6 +3,8 @@ extends Node2D
 
 signal hex_selected(coord: HexCoord)
 signal local_position_selected(local_position: Vector2)
+signal hex_hovered(coord: HexCoord)
+signal local_position_hovered(local_position: Vector2)
 
 const CELL_COLOR_A := Color("#34493d")
 const CELL_COLOR_B := Color("#3d5345")
@@ -16,6 +18,7 @@ const HEAT_COLOR := Color("#d95f45")
 var _map_state: HexMapState
 var _layout: HexLayout
 var _selected_coord: HexCoord
+var _hovered_coord: HexCoord
 var _heat_overlay: Dictionary = {}
 var _cell_visuals: Array[Dictionary] = []
 var _cached_road_levels: Dictionary = {}
@@ -105,6 +108,25 @@ func get_selected_coord() -> HexCoord:
     return _selected_coord
 
 
+func hover_at_local_position(local_position: Vector2) -> bool:
+    if _map_state == null or _layout == null:
+        return false
+    var coord := _layout.pixel_to_coord(local_position)
+    if not _map_state.contains(coord):
+        if _hovered_coord == null:
+            return false
+        _hovered_coord = null
+        hex_hovered.emit(null)
+        local_position_hovered.emit(local_position)
+        return true
+    if _hovered_coord != null and _hovered_coord.equals(coord):
+        return false
+    _hovered_coord = coord
+    hex_hovered.emit(HexCoord.new(coord.q, coord.r))
+    local_position_hovered.emit(local_position)
+    return true
+
+
 func get_world_rect() -> Rect2:
     if _map_state == null or _layout == null:
         return Rect2()
@@ -121,7 +143,9 @@ func get_world_rect() -> Rect2:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-    if event is InputEventMouseButton:
+    if event is InputEventMouseMotion:
+        hover_at_local_position(to_local(get_global_mouse_position()))
+    elif event is InputEventMouseButton:
         var mouse_event := event as InputEventMouseButton
         if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
             if select_at_local_position(to_local(get_global_mouse_position())):

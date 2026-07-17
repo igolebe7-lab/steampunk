@@ -3,6 +3,7 @@ extends Node2D
 @onready var grid_view: HexGridView = $World/HexGridView
 @onready var logistics_world_view: LogisticsWorldView = $World/LogisticsWorldView
 @onready var industrial_effects_view: IndustrialEffectsView = $World/IndustrialEffectsView
+@onready var interaction_overlay_view: InteractionOverlayView = $World/InteractionOverlayView
 @onready var simulation_controller: SimulationController = $SimulationController
 @onready var camera_controller: CameraController = $CameraController
 @onready var title_label: Label = $UI/TopBar/Margin/HBox/Title
@@ -15,11 +16,15 @@ var _hud_controller := HUDController.new()
 var _inspector_controller := InspectorController.new()
 var _selection_controller := SelectionController.new()
 var _tool_controller := ToolController.new()
+var _interaction_feedback_controller := InteractionFeedbackController.new()
 var _result_panel_controller := ResultPanelController.new()
 var _playtest_recorder: PlaytestRecorder
 var _playtest_storage: PlaytestStorage
 var _playtest_writer: PlaytestReportWriter
 var _playtest_analyzer: PlaytestMilestoneAnalyzer
+var _hover_kind: StringName = &""
+var _hover_id: int = 0
+var _hover_coord: HexCoord
 
 
 func _ready() -> void:
@@ -37,6 +42,7 @@ func _ready() -> void:
     grid_view.configure(_map_state, _hex_layout)
     logistics_world_view.configure(_runner.state, _hex_layout)
     industrial_effects_view.configure(_hex_layout)
+    interaction_overlay_view.configure(_runner.state, _hex_layout)
     simulation_controller.configure(_runner)
     _selection_controller.configure(_runner.state, _hex_layout, logistics_world_view)
     _inspector_controller.configure($UI/RightPanel/Margin/VBox/Scroll/Inspector, {
@@ -67,6 +73,7 @@ func _ready() -> void:
     camera_controller.configure_bounds(grid_view.get_world_rect().grow(64.0))
     camera_controller.set_zoom_factor(0.75)
     _hud_controller.refresh(_runner.state)
+    _refresh_interaction_feedback()
 
 
 func get_runner() -> SimulationRunner:
@@ -102,6 +109,7 @@ func get_diagnostics_view() -> DiagnosticsView:
 
 func _connect_ui() -> void:
     grid_view.local_position_selected.connect(_on_world_position_selected)
+    grid_view.local_position_hovered.connect(_on_world_position_hovered)
     simulation_controller.tick_completed.connect(_on_state_changed)
     simulation_controller.commands_flushed.connect(_on_state_changed)
     simulation_controller.interpolation_changed.connect(_on_interpolation_changed)
@@ -124,6 +132,17 @@ func _connect_ui() -> void:
     $UI/RightPanel/Margin/VBox/LinkControls/Reset.pressed.connect(_reset_selected_link)
     $UI/RightPanel/Margin/VBox/BuildingControls/ApplyDirect.pressed.connect(_apply_dispatch_policy)
     $UI/RightPanel/Margin/VBox/BuildingControls/Demolish.pressed.connect(_demolish_selected_depot)
+    _tool_controller.mode_changed.connect(
+        func(_mode: StringName) -> void: _refresh_interaction_feedback()
+    )
+
+
+func _on_world_position_hovered(local_position: Vector2) -> void:
+    var hit := _selection_controller.peek_at_local_position(local_position)
+    _hover_kind = hit.get(&"kind", &"") as StringName
+    _hover_id = hit.get(&"entity_id", 0) as int
+    _hover_coord = hit.get(&"coord") as HexCoord
+    _refresh_interaction_feedback()
 
 
 func _on_world_position_selected(local_position: Vector2) -> void:
@@ -156,6 +175,7 @@ func _on_world_position_selected(local_position: Vector2) -> void:
     elif code != &"ignored":
         var result := _hud_controller.submit_intent(intent)
         status_label.text = _hud_controller.localized_command_message(result)
+    _refresh_interaction_feedback()
 
 
 func _on_state_changed(state: SimulationState) -> void:
@@ -176,6 +196,8 @@ func _on_state_changed(state: SimulationState) -> void:
         _playtest_recorder.capture_state(state)
         if state.scenario_progress.phase == ScenarioProgressState.COMPLETED:
             _playtest_recorder.finish(&"completed", state)
+    interaction_overlay_view.capture_tick(state)
+    _refresh_interaction_feedback()
 
 
 func _on_interpolation_changed(alpha: float) -> void:
@@ -231,6 +253,31 @@ func _submit_pipe_preview() -> void:
     var result := _hud_controller.submit_intent(intent)
     _tool_controller.resolve_pipe_result(result == &"accepted")
     status_label.text = _hud_controller.localized_command_message(result)
+    _refresh_interaction_feedback()
+
+
+func _refresh_interaction_feedback() -> void:
+    if _runner == null or interaction_overlay_view == null:
+        return
+    var feedback := _interaction_feedback_controller.evaluate(
+        _runner.state,
+        _tool_controller,
+        _hover_kind,
+        _hover_id,
+        _hover_coord,
+        _selection_controller.selected_kind,
+        _selection_controller.selected_id,
+        _selection_controller.selected_coord
+    )
+    interaction_overlay_view.present(feedback)
+    var road_preview: Array[HexCoord] = []
+    var pipe_preview: Array[HexCoord] = []
+    if feedback.mode == ToolController.ROAD:
+        road_preview = feedback.preview_coords
+    elif feedback.mode in [ToolController.PIPE_BUILD, ToolController.PIPE_REMOVE]:
+        pipe_preview = feedback.preview_coords
+    grid_view.set_road_preview(road_preview)
+    logistics_world_view.get_utility_network_view().set_pipe_preview(pipe_preview)
 
 
 func _apply_link_settings() -> void:

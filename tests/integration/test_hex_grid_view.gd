@@ -42,5 +42,12 @@ func run() -> Array[String]:
     assert_eq(emitted_coords.size(), 1, "успешный выбор должен отправить один сигнал")
     assert_true(emitted_coords[0].equals(target), "сигнал должен содержать выбранную координату")
     assert_true(not view.select_at_local_position(layout.coord_to_pixel(HexCoord.new(30, 30))), "позиция вне карты должна отклоняться")
+
+    var hovered_coords: Array[HexCoord] = []
+    view.hex_hovered.connect(func(coord: HexCoord) -> void: hovered_coords.append(coord))
+    assert_true(view.hover_at_local_position(layout.coord_to_pixel(target)), "центр гекса создаёт hover")
+    assert_true(not view.hover_at_local_position(layout.coord_to_pixel(target)), "повторный motion внутри гекса не дублирует hover")
+    assert_eq(hovered_coords.size(), 1, "смена гекса отправляет один hover-сигнал")
+    assert_true(hovered_coords[0].equals(target), "hover-сигнал содержит координату гекса")
     view.free()
     return finish()
