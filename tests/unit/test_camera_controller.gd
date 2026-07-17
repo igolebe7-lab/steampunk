@@ -28,4 +28,24 @@ func run() -> Array[String]:
     camera.pan_by(Vector2(-10000, -10000))
     assert_eq(camera.position, Vector2(860, 1180), "позиция камеры не должна накапливаться за нижней правой границей")
     camera.free()
+
+    var safe_camera := CameraController.new()
+    safe_camera.configure_bounds(Rect2(Vector2(80, 80), Vector2(520, 520)))
+    safe_camera.configure_safe_view(
+        Rect2(Vector2(248, 96), Vector2(1300, 760)),
+        Vector2(1920, 1080),
+        true
+    )
+    var projected := (
+        (Vector2(340, 340) - safe_camera.position) * safe_camera.zoom.x
+        + Vector2(960, 540)
+    )
+    assert_near(projected.x, 898.0, 0.01, "центр карты попадает в safe area по X")
+    assert_near(projected.y, 476.0, 0.01, "центр карты попадает в safe area по Y")
+    assert_eq(
+        safe_camera.get_safe_screen_rect(),
+        Rect2(Vector2(248, 96), Vector2(1300, 760)),
+        "камера сохраняет безопасную экранную область"
+    )
+    safe_camera.free()
     return finish()

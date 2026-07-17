@@ -7,6 +7,8 @@ extends Camera2D
 
 var _dragging: bool = false
 var _world_rect: Rect2
+var _safe_screen_rect := Rect2()
+var _viewport_size := Vector2.ZERO
 
 
 func set_zoom_factor(value: float) -> void:
@@ -22,6 +24,38 @@ func configure_bounds(world_rect: Rect2) -> void:
     limit_bottom = ceili(world_rect.end.y)
     position = world_rect.get_center()
     reset_smoothing()
+
+
+func configure_safe_view(
+    screen_rect: Rect2,
+    viewport_size: Vector2,
+    fit_world: bool = false
+) -> void:
+    if (
+        screen_rect.size.x <= 0.0
+        or screen_rect.size.y <= 0.0
+        or viewport_size.x <= 0.0
+        or viewport_size.y <= 0.0
+        or _world_rect.size.x <= 0.0
+        or _world_rect.size.y <= 0.0
+    ):
+        return
+    _safe_screen_rect = screen_rect
+    _viewport_size = viewport_size
+    if fit_world:
+        var fit_zoom := minf(
+            screen_rect.size.x / _world_rect.size.x,
+            screen_rect.size.y / _world_rect.size.y
+        ) * 0.88
+        set_zoom_factor(fit_zoom)
+    position = _world_rect.get_center() - (
+        screen_rect.get_center() - viewport_size * 0.5
+    ) / zoom.x
+    reset_smoothing()
+
+
+func get_safe_screen_rect() -> Rect2:
+    return _safe_screen_rect
 
 
 func pan_by(screen_delta: Vector2) -> void:
