@@ -11,6 +11,10 @@
 logs/
 builds/
 exports/
+output/*
+!output/.gdignore
+tmp/*
+!tmp/.gdignore
 
 # macOS
 .DS_Store
