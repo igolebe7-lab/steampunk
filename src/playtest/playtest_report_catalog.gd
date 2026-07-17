@@ -8,6 +8,7 @@ const LABELS := {
         "build": "Сборка",
         "result": "Результат",
         "duration": "Реальное время",
+        "paused": "Время на паузе",
         "end_tick": "Конечный тик",
         "dropped_entries": "Потерянные записи",
         "milestones": "Вехи",
@@ -15,7 +16,11 @@ const LABELS := {
         "accepted": "Принято",
         "rejected": "Отклонено",
         "idle": "Периоды бездействия",
+        "speeds": "Использование скорости",
+        "phase_durations": "Длительность фаз",
         "layers": "Диагностические слои",
+        "diagnostics": "Измеренные причины остановки",
+        "difficulties": "Предварительная классификация затруднений",
         "water_path": "Путь воды",
         "bottlenecks": "Кандидаты на устранённые узкие места",
         "unknown_events": "Неизвестные события",
@@ -26,6 +31,7 @@ const LABELS := {
         "observer_notes": "Заметки наблюдателя",
         "none": "Нет",
         "unknown_event": "Неизвестное событие: {code}",
+        "unknown_value": "Неизвестное значение: {code}",
         "outcome.completed": "Сценарий завершён",
         "outcome.aborted": "Сессия прервана",
         "outcome.unknown": "Исход не определён",
@@ -41,6 +47,7 @@ const LABELS := {
         "build": "Build",
         "result": "Result",
         "duration": "Elapsed time",
+        "paused": "Paused time",
         "end_tick": "Final tick",
         "dropped_entries": "Dropped entries",
         "milestones": "Milestones",
@@ -48,7 +55,11 @@ const LABELS := {
         "accepted": "Accepted",
         "rejected": "Rejected",
         "idle": "Idle periods",
+        "speeds": "Speed usage",
+        "phase_durations": "Phase durations",
         "layers": "Diagnostic layers",
+        "diagnostics": "Measured stop reasons",
+        "difficulties": "Preliminary difficulty classification",
         "water_path": "Water path",
         "bottlenecks": "Bottleneck candidates",
         "unknown_events": "Unknown events",
@@ -59,6 +70,7 @@ const LABELS := {
         "observer_notes": "Observer notes",
         "none": "None",
         "unknown_event": "Unknown event: {code}",
+        "unknown_value": "Unknown value: {code}",
         "outcome.completed": "Scenario completed",
         "outcome.aborted": "Session aborted",
         "outcome.unknown": "Outcome unknown",
@@ -67,6 +79,61 @@ const LABELS := {
         "water.pipe": "Water pipe",
         "water.mixed": "Mixed path",
         "confirmed": "Requires observer confirmation",
+    },
+}
+
+const VALUES := {
+    "ru": {
+        "layer.links": "Связи",
+        "layer.routes": "Маршруты",
+        "layer.load": "Загрузка",
+        "layer.utilities": "Инженерные сети",
+        "action.road_cell": "Строительство дороги",
+        "action.depot_cell": "Строительство склада",
+        "action.link_complete": "Создание грузовой связи",
+        "action.link_settings": "Настройка грузовой связи",
+        "action.dispatch_policy": "Политика отгрузки",
+        "action.remove_link": "Удаление грузовой связи",
+        "action.reset_link": "Возврат автоматического маршрута",
+        "action.demolish_depot": "Разбор склада",
+        "action.pipe_build": "Строительство водопровода",
+        "action.pipe_remove": "Разбор водопровода",
+        "reason.worker_shortage": "Не хватает работников",
+        "reason.route_conflict": "Конфликт маршрутов",
+        "reason.relay_backlog": "Перевалочный склад переполнен",
+        "phase.observation": "Наблюдение",
+        "phase.site_preparation": "Подготовка промышленной площадки",
+        "phase.boiler_supply": "Снабжение котла",
+        "phase.warming": "Устойчивый прогрев котла",
+        "phase.first_strike": "Подготовка первого удара",
+        "phase.completed": "Сценарий завершён",
+        "difficulty.observer_review": "Требует классификации наблюдателем",
+    },
+    "en": {
+        "layer.links": "Links",
+        "layer.routes": "Routes",
+        "layer.load": "Load",
+        "layer.utilities": "Utilities",
+        "action.road_cell": "Road construction",
+        "action.depot_cell": "Depot construction",
+        "action.link_complete": "Logistics link creation",
+        "action.link_settings": "Logistics link settings",
+        "action.dispatch_policy": "Dispatch policy",
+        "action.remove_link": "Logistics link removal",
+        "action.reset_link": "Automatic route reset",
+        "action.demolish_depot": "Depot demolition",
+        "action.pipe_build": "Water pipe construction",
+        "action.pipe_remove": "Water pipe removal",
+        "reason.worker_shortage": "Worker shortage",
+        "reason.route_conflict": "Route conflict",
+        "reason.relay_backlog": "Relay depot backlog",
+        "phase.observation": "Observation",
+        "phase.site_preparation": "Industrial site preparation",
+        "phase.boiler_supply": "Boiler supply",
+        "phase.warming": "Steady boiler warming",
+        "phase.first_strike": "First strike preparation",
+        "phase.completed": "Scenario completed",
+        "difficulty.observer_review": "Requires observer classification",
     },
 }
 
@@ -119,6 +186,21 @@ static func milestone(key: String, locale: StringName = &"ru") -> String:
     var locale_key := String(locale)
     var selected := MILESTONES.get(locale_key, MILESTONES["ru"]) as Dictionary
     return selected.get(key, key) as String
+
+
+static func value(
+    group: String,
+    code: String,
+    locale: StringName = &"ru"
+) -> String:
+    if code.is_empty():
+        return text(&"none", locale)
+    var locale_key := String(locale)
+    var selected := VALUES.get(locale_key, VALUES["ru"]) as Dictionary
+    var key := "%s.%s" % [group, code]
+    if selected.has(key):
+        return selected[key] as String
+    return text(&"unknown_value", locale).format({"code": code})
 
 
 static func is_known_event(code: StringName) -> bool:

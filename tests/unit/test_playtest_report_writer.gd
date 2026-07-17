@@ -12,7 +12,17 @@ func run() -> Array[String]:
         "water_path": "pipe",
         "command_counts": {"accepted": 1, "rejected": 0},
         "layer_usage": {"routes": 1},
-        "bottleneck_candidates": [],
+        "paused_ms": 10_000,
+        "speed_durations_ms": {"1": 15_000, "2": 75_000},
+        "phase_durations_ms": {"observation": 60_000, "warming": 30_000},
+        "diagnostic_counts": {"worker_shortage": 2},
+        "bottleneck_candidates": [{
+            "action_code": "link_settings",
+            "diagnostic_before": "worker_shortage",
+            "diagnostic_after": "",
+            "throughput_before": 2.0,
+            "throughput_after": 4.0,
+        }],
     }
     var writer := PlaytestReportWriter.new()
     var json_text := writer.build_json(session, analysis)
@@ -28,6 +38,14 @@ func run() -> Array[String]:
     assert_true(markdown.contains("# Отчёт плейтеста PT-REPORT"), "русский заголовок есть")
     assert_true(markdown.contains("## Ответы игрока"), "место для ответов есть")
     assert_true(markdown.contains("## Заметки наблюдателя"), "место для заметок есть")
+    assert_true(markdown.contains("Время на паузе: 00:10"), "время паузы выведено")
+    assert_true(markdown.contains("## Использование скорости"), "скорости выведены")
+    assert_true(markdown.contains("## Длительность фаз"), "длительности фаз выведены")
+    assert_true(markdown.contains("## Измеренные причины остановки"), "диагностика выведена")
+    assert_true(markdown.contains("Маршруты"), "слой локализован")
+    assert_true(not markdown.contains("`routes`"), "машинный код слоя скрыт")
+    assert_true(not markdown.contains("`link_settings`"), "машинный код действия скрыт")
+    assert_true(not markdown.contains("worker_shortage"), "машинный код причины скрыт")
     assert_true(
         markdown.contains("Неизвестное событие: mystery_event"),
         "неизвестный код явно отмечен"

@@ -35,6 +35,11 @@ func analyze(session: PlaytestSession) -> Dictionary:
     var last_action_ms := 0
     var last_manual_water := 0
     var last_pipe_water := 0
+    var pause_started_ms := -1
+    var current_speed := 1
+    var speed_started_ms := 0
+    var current_phase := ""
+    var phase_started_ms := 0
 
     for entry: PlaytestEntry in session.entries:
         if entry.code == &"flow_sample":
@@ -43,6 +48,45 @@ func analyze(session: PlaytestSession) -> Dictionary:
             last_pipe_water = entry.payload.get("pipe_water", 0) as int
         _capture_milestone(result["milestones"] as Dictionary, entry)
         _capture_layer_usage(result["layer_usage"] as Dictionary, entry)
+        if entry.code == &"pause":
+            var paused := entry.payload.get("paused", false) as bool
+            if paused and pause_started_ms < 0:
+                pause_started_ms = entry.elapsed_ms
+            elif not paused and pause_started_ms >= 0:
+                result["paused_ms"] = (result["paused_ms"] as int) + (
+                    entry.elapsed_ms - pause_started_ms
+                )
+                pause_started_ms = -1
+        elif entry.code == &"speed":
+            var next_speed := entry.payload.get(
+                "multiplier", entry.payload.get("value", current_speed)
+            ) as int
+            if next_speed > 0 and next_speed != current_speed:
+                _add_duration(
+                    result["speed_durations_ms"] as Dictionary,
+                    str(current_speed),
+                    entry.elapsed_ms - speed_started_ms
+                )
+                current_speed = next_speed
+                speed_started_ms = entry.elapsed_ms
+        elif entry.code == &"scenario_phase_changed":
+            var next_phase := entry.payload.get("phase", "") as String
+            if not next_phase.is_empty() and next_phase != current_phase:
+                if not current_phase.is_empty():
+                    _add_duration(
+                        result["phase_durations_ms"] as Dictionary,
+                        current_phase,
+                        entry.elapsed_ms - phase_started_ms
+                    )
+                current_phase = next_phase
+                phase_started_ms = entry.elapsed_ms
+        elif entry.code == &"diagnostic_changed":
+            var diagnostic_code := entry.payload.get("code", "") as String
+            if not diagnostic_code.is_empty():
+                var diagnostic_counts := result["diagnostic_counts"] as Dictionary
+                diagnostic_counts[diagnostic_code] = (
+                    diagnostic_counts.get(diagnostic_code, 0) as int
+                ) + 1
         if entry.category == &"command":
             var accepted: bool = entry.payload.get("result", "") == "accepted"
             var count_key := "accepted" if accepted else "rejected"
@@ -54,11 +98,27 @@ func analyze(session: PlaytestSession) -> Dictionary:
             _append_idle_period(result["idle_periods"] as Array, last_action_ms, entry.elapsed_ms)
             last_action_ms = entry.elapsed_ms
 
+    var analysis_end_ms := _analysis_end_ms(session)
     if session.is_finished():
         _append_idle_period(
             result["idle_periods"] as Array,
             last_action_ms,
             session.ended_elapsed_ms
+        )
+    if pause_started_ms >= 0:
+        result["paused_ms"] = (result["paused_ms"] as int) + (
+            analysis_end_ms - pause_started_ms
+        )
+    _add_duration(
+        result["speed_durations_ms"] as Dictionary,
+        str(current_speed),
+        analysis_end_ms - speed_started_ms
+    )
+    if not current_phase.is_empty():
+        _add_duration(
+            result["phase_durations_ms"] as Dictionary,
+            current_phase,
+            analysis_end_ms - phase_started_ms
         )
     result["water_path"] = _water_path(last_manual_water, last_pipe_water)
     var candidates := result["bottleneck_candidates"] as Array
@@ -85,6 +145,10 @@ func _empty_result() -> Dictionary:
         "water_path": "none",
         "command_counts": {"accepted": 0, "rejected": 0},
         "layer_usage": {},
+        "paused_ms": 0,
+        "speed_durations_ms": {},
+        "phase_durations_ms": {},
+        "diagnostic_counts": {},
         "bottleneck_candidates": [],
     }
 
@@ -128,7 +192,22 @@ func _append_idle_period(periods: Array, start_ms: int, end_ms: int) -> void:
         "start_ms": start_ms,
         "end_ms": end_ms,
         "duration_ms": duration,
+        "category": "observer_review",
     })
+
+
+func _add_duration(durations: Dictionary, key: String, duration_ms: int) -> void:
+    if key.is_empty() or duration_ms <= 0:
+        return
+    durations[key] = (durations.get(key, 0) as int) + duration_ms
+
+
+func _analysis_end_ms(session: PlaytestSession) -> int:
+    if session.is_finished():
+        return session.ended_elapsed_ms
+    if session.entries.is_empty():
+        return 0
+    return session.entries[-1].elapsed_ms
 
 
 func _water_path(manual_water: int, pipe_water: int) -> String:
