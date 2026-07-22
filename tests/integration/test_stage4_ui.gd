@@ -6,6 +6,7 @@ func run() -> Array[String]:
     var instance := (load("res://scenes/main.tscn") as PackedScene).instantiate()
     var tree := Engine.get_main_loop() as SceneTree
     tree.root.add_child(instance)
+    _sort_containers(instance.get_node("UI/SafeArea"))
     _assert_layout(instance)
     _assert_time_and_layers(instance)
     _assert_inspectors_and_commands(instance)
@@ -15,30 +16,39 @@ func run() -> Array[String]:
     return finish()
 
 
+func _sort_containers(node: Node) -> void:
+    if node is Container:
+        node.notification(Container.NOTIFICATION_SORT_CHILDREN)
+    for child: Node in node.get_children():
+        _sort_containers(child)
+
+
 func _assert_layout(instance: Node) -> void:
-    var top := instance.get_node("UI/TopBar") as Control
-    var left := instance.get_node("UI/LeftPanel") as Control
-    var right := instance.get_node("UI/RightPanel") as Control
-    var bottom := instance.get_node("UI/BottomBar") as Control
+    var top := instance.get_node("UI/SafeArea/Shell/TopBar") as Control
+    var left := instance.get_node("UI/SafeArea/Shell/Body/LeftPanel") as Control
+    var right := instance.get_node("UI/SafeArea/Shell/Body/RightPanel") as Control
+    var bottom := instance.get_node("UI/SafeArea/Shell/Body/Center/BottomBar") as Control
     assert_true(top != null and left != null and right != null and bottom != null, "четыре HUD области существуют")
     assert_true(not top.get_global_rect().intersects(bottom.get_global_rect()), "top и bottom не перекрываются")
     assert_true(not left.get_global_rect().intersects(right.get_global_rect()), "left и right не перекрываются")
-    assert_true(instance.has_node("UI/RightPanel/Margin/VBox/Scroll/Inspector"), "right inspector прокручивается")
+    assert_true(instance.has_node("UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/Scroll/Inspector"), "right inspector прокручивается")
     for path in [
-        "UI/BottomBar/Margin/Tools/Inspect", "UI/BottomBar/Margin/Tools/Road",
-        "UI/BottomBar/Margin/Tools/Depot", "UI/BottomBar/Margin/Tools/Link",
+        "UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Inspect",
+        "UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Road",
+        "UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Depot",
+        "UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Link",
     ]:
         assert_true(instance.has_node(path), "tool button существует: %s" % path)
     for path in [
-        "UI/RightPanel/Margin/VBox/LinkControls/QuotaRow/Quota",
-        "UI/RightPanel/Margin/VBox/LinkControls/PriorityRow/Priority",
-        "UI/RightPanel/Margin/VBox/LinkControls/Dispatch",
-        "UI/RightPanel/Margin/VBox/LinkControls/Apply",
-        "UI/RightPanel/Margin/VBox/LinkControls/Remove",
-        "UI/RightPanel/Margin/VBox/LinkControls/Reset",
-        "UI/RightPanel/Margin/VBox/BuildingControls/DirectMain",
-        "UI/RightPanel/Margin/VBox/BuildingControls/ApplyDirect",
-        "UI/RightPanel/Margin/VBox/BuildingControls/Demolish",
+        "UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/QuotaRow/Quota",
+        "UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/PriorityRow/Priority",
+        "UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Dispatch",
+        "UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Apply",
+        "UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Remove",
+        "UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Reset",
+        "UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/DirectMain",
+        "UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/ApplyDirect",
+        "UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/Demolish",
     ]:
         assert_true(instance.has_node(path), "management control существует: %s" % path)
 
@@ -46,13 +56,13 @@ func _assert_layout(instance: Node) -> void:
 func _assert_time_and_layers(instance: Node) -> void:
     var runner: SimulationRunner = instance.get_runner()
     var simulation := instance.get_node("SimulationController") as SimulationController
-    (instance.get_node("UI/TopBar/Margin/HBox/Speed4") as Button).pressed.emit()
+    (instance.get_node("UI/SafeArea/Shell/TopBar/Margin/HBox/Speed4") as Button).pressed.emit()
     simulation.advance_frame(0.1)
     assert_eq(runner.state.tick, 4, "x4 выполняет четыре fixed ticks")
-    (instance.get_node("UI/TopBar/Margin/HBox/Pause") as Button).pressed.emit()
+    (instance.get_node("UI/SafeArea/Shell/TopBar/Margin/HBox/Pause") as Button).pressed.emit()
     simulation.advance_frame(0.5)
     assert_eq(runner.state.tick, 4, "pause из HUD останавливает ticks")
-    var routes := instance.get_node("UI/LeftPanel/Margin/Layers/Routes") as CheckButton
+    var routes := instance.get_node("UI/SafeArea/Shell/Body/LeftPanel/Margin/Layers/Routes") as CheckButton
     routes.button_pressed = false
     routes.toggled.emit(false)
     assert_true(not instance.get_diagnostics_view().is_layer_visible(&"routes"), "layer toggle управляет DiagnosticsView")
@@ -90,34 +100,34 @@ func _assert_management_controls(instance: Node) -> void:
     link_ids.sort()
     var link_id := link_ids[0] as int
     inspector.show_selection(runner.state, &"link", link_id)
-    var quota := instance.get_node("UI/RightPanel/Margin/VBox/LinkControls/QuotaRow/Quota") as SpinBox
-    var priority := instance.get_node("UI/RightPanel/Margin/VBox/LinkControls/PriorityRow/Priority") as SpinBox
-    var dispatch := instance.get_node("UI/RightPanel/Margin/VBox/LinkControls/Dispatch") as CheckButton
+    var quota := instance.get_node("UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/QuotaRow/Quota") as SpinBox
+    var priority := instance.get_node("UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/PriorityRow/Priority") as SpinBox
+    var dispatch := instance.get_node("UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Dispatch") as CheckButton
     quota.value = 1
     priority.value = 4
     dispatch.button_pressed = false
-    (instance.get_node("UI/RightPanel/Margin/VBox/LinkControls/Apply") as Button).pressed.emit()
+    (instance.get_node("UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Apply") as Button).pressed.emit()
     var link := runner.state.logistics_links.get(link_id) as LogisticsLinkState
     assert_eq(link.priority, 4, "inspector применяет приоритет связи через command runner")
     assert_true(not link.dispatch_enabled, "inspector останавливает dispatch через command runner")
     dispatch.button_pressed = true
-    (instance.get_node("UI/RightPanel/Margin/VBox/LinkControls/Apply") as Button).pressed.emit()
+    (instance.get_node("UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Apply") as Button).pressed.emit()
     assert_true(link.dispatch_enabled, "inspector возобновляет dispatch через command runner")
 
     var source := runner.state.get_building(link.source_id)
     inspector.show_selection(runner.state, &"building", source.id)
-    var direct := instance.get_node("UI/RightPanel/Margin/VBox/BuildingControls/DirectMain") as CheckButton
+    var direct := instance.get_node("UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/DirectMain") as CheckButton
     direct.button_pressed = false
-    (instance.get_node("UI/RightPanel/Margin/VBox/BuildingControls/ApplyDirect") as Button).pressed.emit()
+    (instance.get_node("UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/ApplyDirect") as Button).pressed.emit()
     assert_true(not source.allows_direct_delivery_to_main, "inspector запрещает прямую доставку через command runner")
     direct.button_pressed = true
-    (instance.get_node("UI/RightPanel/Margin/VBox/BuildingControls/ApplyDirect") as Button).pressed.emit()
+    (instance.get_node("UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/ApplyDirect") as Button).pressed.emit()
     assert_true(source.allows_direct_delivery_to_main, "inspector разрешает прямую доставку через command runner")
 
     var managed_link_id := runner.state.logistics_links.keys()[0] as int
     var managed_link := runner.state.logistics_links.get(managed_link_id) as LogisticsLinkState
     inspector.show_selection(runner.state, &"link", managed_link_id)
-    (instance.get_node("UI/RightPanel/Margin/VBox/LinkControls/Reset") as Button).pressed.emit()
+    (instance.get_node("UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Reset") as Button).pressed.emit()
     var has_automatic := false
     for value: Variant in runner.state.logistics_links.values():
         var candidate := value as LogisticsLinkState
@@ -130,7 +140,7 @@ func _assert_management_controls(instance: Node) -> void:
 
     var removable_id := runner.state.logistics_links.keys()[0] as int
     inspector.show_selection(runner.state, &"link", removable_id)
-    (instance.get_node("UI/RightPanel/Margin/VBox/LinkControls/Remove") as Button).pressed.emit()
+    (instance.get_node("UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Remove") as Button).pressed.emit()
     assert_true(not runner.state.logistics_links.has(removable_id), "remove удаляет выбранную связь через runner")
 
     var main := runner.state.get_building(runner.state.main_warehouse_id)
@@ -148,7 +158,7 @@ func _assert_management_controls(instance: Node) -> void:
         if building.definition_id == &"transfer_depot":
             depot_id = building.id
     inspector.show_selection(runner.state, &"building", depot_id)
-    (instance.get_node("UI/RightPanel/Margin/VBox/BuildingControls/Demolish") as Button).pressed.emit()
+    (instance.get_node("UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/Demolish") as Button).pressed.emit()
     assert_eq(runner.state.get_building(depot_id), null, "inspector разбирает свободное депо через runner")
 
 

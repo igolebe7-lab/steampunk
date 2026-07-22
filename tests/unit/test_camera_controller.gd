@@ -47,5 +47,24 @@ func run() -> Array[String]:
         Rect2(Vector2(248, 96), Vector2(1300, 760)),
         "камера сохраняет безопасную экранную область"
     )
+    assert_true(safe_camera.has_method("zoom_in"), "HUD использует публичное приближение")
+    assert_true(safe_camera.has_method("zoom_out"), "HUD использует публичное отдаление")
+    assert_true(safe_camera.has_method("fit_world"), "HUD может вернуть обзор всей карты")
+    assert_true(safe_camera.has_method("get_zoom_percent"), "HUD получает процент масштаба")
+    if (
+        safe_camera.has_method("zoom_in")
+        and safe_camera.has_method("zoom_out")
+        and safe_camera.has_method("fit_world")
+        and safe_camera.has_method("get_zoom_percent")
+    ):
+        var fitted_zoom := safe_camera.zoom.x
+        safe_camera.zoom_in()
+        assert_true(safe_camera.zoom.x > fitted_zoom, "приближение увеличивает масштаб")
+        safe_camera.zoom_out()
+        assert_near(safe_camera.zoom.x, fitted_zoom, 0.001, "обратный шаг возвращает масштаб")
+        safe_camera.set_zoom_factor(2.0)
+        safe_camera.fit_world()
+        assert_near(safe_camera.zoom.x, fitted_zoom, 0.001, "Вписать восстанавливает обзор карты")
+        assert_eq(safe_camera.get_zoom_percent(), roundi(fitted_zoom * 100.0), "процент соответствует камере")
     safe_camera.free()
     return finish()

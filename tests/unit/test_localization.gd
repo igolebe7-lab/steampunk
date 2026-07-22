@@ -15,6 +15,7 @@ func run() -> Array[String]:
     var required_keys: Array[StringName] = [
         &"ui.hud.wood", &"ui.hud.throughput", &"ui.hud.tick", &"ui.hud.pause",
         &"ui.hud.speed_1", &"ui.hud.speed_2", &"ui.hud.speed_4",
+        &"ui.camera.zoom_out", &"ui.camera.zoom_in", &"ui.camera.fit", &"ui.camera.fit_hint",
         &"ui.layer.links", &"ui.layer.routes", &"ui.layer.load",
         &"ui.layer.utilities", &"phase.observation", &"phase.site_preparation",
         &"phase.boiler_supply", &"phase.warming", &"phase.first_strike", &"phase.completed",

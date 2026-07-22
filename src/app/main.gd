@@ -6,8 +6,9 @@ extends Node2D
 @onready var interaction_overlay_view: InteractionOverlayView = $World/InteractionOverlayView
 @onready var simulation_controller: SimulationController = $SimulationController
 @onready var camera_controller: CameraController = $CameraController
-@onready var title_label: Label = $UI/TopBar/Margin/HBox/Title
-@onready var status_label: Label = $UI/TopBar/Margin/HBox/Status
+@onready var title_label: Label = $UI/SafeArea/Shell/TopBar/Margin/HBox/Title
+@onready var status_label: Label = $UI/SafeArea/Shell/TopBar/Margin/HBox/Status
+@onready var zoom_label: Label = $UI/SafeArea/Shell/TopBar/Margin/HBox/ZoomControls/ZoomLabel
 
 var _map_state: HexMapState
 var _hex_layout: HexLayout
@@ -19,6 +20,7 @@ var _tool_controller := ToolController.new()
 var _interaction_feedback_controller := InteractionFeedbackController.new()
 var _interaction_panel_controller := InteractionPanelController.new()
 var _result_panel_controller := ResultPanelController.new()
+var _responsive_layout := ResponsiveLayoutController.new()
 var _playtest_recorder: PlaytestRecorder
 var _playtest_storage: PlaytestStorage
 var _playtest_writer: PlaytestReportWriter
@@ -29,6 +31,7 @@ var _hover_coord: HexCoord
 
 
 func _ready() -> void:
+    get_window().min_size = Vector2i(1280, 720)
     title_label.text = tr(&"ui.app.title")
     status_label.text = tr(&"ui.status.select_hex")
     var scenario := load("res://data/scenarios/full_industrial.tres") as ScenarioDef
@@ -46,22 +49,22 @@ func _ready() -> void:
     interaction_overlay_view.configure(_runner.state, _hex_layout)
     simulation_controller.configure(_runner)
     _selection_controller.configure(_runner.state, _hex_layout, logistics_world_view)
-    _inspector_controller.configure($UI/RightPanel/Margin/VBox/Scroll/Inspector, {
-        &"link_controls": $UI/RightPanel/Margin/VBox/LinkControls,
-        &"quota": $UI/RightPanel/Margin/VBox/LinkControls/QuotaRow/Quota,
-        &"priority": $UI/RightPanel/Margin/VBox/LinkControls/PriorityRow/Priority,
-        &"dispatch": $UI/RightPanel/Margin/VBox/LinkControls/Dispatch,
-        &"building_controls": $UI/RightPanel/Margin/VBox/BuildingControls,
-        &"direct_main": $UI/RightPanel/Margin/VBox/BuildingControls/DirectMain,
-        &"apply_direct": $UI/RightPanel/Margin/VBox/BuildingControls/ApplyDirect,
-        &"demolish": $UI/RightPanel/Margin/VBox/BuildingControls/Demolish,
+    _inspector_controller.configure($UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/Scroll/Inspector, {
+        &"link_controls": $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls,
+        &"quota": $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/QuotaRow/Quota,
+        &"priority": $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/PriorityRow/Priority,
+        &"dispatch": $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Dispatch,
+        &"building_controls": $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls,
+        &"direct_main": $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/DirectMain,
+        &"apply_direct": $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/ApplyDirect,
+        &"demolish": $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/Demolish,
     })
     _hud_controller.configure(_runner, simulation_controller, logistics_world_view.get_diagnostics_view(), {
-        &"wood": $UI/TopBar/Margin/HBox/Wood,
-        &"throughput": $UI/TopBar/Margin/HBox/Throughput,
-        &"tick": $UI/TopBar/Margin/HBox/Tick,
+        &"wood": $UI/SafeArea/Shell/TopBar/Margin/HBox/Wood,
+        &"throughput": $UI/SafeArea/Shell/TopBar/Margin/HBox/Throughput,
+        &"tick": $UI/SafeArea/Shell/TopBar/Margin/HBox/Tick,
         &"status": status_label,
-        &"phase": $UI/LeftPanel/Margin/Layers/Phase,
+        &"phase": $UI/SafeArea/Shell/Body/LeftPanel/Margin/Layers/Phase,
     }, logistics_world_view)
     _result_panel_controller.configure(
         $UI/ResultPanel,
@@ -70,24 +73,30 @@ func _ready() -> void:
         $UI/ResultPanel/Margin/VBox/Continue
     )
     _interaction_panel_controller.configure(
-        $UI/ContextPanel/Margin/HBox/Copy/Title,
-        $UI/ContextPanel/Margin/HBox/Copy/Hint,
-        $UI/ContextPanel/Margin/HBox/Copy/Target,
-        $UI/ContextPanel/Margin/HBox/Actions/Confirm,
-        $UI/ContextPanel/Margin/HBox/Actions/Cancel,
+        $UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox/Copy/Title,
+        $UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox/Copy/Hint,
+        $UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox/Copy/Target,
+        $UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox/Actions/Confirm,
+        $UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox/Actions/Cancel,
         {
-            ToolController.INSPECT: $UI/BottomBar/Margin/Tools/Inspect,
-            ToolController.ROAD: $UI/BottomBar/Margin/Tools/Road,
-            ToolController.DEPOT: $UI/BottomBar/Margin/Tools/Depot,
-            ToolController.LINK_ORIGIN: $UI/BottomBar/Margin/Tools/Link,
-            ToolController.PIPE_BUILD: $UI/BottomBar/Margin/Tools/PipeBuild,
-            ToolController.PIPE_REMOVE: $UI/BottomBar/Margin/Tools/PipeRemove,
+            ToolController.INSPECT: $UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Inspect,
+            ToolController.ROAD: $UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Road,
+            ToolController.DEPOT: $UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Depot,
+            ToolController.LINK_ORIGIN: $UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Link,
+            ToolController.PIPE_BUILD: $UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/PipeBuild,
+            ToolController.PIPE_REMOVE: $UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/PipeRemove,
         }
     )
     _connect_ui()
     _configure_playtest_from_args()
     camera_controller.configure_bounds(grid_view.get_world_rect().grow(64.0))
-    camera_controller.set_zoom_factor(0.75)
+    _responsive_layout.configure(
+        $UI/SafeArea/Shell/Body/Center/WorldSpace,
+        camera_controller
+    )
+    get_viewport().size_changed.connect(_on_viewport_size_changed)
+    _refresh_responsive_layout.call_deferred(true)
+    _refresh_zoom_label(camera_controller.get_zoom_percent())
     _hud_controller.refresh(_runner.state)
     _refresh_interaction_feedback()
 
@@ -123,31 +132,39 @@ func get_diagnostics_view() -> DiagnosticsView:
     return logistics_world_view.get_diagnostics_view()
 
 
+func get_layout_snapshot() -> Dictionary:
+    return _responsive_layout.snapshot()
+
+
 func _connect_ui() -> void:
     grid_view.local_position_selected.connect(_on_world_position_selected)
     grid_view.local_position_hovered.connect(_on_world_position_hovered)
     simulation_controller.tick_completed.connect(_on_state_changed)
     simulation_controller.commands_flushed.connect(_on_state_changed)
     simulation_controller.interpolation_changed.connect(_on_interpolation_changed)
-    $UI/TopBar/Margin/HBox/Pause.pressed.connect(_on_pause_pressed)
-    $UI/TopBar/Margin/HBox/Speed1.pressed.connect(func() -> void: _hud_controller.set_speed_multiplier(1))
-    $UI/TopBar/Margin/HBox/Speed2.pressed.connect(func() -> void: _hud_controller.set_speed_multiplier(2))
-    $UI/TopBar/Margin/HBox/Speed4.pressed.connect(func() -> void: _hud_controller.set_speed_multiplier(4))
-    $UI/LeftPanel/Margin/Layers/Links.toggled.connect(func(value: bool) -> void: _hud_controller.set_layer_visible(&"links", value))
-    $UI/LeftPanel/Margin/Layers/Routes.toggled.connect(func(value: bool) -> void: _hud_controller.set_layer_visible(&"routes", value))
-    $UI/LeftPanel/Margin/Layers/Load.toggled.connect(func(value: bool) -> void: _hud_controller.set_layer_visible(&"load", value))
-    $UI/LeftPanel/Margin/Layers/Utilities.toggled.connect(func(value: bool) -> void: _hud_controller.set_layer_visible(&"utilities", value))
-    $UI/BottomBar/Margin/Tools/Inspect.pressed.connect(_begin_inspect)
-    $UI/BottomBar/Margin/Tools/Road.pressed.connect(_begin_road)
-    $UI/BottomBar/Margin/Tools/Depot.pressed.connect(_begin_depot)
-    $UI/BottomBar/Margin/Tools/Link.pressed.connect(_begin_link)
-    $UI/BottomBar/Margin/Tools/PipeBuild.pressed.connect(_begin_pipe_build)
-    $UI/BottomBar/Margin/Tools/PipeRemove.pressed.connect(_begin_pipe_remove)
-    $UI/RightPanel/Margin/VBox/LinkControls/Apply.pressed.connect(_apply_link_settings)
-    $UI/RightPanel/Margin/VBox/LinkControls/Remove.pressed.connect(_remove_selected_link)
-    $UI/RightPanel/Margin/VBox/LinkControls/Reset.pressed.connect(_reset_selected_link)
-    $UI/RightPanel/Margin/VBox/BuildingControls/ApplyDirect.pressed.connect(_apply_dispatch_policy)
-    $UI/RightPanel/Margin/VBox/BuildingControls/Demolish.pressed.connect(_demolish_selected_depot)
+    $UI/SafeArea/Shell/TopBar/Margin/HBox/Pause.pressed.connect(_on_pause_pressed)
+    $UI/SafeArea/Shell/TopBar/Margin/HBox/Speed1.pressed.connect(func() -> void: _hud_controller.set_speed_multiplier(1))
+    $UI/SafeArea/Shell/TopBar/Margin/HBox/Speed2.pressed.connect(func() -> void: _hud_controller.set_speed_multiplier(2))
+    $UI/SafeArea/Shell/TopBar/Margin/HBox/Speed4.pressed.connect(func() -> void: _hud_controller.set_speed_multiplier(4))
+    $UI/SafeArea/Shell/TopBar/Margin/HBox/ZoomControls/ZoomOutButton.pressed.connect(camera_controller.zoom_out)
+    $UI/SafeArea/Shell/TopBar/Margin/HBox/ZoomControls/ZoomInButton.pressed.connect(camera_controller.zoom_in)
+    $UI/SafeArea/Shell/TopBar/Margin/HBox/ZoomControls/ZoomFitButton.pressed.connect(camera_controller.fit_world)
+    camera_controller.zoom_changed.connect(_refresh_zoom_label)
+    $UI/SafeArea/Shell/Body/LeftPanel/Margin/Layers/Links.toggled.connect(func(value: bool) -> void: _hud_controller.set_layer_visible(&"links", value))
+    $UI/SafeArea/Shell/Body/LeftPanel/Margin/Layers/Routes.toggled.connect(func(value: bool) -> void: _hud_controller.set_layer_visible(&"routes", value))
+    $UI/SafeArea/Shell/Body/LeftPanel/Margin/Layers/Load.toggled.connect(func(value: bool) -> void: _hud_controller.set_layer_visible(&"load", value))
+    $UI/SafeArea/Shell/Body/LeftPanel/Margin/Layers/Utilities.toggled.connect(func(value: bool) -> void: _hud_controller.set_layer_visible(&"utilities", value))
+    $UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Inspect.pressed.connect(_begin_inspect)
+    $UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Road.pressed.connect(_begin_road)
+    $UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Depot.pressed.connect(_begin_depot)
+    $UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Link.pressed.connect(_begin_link)
+    $UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/PipeBuild.pressed.connect(_begin_pipe_build)
+    $UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/PipeRemove.pressed.connect(_begin_pipe_remove)
+    $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Apply.pressed.connect(_apply_link_settings)
+    $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Remove.pressed.connect(_remove_selected_link)
+    $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Reset.pressed.connect(_reset_selected_link)
+    $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/ApplyDirect.pressed.connect(_apply_dispatch_policy)
+    $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/Demolish.pressed.connect(_demolish_selected_depot)
     _tool_controller.mode_changed.connect(
         func(_mode: StringName) -> void: _refresh_interaction_feedback()
     )
@@ -256,7 +273,19 @@ func _on_interpolation_changed(alpha: float) -> void:
 func _on_pause_pressed() -> void:
     var paused := not simulation_controller.is_paused()
     _hud_controller.set_paused(paused)
-    ($UI/TopBar/Margin/HBox/Pause as Button).text = tr(&"ui.hud.resume") if paused else tr(&"ui.hud.pause")
+    ($UI/SafeArea/Shell/TopBar/Margin/HBox/Pause as Button).text = tr(&"ui.hud.resume") if paused else tr(&"ui.hud.pause")
+
+
+func _on_viewport_size_changed() -> void:
+    _refresh_responsive_layout.call_deferred()
+
+
+func _refresh_responsive_layout(fit_world: bool = false) -> void:
+    _responsive_layout.refresh(get_viewport_rect().size, fit_world)
+
+
+func _refresh_zoom_label(percent: int) -> void:
+    zoom_label.text = "%d%%" % percent
 
 
 func _begin_inspect() -> void:
@@ -340,9 +369,9 @@ func _apply_link_settings() -> void:
     _submit_inspector_intent({
         &"code": &"link_settings",
         &"link_id": _inspector_controller.selected_id,
-        &"quota": int(($UI/RightPanel/Margin/VBox/LinkControls/QuotaRow/Quota as SpinBox).value),
-        &"priority": int(($UI/RightPanel/Margin/VBox/LinkControls/PriorityRow/Priority as SpinBox).value),
-        &"dispatch_enabled": ($UI/RightPanel/Margin/VBox/LinkControls/Dispatch as CheckButton).button_pressed,
+        &"quota": int(($UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/QuotaRow/Quota as SpinBox).value),
+        &"priority": int(($UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/PriorityRow/Priority as SpinBox).value),
+        &"dispatch_enabled": ($UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/Dispatch as CheckButton).button_pressed,
     })
 
 
@@ -369,7 +398,7 @@ func _apply_dispatch_policy() -> void:
     _submit_inspector_intent({
         &"code": &"dispatch_policy",
         &"building_id": _inspector_controller.selected_id,
-        &"allows_direct": ($UI/RightPanel/Margin/VBox/BuildingControls/DirectMain as CheckButton).button_pressed,
+        &"allows_direct": ($UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/DirectMain as CheckButton).button_pressed,
     })
 
 

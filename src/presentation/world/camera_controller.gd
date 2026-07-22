@@ -1,6 +1,8 @@
 class_name CameraController
 extends Camera2D
 
+signal zoom_changed(percent: int)
+
 @export var minimum_zoom: float = 0.5
 @export var maximum_zoom: float = 2.0
 @export var zoom_step: float = 1.15
@@ -13,7 +15,26 @@ var _viewport_size := Vector2.ZERO
 
 func set_zoom_factor(value: float) -> void:
     var clamped := clampf(value, minimum_zoom, maximum_zoom)
+    if is_equal_approx(zoom.x, clamped):
+        return
     zoom = Vector2.ONE * clamped
+    zoom_changed.emit(get_zoom_percent())
+
+
+func zoom_in() -> void:
+    set_zoom_factor(zoom.x * zoom_step)
+
+
+func zoom_out() -> void:
+    set_zoom_factor(zoom.x / zoom_step)
+
+
+func fit_world() -> void:
+    configure_safe_view(_safe_screen_rect, _viewport_size, true)
+
+
+func get_zoom_percent() -> int:
+    return roundi(zoom.x * 100.0)
 
 
 func configure_bounds(world_rect: Rect2) -> void:
@@ -72,11 +93,11 @@ func _unhandled_input(event: InputEvent) -> void:
                 get_viewport().set_input_as_handled()
             MOUSE_BUTTON_WHEEL_UP:
                 if mouse_event.pressed:
-                    set_zoom_factor(zoom.x * zoom_step)
+                    zoom_in()
                     get_viewport().set_input_as_handled()
             MOUSE_BUTTON_WHEEL_DOWN:
                 if mouse_event.pressed:
-                    set_zoom_factor(zoom.x / zoom_step)
+                    zoom_out()
                     get_viewport().set_input_as_handled()
     elif event is InputEventMouseMotion and _dragging:
         var motion_event := event as InputEventMouseMotion

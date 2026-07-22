@@ -15,7 +15,6 @@ script = ExtResource("1_main")
 script = ExtResource("4_controller")
 
 [node name="CameraController" type="Camera2D" parent="."]
-position = Vector2(640, 360)
 enabled = true
 position_smoothing_enabled = true
 position_smoothing_speed = 8.0
@@ -54,301 +53,361 @@ script = ExtResource("7_interaction")
 [node name="UI" type="CanvasLayer" parent="."]
 layer = 10
 
-[node name="TopBar" type="PanelContainer" parent="UI"]
-offset_left = 12.0
-offset_top = 12.0
-offset_right = 1268.0
-offset_bottom = 76.0
+[node name="SafeArea" type="MarginContainer" parent="UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
-[node name="Margin" type="MarginContainer" parent="UI/TopBar"]
+[node name="Shell" type="VBoxContainer" parent="UI/SafeArea"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TopBar" type="PanelContainer" parent="UI/SafeArea/Shell"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="UI/SafeArea/Shell/TopBar"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 8
 
-[node name="HBox" type="HBoxContainer" parent="UI/TopBar/Margin"]
+[node name="HBox" type="HBoxContainer" parent="UI/SafeArea/Shell/TopBar/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Title" type="Label" parent="UI/TopBar/Margin/HBox"]
-custom_minimum_size = Vector2(180, 0)
+[node name="Title" type="Label" parent="UI/SafeArea/Shell/TopBar/Margin/HBox"]
+custom_minimum_size = Vector2(190, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "ui.app.title"
 
-[node name="Wood" type="Label" parent="UI/TopBar/Margin/HBox"]
-custom_minimum_size = Vector2(120, 0)
+[node name="Wood" type="Label" parent="UI/SafeArea/Shell/TopBar/Margin/HBox"]
+custom_minimum_size = Vector2(132, 0)
 layout_mode = 2
 text = "ui.hud.wood"
 
-[node name="Throughput" type="Label" parent="UI/TopBar/Margin/HBox"]
-custom_minimum_size = Vector2(170, 0)
+[node name="Throughput" type="Label" parent="UI/SafeArea/Shell/TopBar/Margin/HBox"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 text = "ui.hud.throughput"
 
-[node name="Tick" type="Label" parent="UI/TopBar/Margin/HBox"]
-custom_minimum_size = Vector2(90, 0)
+[node name="Tick" type="Label" parent="UI/SafeArea/Shell/TopBar/Margin/HBox"]
+custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 text = "ui.hud.tick"
 
-[node name="Status" type="Label" parent="UI/TopBar/Margin/HBox"]
-custom_minimum_size = Vector2(230, 0)
+[node name="Status" type="Label" parent="UI/SafeArea/Shell/TopBar/Margin/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "ui.status.select_hex"
+text_overrun_behavior = 3
 
-[node name="Pause" type="Button" parent="UI/TopBar/Margin/HBox"]
+[node name="ZoomControls" type="HBoxContainer" parent="UI/SafeArea/Shell/TopBar/Margin/HBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ZoomOutButton" type="Button" parent="UI/SafeArea/Shell/TopBar/Margin/HBox/ZoomControls"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+tooltip_text = "ui.camera.zoom_out"
+text = "−"
+
+[node name="ZoomLabel" type="Label" parent="UI/SafeArea/Shell/TopBar/Margin/HBox/ZoomControls"]
+custom_minimum_size = Vector2(58, 0)
+layout_mode = 2
+text = "100%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ZoomInButton" type="Button" parent="UI/SafeArea/Shell/TopBar/Margin/HBox/ZoomControls"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+tooltip_text = "ui.camera.zoom_in"
+text = "+"
+
+[node name="ZoomFitButton" type="Button" parent="UI/SafeArea/Shell/TopBar/Margin/HBox/ZoomControls"]
+layout_mode = 2
+tooltip_text = "ui.camera.fit_hint"
+text = "ui.camera.fit"
+
+[node name="Pause" type="Button" parent="UI/SafeArea/Shell/TopBar/Margin/HBox"]
 layout_mode = 2
 text = "ui.hud.pause"
 
-[node name="Speed1" type="Button" parent="UI/TopBar/Margin/HBox"]
+[node name="Speed1" type="Button" parent="UI/SafeArea/Shell/TopBar/Margin/HBox"]
 layout_mode = 2
 text = "ui.hud.speed_1"
 
-[node name="Speed2" type="Button" parent="UI/TopBar/Margin/HBox"]
+[node name="Speed2" type="Button" parent="UI/SafeArea/Shell/TopBar/Margin/HBox"]
 layout_mode = 2
 text = "ui.hud.speed_2"
 
-[node name="Speed4" type="Button" parent="UI/TopBar/Margin/HBox"]
+[node name="Speed4" type="Button" parent="UI/SafeArea/Shell/TopBar/Margin/HBox"]
 layout_mode = 2
 text = "ui.hud.speed_4"
 
-[node name="LeftPanel" type="PanelContainer" parent="UI"]
-offset_left = 12.0
-offset_top = 92.0
-offset_right = 212.0
-offset_bottom = 340.0
+[node name="Body" type="HBoxContainer" parent="UI/SafeArea/Shell"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
 
-[node name="Margin" type="MarginContainer" parent="UI/LeftPanel"]
+[node name="LeftPanel" type="PanelContainer" parent="UI/SafeArea/Shell/Body"]
+custom_minimum_size = Vector2(224, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="UI/SafeArea/Shell/Body/LeftPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 10
 
-[node name="Layers" type="VBoxContainer" parent="UI/LeftPanel/Margin"]
+[node name="Layers" type="VBoxContainer" parent="UI/SafeArea/Shell/Body/LeftPanel/Margin"]
 layout_mode = 2
 
-[node name="Links" type="CheckButton" parent="UI/LeftPanel/Margin/Layers"]
+[node name="Links" type="CheckButton" parent="UI/SafeArea/Shell/Body/LeftPanel/Margin/Layers"]
 layout_mode = 2
 button_pressed = true
 text = "ui.layer.links"
 
-[node name="Routes" type="CheckButton" parent="UI/LeftPanel/Margin/Layers"]
+[node name="Routes" type="CheckButton" parent="UI/SafeArea/Shell/Body/LeftPanel/Margin/Layers"]
 layout_mode = 2
 button_pressed = true
 text = "ui.layer.routes"
 
-[node name="Load" type="CheckButton" parent="UI/LeftPanel/Margin/Layers"]
+[node name="Load" type="CheckButton" parent="UI/SafeArea/Shell/Body/LeftPanel/Margin/Layers"]
 layout_mode = 2
 button_pressed = true
 text = "ui.layer.load"
 
-[node name="Utilities" type="CheckButton" parent="UI/LeftPanel/Margin/Layers"]
+[node name="Utilities" type="CheckButton" parent="UI/SafeArea/Shell/Body/LeftPanel/Margin/Layers"]
 layout_mode = 2
 button_pressed = true
 text = "ui.layer.utilities"
 
-[node name="Phase" type="Label" parent="UI/LeftPanel/Margin/Layers"]
-custom_minimum_size = Vector2(170, 42)
+[node name="Phase" type="Label" parent="UI/SafeArea/Shell/Body/LeftPanel/Margin/Layers"]
+custom_minimum_size = Vector2(190, 48)
 layout_mode = 2
 autowrap_mode = 2
 text = "phase.observation"
 
-[node name="RightPanel" type="PanelContainer" parent="UI"]
-offset_left = 980.0
-offset_top = 92.0
-offset_right = 1268.0
-offset_bottom = 640.0
-
-[node name="Margin" type="MarginContainer" parent="UI/RightPanel"]
+[node name="Center" type="VBoxContainer" parent="UI/SafeArea/Shell/Body"]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 10
-
-[node name="VBox" type="VBoxContainer" parent="UI/RightPanel/Margin"]
-layout_mode = 2
-
-[node name="Scroll" type="ScrollContainer" parent="UI/RightPanel/Margin/VBox"]
-layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
-horizontal_scroll_mode = 0
+theme_override_constants/separation = 12
 
-[node name="Inspector" type="RichTextLabel" parent="UI/RightPanel/Margin/VBox/Scroll"]
-custom_minimum_size = Vector2(245, 210)
-layout_mode = 2
-fit_content = true
-text = "ui.inspector.empty"
-
-[node name="LinkControls" type="VBoxContainer" parent="UI/RightPanel/Margin/VBox"]
-visible = false
-layout_mode = 2
-
-[node name="QuotaRow" type="HBoxContainer" parent="UI/RightPanel/Margin/VBox/LinkControls"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="UI/RightPanel/Margin/VBox/LinkControls/QuotaRow"]
+[node name="WorldSpace" type="Control" parent="UI/SafeArea/Shell/Body/Center"]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "ui.management.quota"
+size_flags_vertical = 3
+mouse_filter = 2
 
-[node name="Quota" type="SpinBox" parent="UI/RightPanel/Margin/VBox/LinkControls/QuotaRow"]
-custom_minimum_size = Vector2(90, 0)
-layout_mode = 2
-max_value = 8.0
-
-[node name="PriorityRow" type="HBoxContainer" parent="UI/RightPanel/Margin/VBox/LinkControls"]
+[node name="ContextPanel" type="PanelContainer" parent="UI/SafeArea/Shell/Body/Center"]
+custom_minimum_size = Vector2(0, 112)
 layout_mode = 2
 
-[node name="Label" type="Label" parent="UI/RightPanel/Margin/VBox/LinkControls/PriorityRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "ui.management.priority"
-
-[node name="Priority" type="SpinBox" parent="UI/RightPanel/Margin/VBox/LinkControls/PriorityRow"]
-custom_minimum_size = Vector2(90, 0)
-layout_mode = 2
-max_value = 4.0
-
-[node name="Dispatch" type="CheckButton" parent="UI/RightPanel/Margin/VBox/LinkControls"]
-layout_mode = 2
-text = "ui.management.dispatch"
-
-[node name="Apply" type="Button" parent="UI/RightPanel/Margin/VBox/LinkControls"]
-layout_mode = 2
-text = "ui.management.apply_link"
-
-[node name="Remove" type="Button" parent="UI/RightPanel/Margin/VBox/LinkControls"]
-layout_mode = 2
-text = "ui.management.remove_link"
-
-[node name="Reset" type="Button" parent="UI/RightPanel/Margin/VBox/LinkControls"]
-layout_mode = 2
-text = "ui.management.reset_link"
-
-[node name="BuildingControls" type="VBoxContainer" parent="UI/RightPanel/Margin/VBox"]
-visible = false
-layout_mode = 2
-
-[node name="DirectMain" type="CheckButton" parent="UI/RightPanel/Margin/VBox/BuildingControls"]
-layout_mode = 2
-text = "ui.management.direct_main"
-
-[node name="ApplyDirect" type="Button" parent="UI/RightPanel/Margin/VBox/BuildingControls"]
-layout_mode = 2
-text = "ui.management.apply_direct"
-
-[node name="Demolish" type="Button" parent="UI/RightPanel/Margin/VBox/BuildingControls"]
-layout_mode = 2
-text = "ui.management.demolish_depot"
-
-[node name="BottomBar" type="PanelContainer" parent="UI"]
-offset_left = 214.0
-offset_top = 650.0
-offset_right = 966.0
-offset_bottom = 708.0
-
-[node name="Margin" type="MarginContainer" parent="UI/BottomBar"]
+[node name="Margin" type="MarginContainer" parent="UI/SafeArea/Shell/Body/Center/ContextPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 8
 
-[node name="Tools" type="HBoxContainer" parent="UI/BottomBar/Margin"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 12
-
-[node name="Inspect" type="Button" parent="UI/BottomBar/Margin/Tools"]
-custom_minimum_size = Vector2(110, 0)
-layout_mode = 2
-text = "ui.tool.inspect"
-
-[node name="Road" type="Button" parent="UI/BottomBar/Margin/Tools"]
-custom_minimum_size = Vector2(110, 0)
-layout_mode = 2
-text = "ui.tool.road"
-
-[node name="Depot" type="Button" parent="UI/BottomBar/Margin/Tools"]
-custom_minimum_size = Vector2(110, 0)
-layout_mode = 2
-text = "ui.tool.depot"
-
-[node name="Link" type="Button" parent="UI/BottomBar/Margin/Tools"]
-custom_minimum_size = Vector2(110, 0)
-layout_mode = 2
-text = "ui.tool.link"
-
-[node name="PipeBuild" type="Button" parent="UI/BottomBar/Margin/Tools"]
-custom_minimum_size = Vector2(110, 0)
-layout_mode = 2
-text = "ui.tool.pipe_build"
-
-[node name="PipeRemove" type="Button" parent="UI/BottomBar/Margin/Tools"]
-custom_minimum_size = Vector2(110, 0)
-layout_mode = 2
-text = "ui.tool.pipe_remove"
-
-[node name="ContextPanel" type="PanelContainer" parent="UI"]
-offset_left = 214.0
-offset_top = 550.0
-offset_right = 966.0
-offset_bottom = 642.0
-
-[node name="Margin" type="MarginContainer" parent="UI/ContextPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 7
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 7
-
-[node name="HBox" type="HBoxContainer" parent="UI/ContextPanel/Margin"]
+[node name="HBox" type="HBoxContainer" parent="UI/SafeArea/Shell/Body/Center/ContextPanel/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Copy" type="VBoxContainer" parent="UI/ContextPanel/Margin/HBox"]
-custom_minimum_size = Vector2(540, 0)
+[node name="Copy" type="VBoxContainer" parent="UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Title" type="Label" parent="UI/ContextPanel/Margin/HBox/Copy"]
+[node name="Title" type="Label" parent="UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox/Copy"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "ui.mode.inspect"
 
-[node name="Hint" type="Label" parent="UI/ContextPanel/Margin/HBox/Copy"]
+[node name="Hint" type="Label" parent="UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox/Copy"]
 layout_mode = 2
-autowrap_mode = 2
+autowrap_mode = 3
+max_lines_visible = 2
+text_overrun_behavior = 3
 text = "ui.hint.inspect"
 
-[node name="Target" type="Label" parent="UI/ContextPanel/Margin/HBox/Copy"]
+[node name="Target" type="Label" parent="UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox/Copy"]
 layout_mode = 2
+autowrap_mode = 3
+max_lines_visible = 1
+text_overrun_behavior = 3
 text = ""
 
-[node name="Actions" type="VBoxContainer" parent="UI/ContextPanel/Margin/HBox"]
-custom_minimum_size = Vector2(150, 0)
+[node name="Actions" type="VBoxContainer" parent="UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox"]
+custom_minimum_size = Vector2(176, 0)
 layout_mode = 2
 
-[node name="Confirm" type="Button" parent="UI/ContextPanel/Margin/HBox/Actions"]
+[node name="Confirm" type="Button" parent="UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox/Actions"]
 visible = false
 layout_mode = 2
 text = "ui.action.confirm"
 
-[node name="Cancel" type="Button" parent="UI/ContextPanel/Margin/HBox/Actions"]
+[node name="Cancel" type="Button" parent="UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox/Actions"]
 visible = false
 layout_mode = 2
 text = "ui.action.cancel"
 
+[node name="BottomBar" type="PanelContainer" parent="UI/SafeArea/Shell/Body/Center"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="UI/SafeArea/Shell/Body/Center/BottomBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="Tools" type="HBoxContainer" parent="UI/SafeArea/Shell/Body/Center/BottomBar/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Inspect" type="Button" parent="UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui.tool.inspect"
+
+[node name="Road" type="Button" parent="UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui.tool.road"
+
+[node name="Depot" type="Button" parent="UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui.tool.depot"
+
+[node name="Link" type="Button" parent="UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui.tool.link"
+
+[node name="PipeBuild" type="Button" parent="UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui.tool.pipe_build"
+
+[node name="PipeRemove" type="Button" parent="UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui.tool.pipe_remove"
+
+[node name="RightPanel" type="PanelContainer" parent="UI/SafeArea/Shell/Body"]
+custom_minimum_size = Vector2(336, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="UI/SafeArea/Shell/Body/RightPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="UI/SafeArea/Shell/Body/RightPanel/Margin"]
+layout_mode = 2
+
+[node name="Scroll" type="ScrollContainer" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Inspector" type="RichTextLabel" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/Scroll"]
+custom_minimum_size = Vector2(300, 210)
+layout_mode = 2
+fit_content = true
+text = "ui.inspector.empty"
+
+[node name="LinkControls" type="VBoxContainer" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox"]
+visible = false
+layout_mode = 2
+
+[node name="QuotaRow" type="HBoxContainer" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/QuotaRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui.management.quota"
+
+[node name="Quota" type="SpinBox" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/QuotaRow"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+max_value = 8.0
+
+[node name="PriorityRow" type="HBoxContainer" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/PriorityRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui.management.priority"
+
+[node name="Priority" type="SpinBox" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls/PriorityRow"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+max_value = 4.0
+
+[node name="Dispatch" type="CheckButton" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls"]
+layout_mode = 2
+text = "ui.management.dispatch"
+
+[node name="Apply" type="Button" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls"]
+layout_mode = 2
+text = "ui.management.apply_link"
+
+[node name="Remove" type="Button" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls"]
+layout_mode = 2
+text = "ui.management.remove_link"
+
+[node name="Reset" type="Button" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/LinkControls"]
+layout_mode = 2
+text = "ui.management.reset_link"
+
+[node name="BuildingControls" type="VBoxContainer" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox"]
+visible = false
+layout_mode = 2
+
+[node name="DirectMain" type="CheckButton" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls"]
+layout_mode = 2
+text = "ui.management.direct_main"
+
+[node name="ApplyDirect" type="Button" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls"]
+layout_mode = 2
+text = "ui.management.apply_direct"
+
+[node name="Demolish" type="Button" parent="UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls"]
+layout_mode = 2
+text = "ui.management.demolish_depot"
+
 [node name="ResultPanel" type="PanelContainer" parent="UI"]
 visible = false
-offset_left = 420.0
-offset_top = 220.0
-offset_right = 860.0
-offset_bottom = 500.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -140.0
+offset_right = 220.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Margin" type="MarginContainer" parent="UI/ResultPanel"]
 layout_mode = 2

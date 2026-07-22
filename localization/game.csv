@@ -19,6 +19,10 @@ ui.hud.resume,Продолжить,Resume
 ui.hud.speed_1,×1,×1
 ui.hud.speed_2,×2,×2
 ui.hud.speed_4,×4,×4
+ui.camera.zoom_out,Отдалить,Zoom out
+ui.camera.zoom_in,Приблизить,Zoom in
+ui.camera.fit,Вписать,Fit
+ui.camera.fit_hint,Показать всю карту,Show the whole map
 ui.layer.links,Связи,Links
 ui.layer.routes,Маршруты,Routes
 ui.layer.load,Загрузка,Load

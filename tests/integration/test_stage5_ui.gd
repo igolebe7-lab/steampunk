@@ -14,10 +14,10 @@ func run() -> Array[String]:
 
 func _assert_stage5_nodes(instance: Node) -> void:
     for path in [
-        "UI/BottomBar/Margin/Tools/PipeBuild",
-        "UI/BottomBar/Margin/Tools/PipeRemove",
-        "UI/LeftPanel/Margin/Layers/Utilities",
-        "UI/LeftPanel/Margin/Layers/Phase",
+        "UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/PipeBuild",
+        "UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/PipeRemove",
+        "UI/SafeArea/Shell/Body/LeftPanel/Margin/Layers/Utilities",
+        "UI/SafeArea/Shell/Body/LeftPanel/Margin/Layers/Phase",
         "UI/ResultPanel",
         "World/IndustrialEffectsView",
     ]:

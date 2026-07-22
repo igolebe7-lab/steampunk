@@ -54,7 +54,7 @@ func run() -> Array[String]:
         var position := layout.coord_to_pixel(coord)
         instance.call("_on_world_position_hovered", position)
         instance.call("_on_world_position_selected", position)
-    var confirm := instance.get_node("UI/ContextPanel/Margin/HBox/Actions/Confirm") as Button
+    var confirm := instance.get_node("UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox/Actions/Confirm") as Button
     assert_true(confirm.visible, "составной инструмент показывает отдельное подтверждение")
     assert_true(not confirm.disabled, "полный маршрут включает подтверждение")
     assert_true(confirm.text.contains("2"), "подтверждение показывает стоимость трубы")
@@ -70,12 +70,12 @@ func run() -> Array[String]:
         "подтверждение строит показанный маршрут"
     )
     assert_true(
-        (instance.get_node("UI/BottomBar/Margin/Tools/Inspect") as Button).button_pressed,
+        (instance.get_node("UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Inspect") as Button).button_pressed,
         "успех возвращает визуально активный осмотр"
     )
 
     instance.call("_begin_road")
-    var road_button := instance.get_node("UI/BottomBar/Margin/Tools/Road") as Button
+    var road_button := instance.get_node("UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Road") as Button
     assert_true(road_button.button_pressed, "кнопка дороги показывает активный инструмент")
     var road_coord := HexCoord.new(8, 4)
     var road_position := layout.coord_to_pixel(road_coord)
@@ -83,11 +83,11 @@ func run() -> Array[String]:
     instance.call("_on_world_position_selected", road_position)
     var grid := instance.get_node("World/HexGridView") as HexGridView
     assert_eq(grid.get_cached_road_mask(road_coord), 0, "одиночная дорога не рисует шесть ложных ветвей")
-    var cancel := instance.get_node("UI/ContextPanel/Margin/HBox/Actions/Cancel") as Button
+    var cancel := instance.get_node("UI/SafeArea/Shell/Body/Center/ContextPanel/Margin/HBox/Actions/Cancel") as Button
     assert_true(cancel.visible, "активный инструмент показывает явную отмену")
     cancel.pressed.emit()
     assert_true(
-        (instance.get_node("UI/BottomBar/Margin/Tools/Inspect") as Button).button_pressed,
+        (instance.get_node("UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Inspect") as Button).button_pressed,
         "отмена возвращает осмотр"
     )
 
