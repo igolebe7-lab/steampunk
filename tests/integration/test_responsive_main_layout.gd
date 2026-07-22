@@ -74,6 +74,11 @@ func run() -> Array[String]:
         (snapshot.get(&"revision", 0) as int) >= 1,
         "главная сцена применяет safe area камеры"
     )
+    assert_eq(
+        instance.get_window().min_size,
+        Vector2i(1280, 720),
+        "окно запрещает физический размер меньше 1280×720"
+    )
     var camera := instance.get_node("CameraController") as CameraController
     var zoom_in := instance.get_node(
         "UI/SafeArea/Shell/TopBar/Margin/HBox/ZoomControls/ZoomInButton"

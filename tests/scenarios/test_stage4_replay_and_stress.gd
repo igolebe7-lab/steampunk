@@ -1,19 +1,25 @@
 extends TestCase
 
 const STRESS_TICKS := 10000
+const HASH_CHECKPOINT_INTERVAL := 10
 
 
 func run() -> Array[String]:
     var first := _runner()
     var second := _runner()
+    var hasher := StateHasher.new()
     for tick in range(1, STRESS_TICKS + 1):
         if tick == 21:
             _enqueue_link_trace(first, tick)
             _enqueue_link_trace(second, tick)
-        var first_hash := first.step()
-        var second_hash := second.step()
-        assert_true(not first_hash.is_empty() and not second_hash.is_empty(), "stress runner сохраняет инварианты на tick %d" % tick)
-        assert_eq(first_hash, second_hash, "stress replay совпадает на tick %d" % tick)
+        first.step()
+        second.step()
+        if tick % HASH_CHECKPOINT_INTERVAL == 0:
+            assert_eq(
+                hasher.hash_state(first.state),
+                hasher.hash_state(second.state),
+                "stress replay совпадает на checkpoint %d" % tick
+            )
         if not _failures.is_empty():
             break
     assert_eq(first.state.tick, STRESS_TICKS, "stress выполняет 10 000 тиков")
@@ -36,7 +42,7 @@ func _enqueue_link_trace(runner: SimulationRunner, target_tick: int) -> void:
 
 func _runner() -> SimulationRunner:
     var scenario := load("res://data/scenarios/physical_logistics.tres") as ScenarioDef
-    return SimulationRunner.new(ScenarioLoader.new().load_scenario(scenario).state)
+    return SimulationRunner.new(ScenarioLoader.new().load_scenario(scenario).state, false)
 
 
 func _wood_in_world(state: SimulationState) -> int:

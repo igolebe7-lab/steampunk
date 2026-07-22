@@ -39,8 +39,8 @@ func _assert_paused_command_replay_is_deterministic() -> void:
         runner.enqueue(SimulationCommand.set_building_priority(1, 20, 2, 1))
     var first_hash := first.flush_commands()
     var second_hash := second.flush_commands()
-    assert_eq(first_hash, second_hash, "одинаковые paused commands дают одинаковый v=5 hash")
-    assert_true(StateHasher.new().canonicalize(first.state).begins_with("v=5|"), "paused hash сохраняет формат v=5")
+    assert_eq(first_hash, second_hash, "одинаковые paused commands дают одинаковый v=6 hash")
+    assert_true(StateHasher.new().canonicalize(first.state).begins_with("v=6|"), "paused hash сохраняет формат v=6")
 
 
 func _assert_flush_reconciles_topology_without_running_logistics() -> void:
