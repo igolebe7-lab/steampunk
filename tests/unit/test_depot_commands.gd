@@ -112,7 +112,6 @@ func _assert_demolish_removes_idle_links_atomically() -> void:
     var worker := WorkerState.new(state.next_entity_id, HexCoord.new(1, 0))
     worker.link_id = link.id
     state.workers[worker.id] = worker
-    state.worker_occupancy[worker.coord.key()] = worker.id
     state.next_entity_id += 1
 
     var result := CommandSystem.new().apply(state, DepotCommand.demolish(2, 51, depot.id))
@@ -133,7 +132,6 @@ func _assert_demolish_rejects_active_cargo_atomically() -> void:
     worker.cargo_resource_id = WOOD
     worker.action = WorkerState.TO_DESTINATION
     state.workers[worker.id] = worker
-    state.worker_occupancy[worker.coord.key()] = worker.id
     state.next_entity_id += 1
     var initial_wood := _main_warehouse(state).get_amount(WOOD)
 
@@ -170,7 +168,6 @@ func _assert_reserved_capacity_blocks_refund_atomically() -> void:
     var worker := WorkerState.new(state.next_entity_id, HexCoord.new(1, 0))
     worker.link_id = link.id
     state.workers[worker.id] = worker
-    state.worker_occupancy[worker.coord.key()] = worker.id
     state.next_entity_id += 1
     var main := _main_warehouse(state)
     main.inventories[WOOD] = 95

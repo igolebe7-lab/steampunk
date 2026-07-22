@@ -260,7 +260,6 @@ func _cancel_job(state: SimulationState, job: DeliveryJob, worker: WorkerState) 
         worker.action = WorkerState.IDLE
         worker.wait_reason = &"no_job"
         worker.operation_progress = 0
-        _release_worker_cell_reservations(state, worker.id)
     state.jobs.erase(job.id)
 
 
@@ -429,15 +428,6 @@ func _sorted_building_ids(state: SimulationState) -> Array[int]:
         ids.append(key as int)
     ids.sort()
     return ids
-
-
-func _release_worker_cell_reservations(state: SimulationState, worker_id: int) -> void:
-    var keys: Array[StringName] = []
-    for key: Variant in state.cell_reservations.keys():
-        if (state.cell_reservations[key] as int) == worker_id:
-            keys.append(key as StringName)
-    for key: StringName in keys:
-        state.cell_reservations.erase(key)
 
 
 func _link_precedes(left: LogisticsLinkState, right: LogisticsLinkState) -> bool:

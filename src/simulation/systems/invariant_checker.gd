@@ -60,7 +60,6 @@ func check(state: SimulationState) -> Array[StringName]:
     if transfer_depot_count > 1:
         _append_once(errors, &"multiple_transfer_depots")
 
-    var expected_worker_occupancy: Dictionary = {}
     var assigned_jobs: Dictionary = {}
     for key: Variant in state.workers.keys():
         var worker_id := key as int
@@ -73,10 +72,6 @@ func check(state: SimulationState) -> Array[StringName]:
             _append_once(errors, &"worker_out_of_bounds")
         elif state.occupied_cells.has(worker.coord.key()):
             _append_once(errors, &"worker_on_building")
-        elif expected_worker_occupancy.has(worker.coord.key()):
-            _append_once(errors, &"worker_overlap")
-        else:
-            expected_worker_occupancy[worker.coord.key()] = worker_id
         _check_worker_route(state, worker, errors)
         _check_worker_job(state, worker, assigned_jobs, errors)
         if worker.action == WorkerState.BLOCKED and worker.wait_reason.is_empty():
@@ -109,8 +104,6 @@ func check(state: SimulationState) -> Array[StringName]:
         if job.state == DeliveryJob.BLOCKED and job.wait_reason.is_empty():
             _append_once(errors, &"blocked_without_reason")
 
-    _check_worker_occupancy(state, expected_worker_occupancy, errors)
-    _check_cell_reservations(state, errors)
     _check_logistics_links(state, errors)
     _check_reservation_ledger(state, errors)
     _check_resource_conservation(state, errors)
@@ -357,13 +350,6 @@ func _check_worker_route(
         or not worker.route[worker.route_index + 1].equals(worker.segment_target)
     ):
         _append_once(errors, &"invalid_movement_segment")
-    if (
-        worker.segment_target != null
-        and (state.cell_reservations.get(worker.segment_target.key(), 0) as int) != worker.id
-    ):
-        _append_once(errors, &"invalid_cell_reservation")
-
-
 func _check_worker_job(
     state: SimulationState,
     worker: WorkerState,
@@ -403,36 +389,6 @@ func _check_worker_job(
             _append_once(errors, &"cargo_job_mismatch")
         if state.catalog.get_resource(worker.cargo_resource_id) == null:
             _append_once(errors, &"unknown_cargo_resource")
-
-
-func _check_worker_occupancy(
-    state: SimulationState,
-    expected: Dictionary,
-    errors: Array[StringName]
-) -> void:
-    if expected.size() != state.worker_occupancy.size():
-        _append_once(errors, &"invalid_worker_occupancy")
-        return
-    for key: Variant in expected.keys():
-        if state.worker_occupancy.get(key, 0) != expected[key]:
-            _append_once(errors, &"invalid_worker_occupancy")
-            return
-
-
-func _check_cell_reservations(state: SimulationState, errors: Array[StringName]) -> void:
-    for key: Variant in state.cell_reservations.keys():
-        var worker_id := state.cell_reservations[key] as int
-        var worker := state.get_worker(worker_id)
-        if (
-            worker == null
-            or worker.segment_target == null
-            or worker.segment_target.key() != (key as StringName)
-            or (
-                (state.worker_occupancy.get(key, 0) as int) != 0
-                and (state.worker_occupancy.get(key, 0) as int) != worker_id
-            )
-        ):
-            _append_once(errors, &"invalid_cell_reservation")
 
 
 func _check_logistics_links(state: SimulationState, errors: Array[StringName]) -> void:

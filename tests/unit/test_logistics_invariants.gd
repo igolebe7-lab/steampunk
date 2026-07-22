@@ -7,7 +7,10 @@ func run() -> Array[String]:
     var ids: Array = state.workers.keys()
     ids.sort()
     state.get_worker(ids[1]).coord = state.get_worker(ids[0]).coord
-    assert_true(InvariantChecker.new().check(state).has(&"worker_overlap"), "overlap обнаруживается")
+    assert_true(
+        not InvariantChecker.new().check(state).has(&"worker_overlap"),
+        "совпадающие клетки носильщиков допустимы"
+    )
 
     var clean := ScenarioLoader.new().load_scenario(scenario).state
     clean.generated_totals[&"wood"] = 1
@@ -31,19 +34,6 @@ func run() -> Array[String]:
     assert_true(
         InvariantChecker.new().check(mismatched_state).has(&"worker_job_state_mismatch"),
         "несогласованные worker action и job state обнаруживаются"
-    )
-
-    var missing_cell_reservation := ScenarioLoader.new().load_scenario(scenario).state
-    var worker_ids: Array = missing_cell_reservation.workers.keys()
-    worker_ids.sort()
-    var moving_worker := missing_cell_reservation.get_worker(worker_ids[0])
-    var target := moving_worker.coord.neighbor(0)
-    moving_worker.route = [moving_worker.coord, target]
-    moving_worker.segment_target = target
-    moving_worker.segment_duration = 4
-    assert_true(
-        InvariantChecker.new().check(missing_cell_reservation).has(&"invalid_cell_reservation"),
-        "segment target без reservation обнаруживается"
     )
 
     var duplicate_depot := ScenarioLoader.new().load_scenario(scenario).state

@@ -57,7 +57,6 @@ func _block_worker(state: SimulationState, worker: WorkerState, job: DeliveryJob
     worker.wait_reason = &"no_path"
     job.state = DeliveryJob.BLOCKED
     job.wait_reason = &"no_path"
-    _release_worker_reservations(state, worker.id)
     state.events.append(SimulationEvent.new(
         &"route_blocked",
         target_tick,
@@ -65,15 +64,6 @@ func _block_worker(state: SimulationState, worker: WorkerState, job: DeliveryJob
         job.id,
         job.resource_id
     ))
-
-
-func _release_worker_reservations(state: SimulationState, worker_id: int) -> void:
-    var keys_to_release: Array[StringName] = []
-    for key: Variant in state.cell_reservations.keys():
-        if (state.cell_reservations[key] as int) == worker_id:
-            keys_to_release.append(key as StringName)
-    for key: StringName in keys_to_release:
-        state.cell_reservations.erase(key)
 
 
 func _worker_precedes(left: WorkerState, right: WorkerState) -> bool:

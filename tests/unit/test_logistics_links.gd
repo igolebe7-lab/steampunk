@@ -106,7 +106,6 @@ func _assert_removal_releases_idle_workers() -> void:
     var worker := WorkerState.new(3, HexCoord.new(1, 0))
     worker.link_id = link.id
     state.workers[worker.id] = worker
-    state.worker_occupancy[worker.coord.key()] = worker.id
     state.next_entity_id = 4
 
     var removed := LogisticsLinkSystem.new().remove_link(state, link.id, &"test")
@@ -140,7 +139,6 @@ func _assert_removal_finishes_active_cargo() -> void:
     worker.cargo_resource_id = WOOD
     worker.action = WorkerState.TO_DESTINATION
     state.workers[4] = worker
-    state.worker_occupancy[worker.coord.key()] = 4
     state.next_entity_id = 5
 
     var removed := CommandSystem.new().apply(state, LinkCommand.remove(1, 20, 1))

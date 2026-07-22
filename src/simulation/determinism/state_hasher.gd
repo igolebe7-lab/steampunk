@@ -3,7 +3,7 @@ extends RefCounted
 
 
 func canonicalize(state: SimulationState) -> String:
-    return "v=5|tick=%d|revision=%d|seed=%d|next=%d|next_job=%d|next_link=%d|main=%d|topology=%d|map=%d,%d|timings=%d,%d,%d,%d|road_defs=[%s]|building_defs=[%s]|recipe_defs=[%s]|cells=[%s]|buildings=[%s]|workers=[%s]|jobs=[%s]|flows=[%s]|links=[%s]|production=[%s]|utility=[%s]|scenario=[%s]|worker_occupancy=[%s]|cell_reservations=[%s]|generated=[%s]|delivered=[%s]|consumed=[%s]|telemetry=[%s]|diagnostic=[%s]" % [
+    return "v=6|tick=%d|revision=%d|seed=%d|next=%d|next_job=%d|next_link=%d|main=%d|topology=%d|map=%d,%d|timings=%d,%d,%d,%d|road_defs=[%s]|building_defs=[%s]|recipe_defs=[%s]|cells=[%s]|buildings=[%s]|workers=[%s]|jobs=[%s]|flows=[%s]|links=[%s]|production=[%s]|utility=[%s]|scenario=[%s]|generated=[%s]|delivered=[%s]|consumed=[%s]|telemetry=[%s]|diagnostic=[%s]" % [
         state.tick,
         state.revision,
         state.seed,
@@ -30,8 +30,6 @@ func canonicalize(state: SimulationState) -> String:
         _encode_production(state),
         _encode_utility_network(state),
         _encode_scenario(state.scenario_progress),
-        _encode_int_dictionary(state.worker_occupancy),
-        _encode_int_dictionary(state.cell_reservations),
         _encode_int_dictionary(state.generated_totals),
         _encode_int_dictionary(state.delivered_totals),
         _encode_int_dictionary(state.consumed_totals),

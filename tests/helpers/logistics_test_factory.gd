@@ -19,10 +19,6 @@ static func two_workers_same_target() -> SimulationState:
     first.action = WorkerState.TO_SOURCE
     second.action = WorkerState.TO_SOURCE
     state.workers = {1: first, 2: second}
-    state.worker_occupancy = {
-        first.coord.key(): first.id,
-        second.coord.key(): second.id,
-    }
     state.worker_ticks_per_hex = 4
     return state
 
@@ -43,9 +39,5 @@ static func two_workers_swapping_cells() -> SimulationState:
     first.action = WorkerState.TO_SOURCE
     second.action = WorkerState.TO_SOURCE
     state.workers = {1: first, 2: second}
-    state.worker_occupancy = {
-        first.coord.key(): first.id,
-        second.coord.key(): second.id,
-    }
     state.worker_ticks_per_hex = 4
     return state

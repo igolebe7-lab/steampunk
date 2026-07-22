@@ -2,43 +2,54 @@ extends TestCase
 
 
 func run() -> Array[String]:
-    _assert_conflict_resolution_and_arrival()
-    _assert_swap_is_rejected()
-    _assert_repath_avoids_reserved_cell()
+    _assert_workers_share_target_cell()
+    _assert_workers_swap_cells()
+    _assert_static_obstacles_still_block()
     _assert_repath_failure_is_explicit()
     return finish()
 
 
-func _assert_conflict_resolution_and_arrival() -> void:
+func _assert_workers_share_target_cell() -> void:
     var state := LogisticsTestFactory.two_workers_same_target()
     MovementSystem.new().run(state, Pathfinder.new(), 1)
-    assert_eq(state.cell_reservations.size(), 1, "клетка имеет одну reservation")
-    assert_eq(state.cell_reservations.values()[0], 1, "при равном ожидании выигрывает меньший ID")
-    assert_eq(state.get_worker(2).wait_reason, &"cell_reserved", "проигравший объясняет ожидание")
-    var conflict_event: SimulationEvent
+    assert_true(state.get_worker(1).segment_target != null, "первый носильщик начинает переход")
+    assert_true(state.get_worker(2).segment_target != null, "второй носильщик начинает тот же переход")
+    assert_eq(state.get_worker(1).wait_reason, &"", "первый не ждёт другого носильщика")
+    assert_eq(state.get_worker(2).wait_reason, &"", "второй не ждёт другого носильщика")
+    var movement_events := 0
     for event: SimulationEvent in state.events:
-        if event.code == &"worker_waiting" and event.entity_id == 2:
-            conflict_event = event
-            break
-    assert_true(conflict_event != null, "movement публикует telemetry event конфликта")
-    if conflict_event != null:
-        assert_eq(conflict_event.cell_key, &"2:1", "конфликт привязан к целевой клетке")
-        assert_eq(conflict_event.reason, &"cell_reserved", "причина конфликта структурирована")
+        if event.code == &"movement_started":
+            movement_events += 1
+    assert_eq(movement_events, 2, "оба перехода запускаются в один тик")
     for tick in range(2, 6):
         MovementSystem.new().run(state, Pathfinder.new(), tick)
-    assert_eq(state.worker_occupancy.get(&"2:1", 0), 1, "занятость атомарно переходит в target")
-    assert_true(not state.worker_occupancy.has(&"1:1"), "стартовая клетка освобождается после прибытия")
-    assert_true(not state.cell_reservations.has(&"2:1"), "reservation снимается после прибытия")
+    assert_eq(state.get_worker(1).coord.key(), &"2:1", "первый приходит в общую клетку")
+    assert_eq(state.get_worker(2).coord.key(), &"2:1", "второй приходит в общую клетку")
 
 
-func _assert_swap_is_rejected() -> void:
+func _assert_workers_swap_cells() -> void:
     var state := LogisticsTestFactory.two_workers_swapping_cells()
     MovementSystem.new().run(state, Pathfinder.new(), 1)
-    assert_true(state.cell_reservations.is_empty(), "взаимный обмен клетками не резервируется")
-    assert_eq(state.get_worker(1).wait_reason, &"cell_occupied", "первый worker видит занятую клетку")
-    assert_eq(state.get_worker(2).wait_reason, &"cell_occupied", "второй worker видит занятую клетку")
-    assert_eq(state.worker_occupancy.get(&"1:1", 0), 1, "первый worker остаётся на месте")
-    assert_eq(state.worker_occupancy.get(&"2:1", 0), 2, "второй worker остаётся на месте")
+    assert_true(state.get_worker(1).segment_target != null, "первый начинает встречный переход")
+    assert_true(state.get_worker(2).segment_target != null, "второй начинает встречный переход")
+    for tick in range(2, 6):
+        MovementSystem.new().run(state, Pathfinder.new(), tick)
+    assert_eq(state.get_worker(1).coord.key(), &"2:1", "первый занимает прежнюю клетку второго")
+    assert_eq(state.get_worker(2).coord.key(), &"1:1", "второй занимает прежнюю клетку первого")
+
+
+func _assert_static_obstacles_still_block() -> void:
+    var building_state := LogisticsTestFactory.two_workers_same_target()
+    building_state.occupied_cells[&"2:1"] = 99
+    MovementSystem.new().run(building_state, Pathfinder.new(), 1)
+    assert_eq(building_state.get_worker(1).segment_target, null, "здание блокирует переход")
+    assert_eq(building_state.get_worker(1).wait_reason, &"no_path", "здание даёт причину no_path")
+
+    var terrain_state := LogisticsTestFactory.two_workers_same_target()
+    terrain_state.map_state.get_cell(HexCoord.new(2, 1)).traversable = false
+    MovementSystem.new().run(terrain_state, Pathfinder.new(), 1)
+    assert_eq(terrain_state.get_worker(2).segment_target, null, "непроходимая местность блокирует переход")
+    assert_eq(terrain_state.get_worker(2).wait_reason, &"no_path", "местность даёт причину no_path")
 
 
 func _assert_repath_failure_is_explicit() -> void:
@@ -56,35 +67,6 @@ func _assert_repath_failure_is_explicit() -> void:
     assert_eq(moving_worker.wait_reason, &"no_path", "неуспешный repath имеет явную причину")
     assert_eq(job.wait_reason, &"no_path", "job сохраняет причину неуспешного repath")
     assert_eq(state.get_job(job.id), job, "неуспешный repath не удаляет job")
-
-
-func _assert_repath_avoids_reserved_cell() -> void:
-    var state := _assigned_state()
-    var moving_worker := _first_moving_worker(state)
-    assert_true(moving_worker != null, "для теста обхода назначается worker")
-    if moving_worker == null:
-        return
-    var blocker: WorkerState
-    for value: Variant in state.workers.values():
-        var candidate := value as WorkerState
-        if candidate.id != moving_worker.id:
-            blocker = candidate
-            break
-    var blocked_target := moving_worker.route[moving_worker.route_index + 1]
-    state.cell_reservations[blocked_target.key()] = blocker.id
-    state.repath_after_ticks = 1
-    MovementSystem.new().run(state, Pathfinder.new(), 11)
-    var rebuilt := false
-    for event: SimulationEvent in state.events:
-        if event.code == &"route_rebuilt" and event.entity_id == moving_worker.id:
-            rebuilt = true
-            break
-    assert_true(rebuilt, "длительное ожидание вызывает успешный repath")
-    assert_eq(moving_worker.wait_ticks, 0, "успешный repath сбрасывает starvation counter")
-    assert_true(
-        moving_worker.route.size() < 2 or not moving_worker.route[1].equals(blocked_target),
-        "новый маршрут обходит зарезервированную клетку"
-    )
 
 
 func _assigned_state() -> SimulationState:

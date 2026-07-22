@@ -95,7 +95,6 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
         return ScenarioLoadResult.new(null, errors)
 
     var workers: Dictionary = {}
-    var worker_occupancy: Dictionary = {}
     for initial_worker in definition.initial_workers:
         if initial_worker == null:
             errors.append(&"invalid_initial_worker")
@@ -107,11 +106,7 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
         if occupied_cells.has(worker_coord.key()):
             errors.append(&"worker_on_building")
             continue
-        if worker_occupancy.has(worker_coord.key()):
-            errors.append(&"worker_overlap")
-            continue
         workers[next_entity_id] = WorkerState.new(next_entity_id, worker_coord)
-        worker_occupancy[worker_coord.key()] = next_entity_id
         next_entity_id += 1
 
     if not errors.is_empty():
@@ -127,7 +122,6 @@ func load_scenario(definition: ScenarioDef) -> ScenarioLoadResult:
     )
     state.workers = workers
     state.main_warehouse_id = main_warehouse_id
-    state.worker_occupancy = worker_occupancy
 
     var logistics_links: Dictionary = {}
     var link_system := LogisticsLinkSystem.new()

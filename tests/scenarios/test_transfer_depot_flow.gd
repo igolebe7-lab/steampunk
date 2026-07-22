@@ -21,7 +21,6 @@ func run() -> Array[String]:
         var worker_id := 4 + index
         var worker := WorkerState.new(worker_id, coords[index])
         state.workers[worker_id] = worker
-        state.worker_occupancy[worker.coord.key()] = worker_id
     state.next_entity_id = 8
 
     var runner := SimulationRunner.new(state)

@@ -117,7 +117,6 @@ func _state_with_two_links(worker_count: int) -> SimulationState:
         var worker_id := 4 + index
         var worker := WorkerState.new(worker_id, coords[index])
         state.workers[worker_id] = worker
-        state.worker_occupancy[worker.coord.key()] = worker_id
     state.next_entity_id = 4 + worker_count
     return state
 
