@@ -1,0 +1,77 @@
+id,name_ru,category,era,inventory,stack_size,storage_class,renewability,notes_ru
+logs,Брёвна,natural,1,true,20,bulk,slow_renewable,Добываются в лесу
+stone,Камень,natural,1,true,20,bulk,finite,Добывается в карьерах
+clay,Глина,natural,2,true,20,bulk,finite,Добывается в низинах
+sand,Песок,natural,2,true,20,bulk,finite,Добывается у рек и на песчаных участках
+iron_ore,Железная руда,natural,2,true,20,bulk,finite,Добывается шахтами
+copper_ore,Медная руда,natural,2,true,20,bulk,finite,Добывается шахтами
+coal,Уголь,natural,2,true,20,bulk,finite,Топливо и сырьё для кокса
+water,Вода,natural,1,true,20,liquid,flow_limited,Переносится в таре
+grain,Зерно,natural,1,true,20,food,renewable,Выращивается на полях
+vegetables,Овощи,natural,1,true,20,food,renewable,Выращиваются на полях
+plant_fiber,Растительное волокно,natural,2,true,20,dry,renewable,Сырьё для ткани
+fodder,Корм,natural,3,true,20,food,renewable,Питание тягловых животных
+hides,Шкуры,natural,2,true,10,dry,renewable,Сырьё для кожи
+resin,Смола,natural,2,true,10,covered,slow_renewable,Сырьё для смазки
+etherite,Эфирит,natural,7,true,5,secure,finite,Редкий минерал высокого давления
+rough_planks,Грубые доски,processed,1,true,20,bulk,manufactured,Аварийный строительный материал
+planks,Доски,processed,2,true,20,bulk,manufactured,Строительство и ремесло
+beams,Деревянные балки,processed,2,true,15,bulk,manufactured,Каркасы и тяжёлое строительство
+stone_blocks,Каменные блоки,processed,2,true,15,bulk,manufactured,Фундаменты и здания
+gravel,Щебень,processed,2,true,20,bulk,manufactured,Дороги и фундаменты
+bricks,Кирпич,processed,2,true,20,bulk,manufactured,Постоянные здания и печи
+glass,Стекло,processed,3,true,10,fragile,manufactured,Лаборатории и приборы
+flour,Мука,processed,2,true,20,food,manufactured,Вход для рационов
+rations,Рационы,processed,1,true,20,food,manufactured,Пища домохозяйств
+charcoal,Древесный уголь,processed,2,true,20,fuel,manufactured,Раннее топливо
+coke,Кокс,processed,4,true,20,fuel,manufactured,Топливо для стали
+iron_ingot,Железные слитки,processed,2,true,20,metal,manufactured,Базовый металл
+copper_ingot,Медные слитки,processed,3,true,20,metal,manufactured,Цветной металл
+steel,Сталь,processed,5,true,20,metal,manufactured,Тяжёлая промышленность
+cloth,Ткань,processed,1,true,20,dry,manufactured,Стартовый привозной материал и позднее местное производство
+leather,Кожа,processed,2,true,20,dry,manufactured,Упряжь и ремни
+lubricant,Смазка,processed,3,true,10,covered,manufactured,Обслуживание механизмов
+tools,Инструменты,component,1,true,10,covered,manufactured,Строительство и добыча
+iron_plate,Железные пластины,component,3,true,20,metal,manufactured,Машины и котлы
+steel_beam,Стальные балки,component,5,true,15,bulk,manufactured,Крупные здания и мосты
+pipe,Трубы,component,4,true,15,metal,manufactured,Вода и пар
+copper_wire,Медная проволока,component,4,true,20,covered,manufactured,Приборы и управление
+gear,Шестерни,component,3,true,20,covered,manufactured,Механические узлы
+bearing,Подшипники,component,4,true,20,covered,manufactured,Транспорт и машины
+spring,Пружины,component,4,true,20,covered,manufactured,Регуляторы и транспорт
+valve,Клапаны,component,4,true,20,covered,manufactured,Управление трубами
+rope,Канаты,component,3,true,15,dry,manufactured,Краны и шахты
+wooden_fittings,Деревянные детали,component,2,true,20,covered,manufactured,Столярные соединения и транспорт
+pressure_gauge,Манометры,component,4,true,10,fragile,manufactured,Контроль пара
+mechanical_assembly,Механические узлы,component,4,true,10,covered,manufactured,Основа машин
+boiler_section,Котельные секции,component,4,true,10,metal,manufactured,Котлы и паровые машины
+rail,Рельсы,component,5,true,15,bulk,manufactured,Железнодорожный путь
+handcart,Тачки,vehicle,3,true,5,vehicle,manufactured,Локальная ручная логистика
+draft_animal,Тягловые животные,vehicle,3,true,1,livestock,renewable,Тяга для повозок
+wagon,Повозки,vehicle,3,true,3,vehicle,manufactured,Районная логистика
+pump,Насосы,machine,4,true,5,machine,manufactured,Водоснабжение и пар
+steam_engine,Паровые машины,machine,4,true,3,machine,manufactured,Привод промышленности
+bogie,Вагонные тележки,machine,5,true,3,machine,manufactured,Вагоны и локомотивы
+locomotive,Локомотивы,vehicle,5,true,1,vehicle,manufactured,Дальний грузовой транспорт
+freight_car,Грузовые вагоны,vehicle,5,true,1,vehicle,manufactured,Железнодорожная грузовая ёмкость
+steam_tractor,Паровые тягачи,vehicle,5,true,1,vehicle,manufactured,Тяжёлый дорожный транспорт
+pressure_regulator,Регуляторы давления,machine,6,true,5,secure,manufactured,Автоматическое управление паром
+sorter,Сортировщики,machine,6,true,5,machine,manufactured,Локальная автоматизация
+blueprint,Промышленные чертежи,machine,6,true,10,secure,manufactured,Тиражируемые строительные шаблоны
+computing_module,Вычислительные модули,machine,7,true,5,secure,manufactured,Механическая память и логика
+automaton_joint,Суставы автоматонов,machine,7,true,5,machine,manufactured,Механика автоматонов
+etheric_core,Эфирные ядра,machine,7,true,1,secure,manufactured,Сердце поздних машин
+automaton,Автоматоны,vehicle,7,true,1,vehicle,manufactured,Физические механические работники
+airship_frame,Каркасы дирижаблей,machine,7,true,1,vehicle,manufactured,Основа воздушного транспорта
+airship,Дирижабли,vehicle,7,true,1,vehicle,manufactured,Поздний дальний транспорт
+megaproject_section,Секции мегапроекта,machine,7,true,1,secure,manufactured,Модули финального инженерного проекта
+craft_research_kit,Ремесленные исследовательские наборы,research,2,true,10,secure,manufactured,Исследования ремесла
+agrarian_research_kit,Аграрные исследовательские наборы,research,2,true,10,secure,manufactured,Исследования сельского хозяйства
+mechanical_research_kit,Механические исследовательские наборы,research,3,true,10,secure,manufactured,Исследования транспорта
+thermodynamic_research_kit,Термодинамические исследовательские наборы,research,4,true,10,secure,manufactured,Исследования пара
+industrial_research_kit,Промышленные исследовательские наборы,research,5,true,10,secure,manufactured,Исследования тяжёлой промышленности
+etheric_research_kit,Эфирные исследовательские наборы,research,7,true,10,secure,manufactured,Исследования эфирита
+piped_water,Вода в трубопроводе,network,4,false,0,network,flow_limited,Сетевая величина
+steam_pressure,Давление пара,network,4,false,0,network,manufactured,Сетевая величина
+mechanical_power,Механическая мощность,network,6,false,0,network,manufactured,Сетевая величина
+pneumatic_signal,Пневматический сигнал,network,7,false,0,network,manufactured,Сетевая величина

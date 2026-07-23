@@ -1,0 +1,12 @@
+id,name_ru,era,layer,build_labor_s_per_hex,speed_multiplier,capacity_per_min,connection_rule,balance_status
+footpath,Тропа,1,road,8,1.15,30,hex_sides,baseline
+dirt_road,Грунтовая дорога,2,road,15,1.45,60,hex_sides,baseline
+stone_road,Каменная дорога,3,road,30,1.8,120,hex_sides,baseline
+road_bridge,Дорожный мост,3,road,60,1.35,80,bank_to_bank,baseline
+water_pipe,Водопровод,4,utility,20,1.0,12,compatible_ports,baseline
+steam_pipe,Паропровод,5,utility,30,1.0,20,compatible_ports,baseline
+rail_track,Железнодорожный путь,5,rail,45,1.0,240,hex_sides,baseline
+rail_bridge,Железнодорожный мост,5,rail,120,1.0,180,bank_to_bank,baseline
+local_conveyor,Локальный конвейер,6,manufacturing,40,1.0,30,adjacent_industrial_ports,baseline
+mechanical_shaft,Механическая передача,6,utility,25,1.0,20,compatible_ports,baseline
+pneumatic_tube,Пневматическая линия,7,utility,35,1.0,60,compatible_ports,baseline

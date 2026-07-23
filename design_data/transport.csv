@@ -1,0 +1,8 @@
+id,name_ru,era,required_item_id,cargo_capacity,speed_open,speed_road,optimal_min_hex,optimal_max_hex,operating_inputs,network_requirement,balance_status
+porter,Носильщик,1,none,1,1.0,1.15,1,12,food_and_water,walkable,baseline
+handcart_transport,Тачка,3,handcart,3,0.75,1.5,5,20,worker,footpath,baseline
+wagon_transport,Повозка,3,wagon,12,0.0,1.8,20,70,draft_animal_and_fodder,dirt_road,baseline
+steam_tractor_transport,Паровой тягач,5,steam_tractor,20,0.0,2.0,20,80,coal_water_lubricant,stone_road,baseline
+freight_train,Грузовой поезд,5,locomotive,60,0.0,3.0,50,999,coal_water_maintenance,rail_track,baseline
+logistics_automaton,Грузовой автоматон,7,automaton,4,1.0,1.5,1,25,lubricant_and_maintenance,mechanical_control,baseline
+freight_airship,Грузовой дирижабль,7,airship,80,0.0,2.4,80,999,steam_and_etheric_navigation,airship_yard,baseline

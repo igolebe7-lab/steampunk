@@ -1,0 +1,98 @@
+id,name_ru,building_id,era,duration_s,workers_required,network_requirement,balance_status
+emergency_rough_planks,Аварийное изготовление грубых досок,expedition_hq,1,60,1,none,baseline
+emergency_stone_blocks,Аварийная обработка камня,expedition_hq,1,75,1,none,baseline
+emergency_tools,Аварийное изготовление инструментов,expedition_hq,1,120,2,none,baseline
+expedition_rations,Походные рационы,field_kitchen,1,45,1,none,baseline
+travel_bread,Дорожный хлеб,field_kitchen,2,40,1,none,baseline
+logging_post_logs,Ручная заготовка брёвен,logging_post,1,40,1,none,baseline
+stone_gathering,Сбор камня,stone_gathering_post,1,45,1,none,baseline
+draw_well_water,Подъём воды из колодца,well,1,20,1,none,baseline
+small_grain_harvest,Урожай зерна с малого поля,field_plot,1,90,1,none,baseline
+small_vegetable_harvest,Урожай овощей с малого поля,field_plot,1,75,1,none,baseline
+expedition_handcraft,Походное ремесло,expedition_workshop,1,90,1,none,baseline
+farm_grain,Выращивание зерна,farmstead,2,120,2,none,baseline
+farm_vegetables,Выращивание овощей,farmstead,2,100,2,none,baseline
+farm_fiber,Выращивание растительного волокна,farmstead,2,120,2,none,baseline
+farm_fodder,Выращивание корма,farmstead,3,100,2,none,baseline
+raise_draft_animal,Выращивание тяглового животного,ranch,3,300,4,none,baseline
+produce_hides,Получение шкур,ranch,3,180,3,none,baseline
+logging_camp_logs,Организованная заготовка брёвен,logging_camp,2,30,2,none,baseline
+forestry_resin,Сбор смолы,logging_camp,2,75,2,none,baseline
+quarry_stone,Добыча камня,quarry,2,35,2,none,baseline
+dig_clay,Добыча глины,clay_pit,2,35,2,none,baseline
+dig_sand,Добыча песка,sand_pit,2,35,2,none,baseline
+mine_iron_ore,Добыча железной руды,surface_mine,2,45,3,none,baseline
+mine_copper_ore,Добыча медной руды,surface_mine,2,50,3,none,baseline
+mine_coal,Добыча угля,surface_mine,2,40,3,none,baseline
+saw_planks,Распил досок,sawmill,2,30,2,none,baseline
+saw_beams,Распил балок,sawmill,2,45,2,none,baseline
+cut_stone_blocks,Обработка каменных блоков,stoneworks,2,40,2,none,baseline
+crush_gravel,Дробление щебня,crusher,2,30,2,none,baseline
+fire_bricks,Обжиг кирпича,brickworks,2,60,2,none,baseline
+burn_charcoal,Выжиг древесного угля,charcoal_kiln,2,75,1,none,baseline
+smelt_iron,Выплавка железа,bloomery,2,75,2,none,baseline
+smelt_copper,Выплавка меди,bloomery,3,75,2,none,baseline
+mill_flour,Помол муки,mill,2,35,1,none,baseline
+cook_rations,Приготовление рационов,communal_kitchen,2,45,2,none,baseline
+weave_cloth,Изготовление ткани,weavery,2,55,2,none,baseline
+tan_leather,Выделка кожи,tannery,2,60,2,none,baseline
+forge_tools,Ковка инструментов,tool_workshop,2,60,2,none,baseline
+make_wooden_fittings,Изготовление деревянных деталей,carpentry,2,50,2,none,baseline
+forge_iron_plate,Ковка железных пластин,smithy,3,50,2,none,baseline
+forge_gear,Ковка шестерён,smithy,3,55,2,none,baseline
+make_rope,Изготовление канатов,weavery,3,45,2,none,baseline
+craft_kit,Сборка ремесленного исследовательского набора,surveyor_post,1,120,1,none,baseline
+agrarian_kit,Сборка аграрного исследовательского набора,surveyor_post,1,120,1,none,baseline
+fire_glass,Выплавка стекла,glassworks,3,80,2,none,baseline
+make_lubricant,Изготовление смазки,oil_house,3,60,2,none,baseline
+make_handcart,Сборка тачки,cartwright,3,100,2,none,baseline
+make_wagon,Сборка повозки,cartwright,3,180,3,none,baseline
+make_bearing,Изготовление подшипников,mechanical_shop,3,75,2,none,baseline
+make_spring,Изготовление пружин,mechanical_shop,3,70,2,none,baseline
+make_mechanical_assembly,Сборка механического узла,mechanical_shop,3,100,3,none,baseline
+mechanical_kit,Сборка механического исследовательского набора,research_workshop,3,120,3,none,baseline
+pump_water,Подача воды насосом,pump_station,4,10,2,mechanical_power_optional,baseline
+make_coke,Получение кокса,coke_oven,4,90,2,none,baseline
+foundry_iron,Литейная выплавка железа,foundry,4,45,3,steam_pressure,baseline
+foundry_copper,Литейная выплавка меди,foundry,4,50,3,steam_pressure,baseline
+make_pipe,Изготовление труб,pipeworks,4,65,2,none,baseline
+make_copper_wire,Волочение медной проволоки,pipeworks,4,55,2,none,baseline
+make_valve,Изготовление клапанов,mechanical_shop,4,80,3,none,baseline
+make_pressure_gauge,Изготовление манометров,mechanical_shop,4,100,3,none,baseline
+make_pump,Сборка насоса,boilerworks,4,140,3,none,baseline
+make_boiler_section,Сборка котельной секции,boilerworks,4,150,4,none,baseline
+make_steam_engine,Сборка паровой машины,boilerworks,4,240,5,none,baseline
+boiler_steam,Выработка пара,small_boiler,4,20,2,piped_water,baseline
+steam_hammer_plate,Прокат железных пластин паровым молотом,steam_hammer,4,35,2,steam_pressure,baseline
+thermodynamic_kit,Сборка термодинамического набора,engineering_lab,4,150,3,none,baseline
+make_steel,Выплавка стали,steelworks,5,90,6,steam_pressure,baseline
+roll_steel_beam,Прокат стальных балок,steelworks,5,75,4,steam_pressure,baseline
+roll_rail,Прокат рельсов,rail_mill,5,70,3,steam_pressure,baseline
+make_bogie,Сборка вагонной тележки,locomotive_works,5,180,4,steam_pressure,baseline
+make_locomotive,Сборка локомотива,locomotive_works,5,600,8,steam_pressure,baseline
+make_freight_car,Сборка грузового вагона,locomotive_works,5,300,5,steam_pressure,baseline
+make_steam_tractor,Сборка парового тягача,locomotive_works,5,420,6,steam_pressure,baseline
+central_steam,Централизованная выработка пара,central_boiler,5,15,4,piped_water,baseline
+industrial_kit,Сборка промышленного набора,industrial_lab,5,210,4,steam_pressure,baseline
+make_pressure_regulator,Сборка регулятора давления,regulator_works,6,150,3,mechanical_power,baseline
+make_sorter,Сборка сортировщика,sorter_works,6,160,3,mechanical_power,baseline
+print_blueprint,Тиражирование промышленного чертежа,blueprint_office,6,120,2,mechanical_power,baseline
+assembly_steam_engine,Поточная сборка паровой машины,assembly_hall,6,150,5,mechanical_power,baseline
+generate_mechanical_power,Выработка механической мощности,conveyor_drive,6,15,2,steam_pressure,baseline
+deep_mine_iron,Глубокая добыча железной руды,mine_hoist,4,30,3,steam_pressure,baseline
+deep_mine_copper,Глубокая добыча медной руды,mine_hoist,4,35,3,steam_pressure,baseline
+deep_mine_coal,Глубокая добыча угля,mine_hoist,4,28,3,steam_pressure,baseline
+mine_etherite,Добыча эфирита,etherite_mine,7,120,6,steam_pressure,baseline
+deep_drill_iron,Глубокое бурение железной руды,deep_drill,7,45,6,steam_pressure,baseline
+deep_drill_copper,Глубокое бурение медной руды,deep_drill,7,50,6,steam_pressure,baseline
+deep_drill_coal,Глубокое бурение угля,deep_drill,7,40,6,steam_pressure,baseline
+deep_drill_stone,Глубокое бурение камня,deep_drill,7,35,6,steam_pressure,baseline
+make_computing_module,Сборка вычислительного модуля,computing_workshop,7,240,5,mechanical_power,baseline
+make_automaton_joint,Сборка сустава автоматона,computing_workshop,7,180,4,mechanical_power,baseline
+make_etheric_core,Сборка эфирного ядра,precision_lab,7,360,6,pneumatic_signal,baseline
+etheric_kit,Сборка эфирного исследовательского набора,precision_lab,7,300,5,pneumatic_signal,baseline
+make_automaton,Сборка автоматона,automaton_works,7,720,10,mechanical_power,baseline
+make_airship_frame,Сборка каркаса дирижабля,airship_yard,7,900,12,steam_pressure,baseline
+make_airship,Сборка дирижабля,airship_yard,7,1200,16,steam_pressure,baseline
+make_megaproject_section,Сборка секции мегапроекта,assembly_hall,7,600,10,mechanical_power,baseline
+generate_pneumatic_signal,Формирование пневматического сигнала,pneumatic_exchange,7,10,2,steam_pressure,baseline

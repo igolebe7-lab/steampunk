@@ -1,0 +1,10 @@
+id,name_ru,era,footprint_hex,effect_type,effect_value,max_per_building,compatibility,balance_status
+storage_annex,Складская пристройка,2,1,storage_capacity,60,2,production_or_storage,baseline
+loading_bay,Погрузочная площадка,2,1,logistics_slots,2,2,road_port,baseline
+stable_annex,Малая конюшня,3,1,wagon_slots,2,1,logistics,baseline
+water_reservoir_annex,Резервуар воды,4,1,water_buffer,80,2,pipe_port,baseline
+coal_bunker,Угольный бункер,4,1,coal_buffer,60,2,steam_consumer,baseline
+local_steam_drive,Локальный паровой привод,4,1,production_rate,0.35,1,mechanical_production,baseline
+repair_shed,Ремонтный сарай,4,1,maintenance_capacity,3,1,vehicle_or_machine,baseline
+crane_annex,Погрузочный кран,5,1,loading_rate,0.5,2,warehouse_or_station,baseline
+lab_wing,Лабораторное крыло,4,3,research_slots,2,2,research,baseline

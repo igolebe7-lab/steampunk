@@ -1,0 +1,41 @@
+id,name_ru,era,prerequisite_id,prototype_requirement,engineer_time_s,balance_status
+expedition_methods,Экспедиционные методы,1,none,start_unlocked,0,baseline
+settlement_charter,Хартия поселения,1,expedition_methods,sustainable_colony,180,baseline
+organized_agriculture,Организованное земледелие,2,settlement_charter,none,240,baseline
+woodworking,Механизированная деревообработка,2,settlement_charter,none,240,baseline
+masonry,Каменное строительство,2,settlement_charter,none,240,baseline
+ore_processing,Рудное дело,2,settlement_charter,none,300,baseline
+warehouse_accounting,Складской учёт,2,settlement_charter,none,240,baseline
+research_institutions,Исследовательские учреждения,2,warehouse_accounting,none,300,baseline
+animal_husbandry,Тягловое животноводство,3,organized_agriculture,stocked_stable,360,baseline
+handcarts,Ручные тележки,3,woodworking,working_handcart,300,baseline
+wagon_transport,Повозочный транспорт,3,animal_husbandry,completed_wagon_route,480,baseline
+road_engineering,Дорожная инженерия,3,masonry,stone_road_segment,420,baseline
+glassmaking,Стекольное дело,3,masonry,none,300,baseline
+lubrication,Промышленные смазки,3,organized_agriculture,none,300,baseline
+precision_mechanics,Точная механика,3,ore_processing,mechanical_assembly,540,baseline
+construction_guilds,Строительные гильдии,3,warehouse_accounting,none,360,baseline
+hydraulic_engineering,Гидравлическая инженерия,4,precision_mechanics,working_pump_station,600,baseline
+thermodynamics,Термодинамика,4,precision_mechanics,stable_heated_boiler,720,baseline
+local_steam_power,Локальный паровой привод,4,thermodynamics,boiler_hammer_cycles,900,baseline
+steam_mining,Паровой шахтный подъём,4,local_steam_power,working_mine_hoist,720,baseline
+industrial_foundry,Промышленная литейная,4,local_steam_power,none,660,baseline
+pressure_instruments,Приборы давления,4,glassmaking,calibrated_pressure_gauge,600,baseline
+steelmaking,Сталелитейное производство,5,industrial_foundry,steel_batch,1200,baseline
+central_steam,Централизованное пароснабжение,5,pressure_instruments,multi_consumer_steam_network,1200,baseline
+rail_engineering,Железнодорожное строительство,5,steelmaking,connected_rail_stations,1200,baseline
+steam_locomotion,Паровозостроение,5,rail_engineering,completed_freight_run,1500,baseline
+heavy_handling,Тяжёлая механизация погрузки,5,central_steam,working_steam_crane,900,baseline
+industrial_science,Промышленная наука,5,steelmaking,working_industrial_lab,1200,baseline
+local_conveyors,Локальные конвейеры,6,heavy_handling,powered_conveyor_cell,1200,baseline
+pressure_regulation,Автоматическое регулирование давления,6,central_steam,regulated_steam_branch,1200,baseline
+industrial_blueprints,Промышленные чертежи,6,industrial_science,completed_blueprint_copy,1050,baseline
+assembly_lines,Сборочные линии,6,local_conveyors,continuous_assembly_cell,1500,baseline
+mechanical_logic,Механическая логика,6,pressure_regulation,stock_controlled_sorter,1500,baseline
+etherite_extraction,Эфиритовая добыча,7,industrial_science,etherite_sample,1800,baseline
+etheric_instrumentation,Эфирные приборы,7,etherite_extraction,etheric_pressure_regulator,1800,baseline
+mechanical_computing,Механические вычислители,7,mechanical_logic,working_computing_module,2100,baseline
+automata,Автоматоны,7,mechanical_computing,working_automaton,2400,baseline
+airship_engineering,Дирижаблестроение,7,etheric_instrumentation,completed_airship_frame,2400,baseline
+deep_drilling,Глубокое бурение,7,etherite_extraction,working_deep_drill,1800,baseline
+atmospheric_engine,Эфирный атмосферный двигатель,7,automata,completed_atmospheric_engine,3600,baseline

@@ -1,0 +1,87 @@
+id,name_ru,category,era,footprint_hex,workers_min,workers_max,logistics_slots,input_buffer_cycles,output_buffer_cycles,road_port,pipe_port,rail_port,upgrade_max,terrain_rule,balance_status
+expedition_hq,Экспедиционный центр,administration,1,7,1,4,2,3,3,true,false,false,1,buildable,baseline
+supply_depot,Склад снабжения,storage,1,3,1,2,2,0,0,true,false,false,1,buildable,baseline
+tent_camp,Палаточный лагерь,housing,1,3,0,0,0,2,0,true,false,false,1,buildable,baseline
+field_kitchen,Полевая кухня,food,1,1,1,2,1,2,2,true,false,false,1,buildable,baseline
+water_post,Водораздаточный пункт,service,1,1,0,1,1,3,0,true,false,false,2,buildable,baseline
+builder_yard,Строительный двор,construction,1,3,1,4,2,2,2,true,false,false,3,buildable,baseline
+surveyor_post,Пост землемера,research,1,1,1,2,1,2,2,true,false,false,3,buildable,baseline
+logging_post,Лесозаготовительный пост,extraction,1,1,1,2,2,1,4,true,false,false,1,adjacent_forest,baseline
+stone_gathering_post,Пункт сбора камня,extraction,1,1,1,2,2,1,4,true,false,false,1,stone_outcrop,baseline
+well,Колодец,extraction,1,1,1,1,1,0,4,true,false,false,2,aquifer,baseline
+open_stockpile,Открытая площадка,storage,1,1,0,1,2,0,0,true,false,false,3,buildable,baseline
+covered_store,Крытый склад,storage,1,1,0,1,2,0,0,true,false,false,3,buildable,baseline
+field_plot,Полевой участок,agriculture,1,1,1,1,1,1,3,true,false,false,1,fertile,baseline
+expedition_workshop,Походная мастерская,manufacturing,1,1,1,2,1,2,2,true,false,false,1,buildable,baseline
+administration,Администрация поселения,administration,2,7,2,6,3,2,2,true,false,false,3,buildable,baseline
+worker_cottage,Рабочий дом,housing,2,3,0,0,0,3,0,true,false,false,3,buildable,baseline
+communal_kitchen,Общая кухня,food,2,3,2,4,2,3,3,true,true,false,3,buildable,baseline
+farmstead,Фермерский двор,agriculture,2,3,1,6,2,2,3,true,false,false,3,adjacent_fertile,baseline
+grain_field,Зерновое поле,agriculture,2,1,0,0,0,0,4,true,false,false,1,fertile,baseline
+vegetable_field,Овощное поле,agriculture,2,1,0,0,0,0,4,true,false,false,1,fertile,baseline
+granary,Амбар,storage,2,3,1,2,3,0,0,true,false,false,3,buildable,baseline
+mill,Мельница,processing,2,3,1,3,2,3,3,true,false,false,3,buildable,baseline
+logging_camp,Лесной лагерь,extraction,2,3,2,5,3,1,5,true,false,false,3,adjacent_forest,baseline
+sawmill,Лесопилка,processing,2,3,2,4,2,3,4,true,false,false,3,buildable,baseline
+quarry,Каменоломня,extraction,2,3,2,6,3,1,5,true,false,false,3,stone_deposit,baseline
+clay_pit,Глиняный карьер,extraction,2,3,2,5,3,1,5,true,false,false,3,clay_deposit,baseline
+sand_pit,Песчаный разрез,extraction,2,3,2,5,3,1,5,true,false,false,3,sand_deposit,baseline
+surface_mine,Поверхностная шахта,extraction,2,3,2,6,3,1,5,true,false,false,3,ore_deposit,baseline
+stoneworks,Камнерезня,processing,2,3,2,4,2,3,4,true,false,false,3,buildable,baseline
+crusher,Камнедробилка,processing,2,3,2,4,2,3,4,true,false,false,3,buildable,baseline
+brickworks,Кирпичный двор,processing,2,3,2,5,2,3,4,true,false,false,3,buildable,baseline
+charcoal_kiln,Углежогная печь,processing,2,1,1,2,1,3,3,true,false,false,3,buildable,baseline
+bloomery,Сыродутная печь,processing,2,3,2,4,2,3,3,true,false,false,3,buildable,baseline
+smithy,Кузница,manufacturing,2,3,2,4,2,3,3,true,false,false,3,buildable,baseline
+carpentry,Столярная мастерская,manufacturing,2,3,2,4,2,3,3,true,false,false,3,buildable,baseline
+tool_workshop,Инструментальная мастерская,manufacturing,2,3,2,4,2,3,3,true,false,false,3,buildable,baseline
+weavery,Ткацкая мастерская,manufacturing,2,3,2,4,2,3,3,true,false,false,3,buildable,baseline
+tannery,Кожевенная мастерская,manufacturing,2,3,2,4,2,3,3,true,false,false,3,buildable,baseline
+warehouse,Склад,storage,2,3,1,4,4,0,0,true,false,false,3,buildable,baseline
+transfer_warehouse,Перевалочный склад,storage,2,3,1,4,6,0,0,true,false,false,3,buildable,baseline
+porter_guild,Артель носильщиков,logistics,2,3,1,8,4,2,2,true,false,false,3,buildable,baseline
+research_workshop,Исследовательская мастерская,research,2,3,2,4,2,4,2,true,false,false,3,buildable,baseline
+stable,Конюшня,logistics,3,3,2,5,4,3,3,true,true,false,3,buildable,baseline
+ranch,Животноводческое хозяйство,agriculture,3,7,2,8,3,3,4,true,true,false,3,pasture,baseline
+fodder_barn,Кормовой сарай,storage,3,3,1,2,3,0,0,true,false,false,3,buildable,baseline
+cartwright,Тележный двор,manufacturing,3,3,2,5,3,3,3,true,false,false,3,buildable,baseline
+wagon_yard,Повозочный двор,logistics,3,7,2,8,6,3,3,true,true,false,3,buildable,baseline
+road_station,Дорожная станция,logistics,3,3,1,4,4,2,2,true,true,false,3,road_junction,baseline
+glassworks,Стекольная печь,processing,3,3,2,5,2,3,3,true,false,false,3,buildable,baseline
+oil_house,Смазочная мастерская,processing,3,3,2,4,2,3,3,true,false,false,3,buildable,baseline
+mechanical_shop,Механическая мастерская,manufacturing,3,3,2,6,3,4,3,true,false,false,3,buildable,baseline
+construction_guild,Строительная гильдия,construction,3,7,2,10,5,3,3,true,false,false,3,buildable,baseline
+pump_station,Насосная станция,utility,4,3,2,4,2,2,2,true,true,false,3,water_edge,baseline
+water_tank,Резервуар воды,utility,4,3,0,1,2,0,0,true,true,false,3,buildable,baseline
+small_boiler,Малый котёл,utility,4,3,2,4,2,3,2,true,true,false,3,buildable,baseline
+steam_hammer,Паровой молот,manufacturing,4,3,2,5,2,3,3,true,true,false,3,buildable,baseline
+mine_hoist,Шахтный подъёмник,extraction,4,3,2,5,3,2,4,true,true,false,3,deep_ore_deposit,baseline
+coke_oven,Коксовая печь,processing,4,3,2,5,2,3,4,true,false,false,3,buildable,baseline
+foundry,Литейная,processing,4,7,3,8,4,4,4,true,true,false,3,buildable,baseline
+pipeworks,Трубный цех,manufacturing,4,3,2,6,3,4,3,true,false,false,3,buildable,baseline
+boilerworks,Котельная мастерская,manufacturing,4,7,3,8,4,4,3,true,true,false,3,buildable,baseline
+engineering_lab,Инженерная лаборатория,research,4,7,3,8,3,5,2,true,true,false,3,buildable,baseline
+steelworks,Сталелитейный комбинат,processing,5,19,6,16,8,5,5,true,true,true,3,buildable,baseline
+rail_mill,Рельсопрокатный цех,manufacturing,5,7,3,8,4,4,4,true,true,true,3,buildable,baseline
+central_boiler,Центральная котельная,utility,5,7,4,10,4,5,2,true,true,true,3,buildable,baseline
+large_warehouse,Большой склад,storage,5,7,2,8,10,0,0,true,false,true,3,buildable,baseline
+freight_station,Грузовая железнодорожная станция,logistics,5,7,3,10,10,3,3,true,true,true,3,rail_adjacent,baseline
+locomotive_works,Локомотивный завод,manufacturing,5,19,6,14,8,5,4,true,true,true,3,buildable,baseline
+rail_depot,Железнодорожное депо,logistics,5,7,3,10,6,4,3,true,true,true,3,rail_adjacent,baseline
+water_tower,Водонапорная башня,utility,5,3,1,2,2,0,0,true,true,true,3,rail_adjacent,baseline
+coal_stage,Угольная эстакада,logistics,5,3,1,3,3,2,2,true,false,true,3,rail_adjacent,baseline
+steam_crane,Паровой кран,logistics,5,3,2,4,2,2,2,true,true,true,3,buildable,baseline
+industrial_lab,Промышленная лаборатория,research,5,7,4,10,4,6,2,true,true,true,3,buildable,baseline
+conveyor_drive,Привод конвейеров,utility,6,3,2,4,2,3,2,true,true,false,3,buildable,baseline
+sorter_works,Цех сортировщиков,manufacturing,6,7,3,8,4,4,3,true,true,false,3,buildable,baseline
+assembly_hall,Сборочный цех,manufacturing,6,19,6,16,8,6,5,true,true,true,3,buildable,baseline
+regulator_works,Цех регуляторов,manufacturing,6,7,3,8,4,5,3,true,true,false,3,buildable,baseline
+blueprint_office,Конструкторское бюро,research,6,7,3,8,3,5,2,true,true,false,3,buildable,baseline
+etherite_mine,Эфиритовая шахта,extraction,7,7,4,12,6,3,4,true,true,true,3,etherite_deposit,baseline
+precision_lab,Эфирная лаборатория,research,7,7,5,12,5,6,2,true,true,true,3,buildable,baseline
+computing_workshop,Вычислительная мастерская,manufacturing,7,7,4,10,5,5,3,true,true,false,3,buildable,baseline
+automaton_works,Завод автоматонов,manufacturing,7,19,8,18,10,6,4,true,true,true,3,buildable,baseline
+pneumatic_exchange,Пневматическая станция,utility,7,3,2,5,2,2,2,true,true,false,3,buildable,baseline
+airship_yard,Дирижабельная верфь,logistics,7,19,8,20,10,6,5,true,true,true,3,buildable,baseline
+deep_drill,Глубокая буровая,extraction,7,7,5,12,6,3,5,true,true,true,3,deep_deposit,baseline
+megaproject_yard,Двор мегапроекта,construction,7,19,10,24,12,8,8,true,true,true,1,buildable,baseline

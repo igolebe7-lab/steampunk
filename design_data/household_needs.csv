@@ -1,0 +1,3 @@
+household_id,resource_id,amount_per_interval
+colonist_household,rations,1
+colonist_household,water,1

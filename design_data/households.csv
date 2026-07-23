@@ -1,0 +1,2 @@
+id,name_ru,workers_provided,consumption_interval_s,warning_intervals,productivity_penalty_intervals,departure_intervals,balance_status
+colonist_household,Домохозяйство колонистов,2,180,2,5,10,baseline

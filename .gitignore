@@ -14,6 +14,8 @@ builds/
 exports/
 output/*
 !output/.gdignore
+outputs/*/previews/
+outputs/**/*.inspect.ndjson
 tmp/*
 !tmp/.gdignore
 
