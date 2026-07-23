@@ -13,7 +13,8 @@ func run() -> Array[String]:
         "fallback-шрифт Godot должен содержать кириллицу"
     )
     var required_keys: Array[StringName] = [
-        &"ui.hud.wood", &"ui.hud.throughput", &"ui.hud.tick", &"ui.hud.pause",
+        &"ui.hud.wood", &"ui.hud.iron", &"ui.hud.coal", &"ui.hud.water",
+        &"ui.hud.throughput", &"ui.hud.tick", &"ui.hud.pause",
         &"ui.hud.speed_1", &"ui.hud.speed_2", &"ui.hud.speed_4",
         &"ui.camera.zoom_out", &"ui.camera.zoom_in", &"ui.camera.fit", &"ui.camera.fit_hint",
         &"ui.layer.links", &"ui.layer.routes", &"ui.layer.load",
@@ -26,6 +27,8 @@ func run() -> Array[String]:
         &"ui.management.direct_main", &"ui.management.apply_direct",
         &"ui.management.demolish_depot",
         &"ui.inspector.worker", &"ui.inspector.building", &"ui.inspector.link",
+        &"ui.inspector.inventory.total", &"ui.inspector.inventory.line",
+        &"ui.inspector.inventory.outgoing", &"ui.inspector.inventory.incoming",
         &"reason.no_destination", &"reason.destination_full", &"reason.source_full",
         &"reason.worker_shortage", &"reason.route_conflict", &"reason.relay_backlog",
         &"reason.no_path", &"command.accepted", &"command.insufficient_wood",

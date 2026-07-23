@@ -94,15 +94,16 @@ func _building_text(state: SimulationState, building: BuildingState) -> String:
     var definition := state.catalog.get_building(building.definition_id)
     var text := "%s\n%s" % [
         tr(&"ui.inspector.building").format({"id": building.id}),
-        tr(&"ui.inspector.building.body").format({
-            "name": tr(definition.display_name_key),
-            "inventory": building.inventory_total(),
-            "capacity": building.inventory_capacity,
-            "level": building.level,
-            "priority": building.priority,
-            "direct": tr(&"ui.value.yes") if building.allows_direct_delivery_to_main else tr(&"ui.value.no"),
-        }),
+        tr(definition.display_name_key),
     ]
+    var inventory_text := _inventory_text(state, building, definition)
+    if not inventory_text.is_empty():
+        text += "\n%s" % inventory_text
+    text += "\n%s" % tr(&"ui.inspector.building.body").format({
+        "level": building.level,
+        "priority": building.priority,
+        "direct": tr(&"ui.value.yes") if building.allows_direct_delivery_to_main else tr(&"ui.value.no"),
+    })
     var production := state.production_states.get(building.id) as ProductionState
     if production != null:
         text += "\n%s" % tr(&"ui.inspector.production.body").format({
@@ -113,6 +114,70 @@ func _building_text(state: SimulationState, building: BuildingState) -> String:
             "reason": tr(StringName("reason.%s" % production.blocked_reason)) if not production.blocked_reason.is_empty() else tr(&"ui.value.none"),
         })
     return text
+
+
+func _inventory_text(
+    state: SimulationState,
+    building: BuildingState,
+    definition: BuildingDef
+) -> String:
+    var resource_ids := _inventory_resource_ids(state, building, definition)
+    if building.inventory_capacity <= 0 and resource_ids.is_empty():
+        return ""
+    var lines: Array[String] = [
+        tr(&"ui.inspector.inventory.total").format({
+            "inventory": building.inventory_total(),
+            "capacity": building.inventory_capacity,
+        }),
+    ]
+    for resource_id: StringName in resource_ids:
+        var resource := state.catalog.get_resource(resource_id)
+        var name := String(resource_id) if resource == null else tr(resource.display_name_key)
+        lines.append(tr(&"ui.inspector.inventory.line").format({
+            "name": name,
+            "amount": building.get_amount(resource_id),
+        }))
+        var outgoing := building.get_outgoing_reserved(resource_id)
+        if outgoing > 0:
+            lines.append(tr(&"ui.inspector.inventory.outgoing").format({"amount": outgoing}))
+        var incoming := building.get_incoming_reserved(resource_id)
+        if incoming > 0:
+            lines.append(tr(&"ui.inspector.inventory.incoming").format({"amount": incoming}))
+    return "\n".join(lines)
+
+
+func _inventory_resource_ids(
+    state: SimulationState,
+    building: BuildingState,
+    definition: BuildingDef
+) -> Array[StringName]:
+    var relevant: Dictionary = {}
+    var show_all := definition.role in [
+        LogisticsPortDef.ROLE_MAIN_WAREHOUSE,
+        LogisticsPortDef.ROLE_TRANSFER_DEPOT,
+    ]
+    if not definition.source_resource_id.is_empty():
+        relevant[definition.source_resource_id] = true
+    for port: LogisticsPortDef in definition.logistics_ports:
+        relevant[port.resource_id] = true
+    for inventory in [
+        building.inventories,
+        building.outgoing_reserved,
+        building.incoming_reserved,
+    ]:
+        for resource_id: StringName in inventory:
+            relevant[resource_id] = true
+
+    var result: Array[StringName] = []
+    for resource: ResourceDef in state.catalog.resources:
+        if show_all or relevant.has(resource.id):
+            result.append(resource.id)
+            relevant.erase(resource.id)
+    var unknown_ids: Array = relevant.keys()
+    unknown_ids.sort()
+    for resource_id: StringName in unknown_ids:
+        result.append(resource_id)
+    return result
 
 
 func _utility_text(state: SimulationState, coord: HexCoord) -> String:

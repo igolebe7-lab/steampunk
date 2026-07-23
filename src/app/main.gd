@@ -60,7 +60,10 @@ func _ready() -> void:
         &"demolish": $UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/BuildingControls/Demolish,
     })
     _hud_controller.configure(_runner, simulation_controller, logistics_world_view.get_diagnostics_view(), {
-        &"wood": $UI/SafeArea/Shell/TopBar/Margin/HBox/Wood,
+        &"wood": $UI/SafeArea/Shell/TopBar/Margin/HBox/Resources/Wood,
+        &"iron": $UI/SafeArea/Shell/TopBar/Margin/HBox/Resources/Iron,
+        &"coal": $UI/SafeArea/Shell/TopBar/Margin/HBox/Resources/Coal,
+        &"water": $UI/SafeArea/Shell/TopBar/Margin/HBox/Resources/Water,
         &"throughput": $UI/SafeArea/Shell/TopBar/Margin/HBox/Throughput,
         &"tick": $UI/SafeArea/Shell/TopBar/Margin/HBox/Tick,
         &"status": status_label,

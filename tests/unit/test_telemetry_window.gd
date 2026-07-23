@@ -5,6 +5,7 @@ func run() -> Array[String]:
     _assert_bounded_window_and_warmup()
     _assert_window_metrics()
     _assert_telemetry_system_collects_events_and_load()
+    _assert_inactive_production_links_do_not_report_worker_shortage()
     return finish()
 
 
@@ -85,3 +86,24 @@ func _assert_telemetry_system_collects_events_and_load() -> void:
     assert_true(not (state.telemetry.get(&"ready", true) as bool), "публичная telemetry отмечает warmup")
     DiagnosticsSystem.new().run(state)
     assert_eq(state.diagnostic_report.cell_key, &"2:3", "diagnostic report указывает целевую клетку конфликта")
+
+
+func _assert_inactive_production_links_do_not_report_worker_shortage() -> void:
+    var scenario := load("res://data/scenarios/full_industrial.tres") as ScenarioDef
+    var loaded := ScenarioLoader.new().load_scenario(scenario)
+    var runner := SimulationRunner.new(loaded.state, false)
+    runner.run_ticks(100)
+    var free_workers := 0
+    for value: Variant in runner.state.workers.values():
+        var worker := value as WorkerState
+        if (
+            worker.action == WorkerState.IDLE
+            and worker.link_id == 0
+            and worker.job_id == 0
+        ):
+            free_workers += 1
+    assert_eq(free_workers, 2, "в фазе наблюдения два носильщика действительно свободны")
+    assert_true(
+        runner.state.diagnostic_report.code != &"worker_shortage",
+        "заблокированное производство без спроса не создаёт ложный дефицит работников"
+    )

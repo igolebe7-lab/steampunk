@@ -32,6 +32,11 @@ func _assert_layout(instance: Node) -> void:
     assert_true(not top.get_global_rect().intersects(bottom.get_global_rect()), "top и bottom не перекрываются")
     assert_true(not left.get_global_rect().intersects(right.get_global_rect()), "left и right не перекрываются")
     assert_true(instance.has_node("UI/SafeArea/Shell/Body/RightPanel/Margin/VBox/Scroll/Inspector"), "right inspector прокручивается")
+    for resource_node in ["Wood", "Iron", "Coal", "Water"]:
+        assert_true(
+            instance.has_node("UI/SafeArea/Shell/TopBar/Margin/HBox/Resources/%s" % resource_node),
+            "верхняя панель показывает ресурс: %s" % resource_node
+        )
     for path in [
         "UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Inspect",
         "UI/SafeArea/Shell/Body/Center/BottomBar/Margin/Tools/Road",
@@ -74,17 +79,87 @@ func _assert_inspectors_and_commands(instance: Node) -> void:
     var worker_id := runner.state.workers.keys()[0] as int
     var worker_text := inspector.build_text(runner.state, &"worker", worker_id)
     assert_true(worker_text.contains("Worker"), "worker inspector локализован")
+    var main := runner.state.get_building(runner.state.main_warehouse_id)
+    main.inventories[&"wood"] = 11
+    main.inventories[&"iron"] = 7
+    main.inventories[&"coal"] = 5
+    main.inventories[&"water"] = 3
+    main.outgoing_reserved[&"coal"] = 2
+    main.incoming_reserved[&"water"] = 1
     var building_text := inspector.build_text(runner.state, &"building", runner.state.main_warehouse_id)
     assert_true(building_text.contains("Building"), "building inspector локализован")
+    for expected in ["Wood: 11", "Iron: 7", "Coal: 5", "Water: 3"]:
+        assert_true(building_text.contains(expected), "инспектор показывает состав склада: %s" % expected)
+    assert_true(building_text.contains("Reserved to send: 2"), "инспектор отделяет исходящий резерв")
+    assert_true(building_text.contains("Expected: 1"), "инспектор отделяет входящий резерв")
+    assert_true(
+        (
+            building_text.find("Stored: 26/100")
+            < building_text.find("Wood: 11")
+            and building_text.find("Wood: 11") < building_text.find("Iron: 7")
+            and building_text.find("Iron: 7") < building_text.find("Coal: 5")
+            and building_text.find("Coal: 5") < building_text.find("Water: 3")
+            and building_text.find("Water: 3") < building_text.find("Level: 1")
+        ),
+        "инспектор показывает итог, ресурсы в порядке каталога и только затем настройки"
+    )
+    var boiler_id := 0
+    for value: Variant in runner.state.buildings.values():
+        var candidate := value as BuildingState
+        if candidate.definition_id == &"boiler":
+            boiler_id = candidate.id
+            candidate.inventories[&"coal"] = 2
+            candidate.inventories[&"water"] = 1
+    var boiler_text := inspector.build_text(runner.state, &"building", boiler_id)
+    assert_true(
+        (
+            boiler_text.find("Coal: 2") >= 0
+            and boiler_text.find("Coal: 2") < boiler_text.find("Water: 1")
+            and not boiler_text.contains("Wood:")
+            and not boiler_text.contains("Iron:")
+        ),
+        "производство показывает только релевантные ресурсы в порядке каталога"
+    )
+    var pump_id := 0
+    for value: Variant in runner.state.buildings.values():
+        var candidate := value as BuildingState
+        if candidate.definition_id == &"pump_station":
+            pump_id = candidate.id
+    var pump_text := inspector.build_text(runner.state, &"building", pump_id)
+    assert_true(not pump_text.contains("Stored: 0/0"), "насосная без инвентаря не изображается складом")
+    runner.state.get_building(boiler_id).inventories.clear()
     LogisticsLinkSystem.new().run(runner.state, Pathfinder.new())
     var link_id := runner.state.logistics_links.keys()[0] as int
     var link_text := inspector.build_text(runner.state, &"link", link_id)
     assert_true(link_text.contains("Link"), "link inspector локализован")
 
     var hud: HUDController = instance.get_hud_controller()
-    var main := runner.state.get_building(runner.state.main_warehouse_id)
-    main.add_amount(&"wood", 10)
-    runner.state.generated_totals[&"wood"] = (runner.state.generated_totals.get(&"wood", 0) as int) + 10
+    hud.refresh(runner.state)
+    assert_eq(
+        (instance.get_node("UI/SafeArea/Shell/TopBar/Margin/HBox/Resources/Wood") as Label).text,
+        "Wood: 11",
+        "HUD показывает дерево главного склада"
+    )
+    assert_eq(
+        (instance.get_node("UI/SafeArea/Shell/TopBar/Margin/HBox/Resources/Iron") as Label).text,
+        "Iron: 7",
+        "HUD показывает железо главного склада"
+    )
+    assert_eq(
+        (instance.get_node("UI/SafeArea/Shell/TopBar/Margin/HBox/Resources/Coal") as Label).text,
+        "Coal: 5",
+        "HUD показывает уголь главного склада"
+    )
+    assert_eq(
+        (instance.get_node("UI/SafeArea/Shell/TopBar/Margin/HBox/Resources/Water") as Label).text,
+        "Water: 3",
+        "HUD показывает воду главного склада"
+    )
+    main.inventories.clear()
+    main.outgoing_reserved.clear()
+    main.incoming_reserved.clear()
+    main.inventories[&"wood"] = 20
+    runner.state.generated_totals[&"wood"] = (runner.state.generated_totals.get(&"wood", 0) as int) + 20
     var coord := HexCoord.new(6, 6)
     var before := runner.state.map_state.get_cell(coord).road_level
     var code := hud.submit_intent({&"code": &"road_cell", &"coord": coord})

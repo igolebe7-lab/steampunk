@@ -74,7 +74,10 @@ func _collect_capacity_losses(state: SimulationState, sample: Dictionary) -> voi
         if source != null and destination != null and source.get_amount(link.resource_id) > 0:
             if destination.free_capacity() == 0:
                 _record_loss(sample, &"destination_full", link.id)
-            if _link_worker_count(state, link.id) == 0:
+            if (
+                JobSystem.demand_capacity(state, link) > 0
+                and _link_worker_count(state, link.id) == 0
+            ):
                 _record_loss(sample, &"worker_shortage", link.id)
 
     for value: Variant in state.buildings.values():

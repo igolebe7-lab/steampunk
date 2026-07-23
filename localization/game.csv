@@ -12,6 +12,9 @@ building.boiler.name,Котёл,Boiler
 building.steam_hammer.name,Паровой молот,Steam Hammer
 building.wood_source.name,Источник древесины,Wood Source
 ui.hud.wood,Дерево: {value},Wood: {value}
+ui.hud.iron,Железо: {value},Iron: {value}
+ui.hud.coal,Уголь: {value},Coal: {value}
+ui.hud.water,Вода: {value},Water: {value}
 ui.hud.throughput,Поток: {value}/мин,Throughput: {value}/min
 ui.hud.tick,Тик: {value},Tick: {value}
 ui.hud.pause,Пауза,Pause
@@ -35,7 +38,11 @@ ui.inspector.worker,Работник #{id},Worker #{id}
 ui.inspector.building,Здание #{id},Building #{id}
 ui.inspector.link,Связь #{id},Link #{id}
 ui.inspector.worker.body,"Действие: {action}\nГруз: {cargo}\nПричина: {reason}\nОжидание: {wait}\nСвязь: {link}\nЗадание: {job}","Action: {action}\nCargo: {cargo}\nReason: {reason}\nWait: {wait}\nLink: {link}\nJob: {job}"
-ui.inspector.building.body,"{name}\nЗапасы: {inventory}/{capacity}\nУровень: {level}\nПриоритет: {priority}\nПрямой маршрут: {direct}","{name}\nInventory: {inventory}/{capacity}\nLevel: {level}\nPriority: {priority}\nDirect policy: {direct}"
+ui.inspector.building.body,"Уровень: {level}\nПриоритет: {priority}\nПрямой маршрут: {direct}","Level: {level}\nPriority: {priority}\nDirect policy: {direct}"
+ui.inspector.inventory.total,Хранится: {inventory}/{capacity},Stored: {inventory}/{capacity}
+ui.inspector.inventory.line,{name}: {amount},{name}: {amount}
+ui.inspector.inventory.outgoing,  ↗ К отправке: {amount},  ↗ Reserved to send: {amount}
+ui.inspector.inventory.incoming,  ↘ Ожидается: {amount},  ↘ Expected: {amount}
 ui.inspector.link.body,"Откуда: {source}\nКуда: {destination}\nКвота: {quota}\nПриоритет: {priority}\nОтправка: {dispatch}\nПолитика: {policy}\nПоток: {throughput}/мин","Source: {source}\nDestination: {destination}\nQuota: {quota}\nPriority: {priority}\nDispatch: {dispatch}\nPolicy: {policy}\nThroughput: {throughput}/min"
 ui.value.none,Нет,None
 ui.value.yes,Да,Yes

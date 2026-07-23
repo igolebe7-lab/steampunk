@@ -35,9 +35,13 @@ func refresh(state: SimulationState) -> void:
     if state == null:
         return
     var main := state.get_building(state.main_warehouse_id)
-    var wood := 0 if main == null else main.get_amount(&"wood")
+    for resource_id in [&"wood", &"iron", &"coal", &"water"]:
+        var amount := 0 if main == null else main.get_amount(resource_id)
+        _set_label(
+            resource_id,
+            tr(StringName("ui.hud.%s" % resource_id)).format({"value": amount})
+        )
     var throughput := state.telemetry_window.main_throughput_per_minute(&"wood")
-    _set_label(&"wood", tr(&"ui.hud.wood").format({"value": wood}))
     _set_label(&"throughput", tr(&"ui.hud.throughput").format({"value": "%.1f" % throughput}))
     _set_label(&"tick", tr(&"ui.hud.tick").format({"value": state.tick}))
     _set_label(&"phase", tr(StringName("phase.%s" % state.scenario_progress.phase)))
